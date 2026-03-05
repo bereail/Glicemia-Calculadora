@@ -1,0 +1,28 @@
+{% extends "calculadora/base.html" %}
+{% block content %}
+
+<div class="card">
+  <div class="page-title">Ingresar medición</div>
+
+  <form method="post" action="{% url 'resultado' %}" style="margin-top:14px">
+    {% csrf_token %}
+
+    <div class="form-row">
+      <div class="form-col">
+        <label class="label">{{ form.glucemia.label }}</label>
+        {{ form.glucemia }}
+      </div>
+
+      <div class="form-col">
+        <label class="label">{{ form.momento.label }}</label>
+        {{ form.momento }}
+      </div>
+    </div>
+
+    <div style="margin-top:14px">
+      <button class="btn primary" type="submit">Calcular</button>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

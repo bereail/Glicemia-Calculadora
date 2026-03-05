@@ -1,0 +1,82 @@
+{% extends "calculadora/base.html" %}
+{% block content %}
+
+<div class="card">
+  <div class="page-title">Resultado</div>
+
+  <div class="box" style="margin-top:12px">
+    <div class="muted">Glucemia</div>
+    <div class="big"><strong>{{ g }}</strong> mg/dL</div>
+
+    {% if momento %}
+      <div class="muted" style="margin-top:6px">
+        Momento:
+        {% if momento == "ayunas" %}Ayunas
+        {% elif momento == "post" %}Postprandial
+        {% elif momento == "nocturna" %}Nocturna
+        {% else %}{{ momento }}
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="pill {{ clase }}" style="margin-top:12px">
+    <strong>{{ estado }}</strong> — {{ mensaje }}
+  </div>
+
+  <div class="box" style="margin-top:12px">
+    <div class="muted">Inicio insulinización EV</div>
+    <div>
+      {% if iniciar_ev %}
+        <strong>Sí</strong> (≥180 en 2 controles consecutivos)
+      {% else %}
+        <strong>No</strong> (lleva {{ streak }} consecutivo/s ≥180)
+      {% endif %}
+    </div>
+  </div>
+
+  {% if alerta_hgr %}
+    <div class="pill danger" style="margin-top:12px">
+      ALERTA HGR — &gt;360 mg/dL en 2 controles consecutivos. Avisar médico.
+    </div>
+  {% endif %}
+
+  {% if bolo_ui %}
+    <div class="box" style="margin-top:12px">
+      <div class="muted">Bolo inicial (g/100)</div>
+      <div class="big"><strong>{{ bolo_ui }}</strong> UI</div>
+    </div>
+  {% endif %}
+
+  {% if tasa_inicial_ui_h %}
+    <div class="box" style="margin-top:12px">
+      <div class="muted">Tasa inicial (g/100)</div>
+      <div class="big"><strong>{{ tasa_inicial_ui_h }}</strong> UI/h</div>
+    </div>
+  {% endif %}
+
+  <div class="box" style="margin-top:12px">
+    <div class="muted">Velocidad sugerida por tabla</div>
+    <div>
+      <div><strong>Algoritmo 1:</strong> {% if alg1_u_h %}{{ alg1_u_h }} UI/h{% else %}Suspender{% endif %}</div>
+      <div><strong>Algoritmo 2:</strong> {% if alg2_u_h %}{{ alg2_u_h }} UI/h{% else %}Suspender{% endif %}</div>
+    </div>
+    <div class="muted" style="margin-top:8px">
+      Objetivo: {{ rango_objetivo }}
+    </div>
+  </div>
+
+  {% if monitor %}
+    <div class="box" style="margin-top:12px">
+      <div class="muted">Monitoreo glucémico</div>
+      <div><strong>{{ monitor }}</strong></div>
+    </div>
+  {% endif %}
+
+  <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap">
+    <a class="btn" href="{% url 'home' %}?g={{ g }}&momento={{ momento }}">Editar esta medición</a>
+    <a class="btn" href="{% url 'home' %}">Nueva en blanco</a>
+  </div>
+</div>
+
+{% endblock %}
