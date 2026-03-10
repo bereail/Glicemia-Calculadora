@@ -1,26 +1,48 @@
 from django import forms
 
-MOMENTO_CHOICES = [
-    ("", "— Seleccionar (opcional) —"),
-    ("ayunas", "Ayunas"),
-    ("post", "Postprandial"),
-    ("nocturna", "Nocturna"),
+MODO_CHOICES = [
+    ("inicio", "Inicio / Reinicio"),
+    ("alg1", "Seguimiento - Algoritmo 1"),
+    ("alg2", "Seguimiento - Algoritmo 2"),
+]
+
+INFUSION_CHOICES = [
+    ("no", "No"),
+    ("si", "Sí"),
 ]
 
 class GlucemiaForm(forms.Form):
     glucemia = forms.IntegerField(
-        label="Glucemia (mg/dL)",
-        min_value=20,
-        max_value=600,
+        min_value=1,
+        label="Glucemia actual (mg/dL)",
         widget=forms.NumberInput(attrs={
-            "placeholder": "Ej: 140",
             "class": "input",
-            "required": True,
+            "placeholder": "Ej: 180"
         })
     )
-    momento = forms.ChoiceField(
-        label="Momento (opcional)",
+
+    glucemia_previa = forms.IntegerField(
+        min_value=1,
         required=False,
-        choices=MOMENTO_CHOICES,
-        widget=forms.Select(attrs={"class": "input"})
+        label="Glucemia previa (mg/dL)",
+        widget=forms.NumberInput(attrs={
+            "class": "input",
+            "placeholder": "Opcional, ej: 190"
+        })
+    )
+
+    modo = forms.ChoiceField(
+        choices=MODO_CHOICES,
+        label="Modo clínico",
+        widget=forms.Select(attrs={
+            "class": "input"
+        })
+    )
+
+    infusion_activa = forms.ChoiceField(
+        choices=INFUSION_CHOICES,
+        label="¿Infusión activa?",
+        widget=forms.Select(attrs={
+            "class": "input"
+        })
     )

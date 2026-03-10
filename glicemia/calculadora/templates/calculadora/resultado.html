@@ -2,80 +2,123 @@
 {% block content %}
 
 <div class="card">
-  <div class="page-title">Resultado</div>
+  <div class="page-title">Resultado del cálculo</div>
 
-  <div class="box" style="margin-top:12px">
-    <div class="muted">Glucemia</div>
-    <div class="big"><strong>{{ g }}</strong> mg/dL</div>
+  <div class="result-panel">
 
-    {% if momento %}
-      <div class="muted" style="margin-top:6px">
-        Momento:
-        {% if momento == "ayunas" %}Ayunas
-        {% elif momento == "post" %}Postprandial
-        {% elif momento == "nocturna" %}Nocturna
-        {% else %}{{ momento }}
+    <div class="hero-result">
+      <div class="hero-top">
+        <div>
+          <div class="eyebrow">Glucemia actual</div>
+          <div class="hero-value">
+            {{ g }}<span class="hero-unit">mg/dL</span>
+          </div>
+
+          {% if modo_label %}
+            <div class="summary-subtext" style="margin-top: 10px;">
+              Modo clínico: <strong>{{ modo_label }}</strong>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="status-badge {{ clase }}">
+          {{ estado }}
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-label">Conducta sugerida</div>
+        <div class="summary-value">{{ conducta }}</div>
+        <div class="summary-subtext">{{ mensaje }}</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-label">Próximo control</div>
+        <div class="summary-value">{{ proximo_control }}</div>
+        <div class="summary-subtext">
+          Objetivo glucémico: {{ rango_objetivo }}
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-label">Algoritmo usado</div>
+        <div class="summary-value">
+          {% if algoritmo_usado %}
+            {{ algoritmo_usado }}
+          {% else %}
+            No definido
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-label">Velocidad sugerida</div>
+        <div class="summary-value">
+          {% if velocidad_sugerida %}
+            {{ velocidad_sugerida }} UI/h
+          {% else %}
+            Suspender
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {% if alerta_hgr or alerta_hgp %}
+      <div class="alert-stack">
+        {% if alerta_hgr %}
+          <div class="alert-box danger">
+            <div class="alert-title">ALERTA HGR</div>
+            Más de 360 mg/dL en 2 controles consecutivos. Avisar médico.
+          </div>
+        {% endif %}
+
+        {% if alerta_hgp %}
+          <div class="alert-box warn">
+            <div class="alert-title">ALERTA HGP</div>
+            Evaluar falla del algoritmo y conducta médica.
+          </div>
         {% endif %}
       </div>
     {% endif %}
-  </div>
 
-  <div class="pill {{ clase }}" style="margin-top:12px">
-    <strong>{{ estado }}</strong> — {{ mensaje }}
-  </div>
+    {% if bolo_ui or tasa_inicial_ui_h %}
+      <div class="summary-grid">
+        {% if bolo_ui %}
+          <div class="summary-card">
+            <div class="summary-label">Bolo inicial</div>
+            <div class="summary-value">{{ bolo_ui }} UI</div>
+          </div>
+        {% endif %}
 
-  <div class="box" style="margin-top:12px">
-    <div class="muted">Inicio insulinización EV</div>
-    <div>
-      {% if iniciar_ev %}
-        <strong>Sí</strong> (≥180 en 2 controles consecutivos)
-      {% else %}
-        <strong>No</strong> (lleva {{ streak }} consecutivo/s ≥180)
-      {% endif %}
+        {% if tasa_inicial_ui_h %}
+          <div class="summary-card">
+            <div class="summary-label">Tasa inicial</div>
+            <div class="summary-value">{{ tasa_inicial_ui_h }} UI/h</div>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="summary-card">
+      <div class="summary-label">Detalle clínico</div>
+      <div class="detail-value">
+        <strong>Inicio insulinización EV:</strong>
+        {% if inicio_ins_ev %}Sí{% else %}No{% endif %}
+        <br>
+
+        <strong>Controles consecutivos ≥180:</strong> {{ streak }}
+        <br>
+
+        <strong>Rango objetivo:</strong> {{ rango_objetivo }}
+      </div>
     </div>
-  </div>
 
-  {% if alerta_hgr %}
-    <div class="pill danger" style="margin-top:12px">
-      ALERTA HGR — &gt;360 mg/dL en 2 controles consecutivos. Avisar médico.
+    <div class="result-actions">
+      <a class="btn" href="{% url 'home' %}">Nueva medición</a>
     </div>
-  {% endif %}
 
-  {% if bolo_ui %}
-    <div class="box" style="margin-top:12px">
-      <div class="muted">Bolo inicial (g/100)</div>
-      <div class="big"><strong>{{ bolo_ui }}</strong> UI</div>
-    </div>
-  {% endif %}
-
-  {% if tasa_inicial_ui_h %}
-    <div class="box" style="margin-top:12px">
-      <div class="muted">Tasa inicial (g/100)</div>
-      <div class="big"><strong>{{ tasa_inicial_ui_h }}</strong> UI/h</div>
-    </div>
-  {% endif %}
-
-  <div class="box" style="margin-top:12px">
-    <div class="muted">Velocidad sugerida por tabla</div>
-    <div>
-      <div><strong>Algoritmo 1:</strong> {% if alg1_u_h %}{{ alg1_u_h }} UI/h{% else %}Suspender{% endif %}</div>
-      <div><strong>Algoritmo 2:</strong> {% if alg2_u_h %}{{ alg2_u_h }} UI/h{% else %}Suspender{% endif %}</div>
-    </div>
-    <div class="muted" style="margin-top:8px">
-      Objetivo: {{ rango_objetivo }}
-    </div>
-  </div>
-
-  {% if monitor %}
-    <div class="box" style="margin-top:12px">
-      <div class="muted">Monitoreo glucémico</div>
-      <div><strong>{{ monitor }}</strong></div>
-    </div>
-  {% endif %}
-
-  <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap">
-    <a class="btn" href="{% url 'home' %}?g={{ g }}&momento={{ momento }}">Editar esta medición</a>
-    <a class="btn" href="{% url 'home' %}">Nueva en blanco</a>
   </div>
 </div>
 
