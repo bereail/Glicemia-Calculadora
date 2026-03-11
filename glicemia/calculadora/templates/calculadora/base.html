@@ -5,23 +5,29 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>{% block title %}Glicemia MVP{% endblock %}</title>
-  {% load static %}
-<link rel="stylesheet" href="{% static 'calculadora/styles.css' %}?v=3">
+
+  <link rel="stylesheet" href="{% static 'calculadora/styles.css' %}?v=4">
 </head>
+
 <body>
-  <header class="topbar">
-    <div class="container">
-      <div class="brand">Glicemia · MVP</div>
-      <div class="muted">Calculadora de apoyo (no guarda datos)</div>
+
+<header class="topbar">
+  <div class="container">
+    <div class="brand">Glicemia · MVP</div>
+    <div class="muted">
+      Calculadora de apoyo clínico (no guarda datos)
     </div>
-  </header>
+  </div>
+</header>
 
-  <main class="container">
-    {% block content %}{% endblock %}
-  </main>
+<main class="container">
+  {% block content %}{% endblock %}
+</main>
 
-  <footer class="footer container muted">
-    Hecho para uso interno. Versión MVP.
-  </footer>
+<footer class="footer container muted">
+  Herramienta de apoyo para uso interno.  
+  No reemplaza el criterio médico ni la historia clínica.
+</footer>
+
 </body>
 </html>

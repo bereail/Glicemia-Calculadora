@@ -6,7 +6,7 @@ OBJ_MIN = 140
 OBJ_MAX = 200
 
 ALG1 = [
-    (None, 119, None),      # <120 Suspender
+    (None, 119, None),
     (120, 149, Decimal("0.5")),
     (150, 179, Decimal("1")),
     (180, 209, Decimal("1.5")),
@@ -19,7 +19,7 @@ ALG1 = [
 ]
 
 ALG2 = [
-    (None, 119, None),      # <120 Suspender
+    (None, 119, None),
     (120, 149, Decimal("1")),
     (150, 179, Decimal("1.5")),
     (180, 209, Decimal("2.5")),
@@ -86,18 +86,21 @@ def resultado(request):
         return render(request, "calculadora/home.html", {"form": form})
 
     g = int(form.cleaned_data["glucemia"])
+    glucemia_previa = form.cleaned_data.get("glucemia_previa")
     modo = form.cleaned_data["modo"]
+    infusion_activa = form.cleaned_data["infusion_activa"]
+
+    if glucemia_previa is not None:
+        glucemia_previa = int(glucemia_previa)
 
     rango_objetivo = f"{OBJ_MIN}–{OBJ_MAX} mg/dL"
     modo_label = _get_mode_label(modo)
 
-    # ===== 1) Controles consecutivos >=180 para inicio/reinicio =====
-    streak = int(request.session.get("gt180_streak", 0))
-    if g >= 180:
-        streak += 1
+    # ===== 1) Controles consecutivos >=180 usando glucemia previa =====
+    if glucemia_previa is not None:
+        streak = 2 if glucemia_previa >= 180 and g >= 180 else (1 if g >= 180 else 0)
     else:
-        streak = 0
-    request.session["gt180_streak"] = streak
+        streak = 1 if g >= 180 else 0
 
     iniciar_ev = streak >= 2
 
@@ -131,43 +134,39 @@ def resultado(request):
     proximo_control = _monitoring_text(g)
 
     # ===== 6) Alertas =====
-    gt360_streak = int(request.session.get("gt360_streak", 0))
-    if g > 360:
-        gt360_streak += 1
-    else:
-        gt360_streak = 0
-    request.session["gt360_streak"] = gt360_streak
-
-    alerta_hgr = gt360_streak >= 2
-    alerta_hgp = False  # se deja pendiente para una versión siguiente
+    alerta_hgr = glucemia_previa is not None and glucemia_previa > 360 and g > 360
+    alerta_hgp = False
 
     # ===== 7) Salida clínica =====
     if es_hipoglucemia:
         estado = "Hipoglucemia"
         clase = "danger"
         conducta = "Suspender insulina EV"
-        mensaje = "Administrar dextrosa 25% 50 ml y recontrolar a los 30 minutos."
+        mensaje = "Administrar dextrosa al 25% 50 ml y recontrolar a los 30 minutos."
         proximo_control = "30 minutos"
+
     elif suspender:
         estado = "Detener infusión"
         clase = "warn"
         conducta = "Suspender infusión"
         mensaje = "Glucemia menor a 120 mg/dL. Recontrol frecuente según protocolo."
+
     elif modo == "inicio" and not iniciar_ev:
         estado = "Aún no iniciar EV"
         clase = "warn"
         conducta = "Esperar segundo control consecutivo"
-        mensaje = "La insulinización EV inicia con 2 controles consecutivos de 180 mg/dL o más."
+        mensaje = "La insulinización EV inicia con dos controles consecutivos de 180 mg/dL o más."
+
     else:
         if OBJ_MIN <= g <= OBJ_MAX:
-            estado = "En objetivo"
+            estado = "En rango objetivo"
             clase = "ok"
             conducta = "Mantener conducta actual"
             mensaje = f"Glucemia dentro del rango objetivo ({rango_objetivo})."
         elif g > OBJ_MAX:
             estado = "Hiperglucemia"
             clase = "warn"
-            conducta = "Ajustar infusión según algoritmo"
+            conducta = "Ajustar infusión según protocolo"
             mensaje = "Glucemia por encima del objetivo. Ajustar según la escala correspondiente."
         else:
             estado = "Bajo objetivo"
@@ -177,6 +176,7 @@ def resultado(request):
 
     ctx = {
         "g": g,
+        "glucemia_previa": glucemia_previa,
         "modo": modo,
         "modo_label": modo_label,
         "estado": estado,
@@ -193,5 +193,6 @@ def resultado(request):
         "proximo_control": proximo_control,
         "alerta_hgp": alerta_hgp,
         "alerta_hgr": alerta_hgr,
+        "infusion_activa": infusion_activa,
     }
     return render(request, "calculadora/resultado.html", ctx)

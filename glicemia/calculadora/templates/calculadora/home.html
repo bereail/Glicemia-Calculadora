@@ -1,28 +1,39 @@
 {% extends "calculadora/base.html" %}
+{% block title %}Nueva medición{% endblock %}
+
 {% block content %}
 
 <div class="card">
+
   <div class="page-title">Ingresar medición</div>
+
   <div class="muted" style="margin-top:6px">
     Objetivo glucémico: <strong>140–200 mg/dL</strong>
   </div>
 
   <form method="post" action="{% url 'resultado' %}" style="margin-top:16px">
+
     {% csrf_token %}
 
     <div class="form-row">
+
       <div class="form-col">
         <label class="label">{{ form.glucemia.label }}</label>
         {{ form.glucemia }}
       </div>
 
       <div class="form-col">
-        <label class="label">{{ form.glucemia_previa.label }}</label>
+        <label class="label">
+          {{ form.glucemia_previa.label }}
+          <span class="muted" style="font-size:12px">(opcional)</span>
+        </label>
         {{ form.glucemia_previa }}
       </div>
+
     </div>
 
-    <div class="form-row" style="margin-top:12px;">
+    <div class="form-row">
+
       <div class="form-col">
         <label class="label">{{ form.modo.label }}</label>
         {{ form.modo }}
@@ -32,13 +43,23 @@
         <label class="label">{{ form.infusion_activa.label }}</label>
         {{ form.infusion_activa }}
       </div>
+
     </div>
 
     <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap">
-      <button class="btn primary" type="submit">Calcular</button>
-      <a class="btn" href="{% url 'home' %}">Limpiar</a>
+
+      <button class="btn primary" type="submit">
+        Calcular
+      </button>
+
+      <a class="btn" href="{% url 'home' %}">
+        Limpiar
+      </a>
+
     </div>
+
   </form>
+
 </div>
 
 {% endblock %}
