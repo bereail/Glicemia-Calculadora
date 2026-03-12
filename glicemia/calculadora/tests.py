@@ -47,7 +47,11 @@ class HomeViewTests(TestCase):
         })
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Hay datos inválidos")
-        self.assertFormError(response, "form", "glucemia", "Ingresá la glucemia actual.")
+
+        form = response.context["form"]
+        self.assertTrue(form.errors)
+        self.assertIn("glucemia", form.errors)
+        self.assertIn("Ingresá la glucemia actual.", form.errors["glucemia"])
 
     def test_invalid_form_non_numeric_glucemia(self):
         self.login()
@@ -127,8 +131,10 @@ class HomeViewTests(TestCase):
         })
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "URGENTE")
+        self.assertContains(response, "ALERTA 1")
         self.assertContains(response, "Hiperglucemia persistente grave")
+        self.assertContains(response, "Evaluar protocolo 2")
+        self.assertContains(response, "Evaluar aviso al médico")
 
     def test_clean_get_after_post_still_works(self):
         self.login()

@@ -114,12 +114,21 @@
 
   {% if resultado.alerta_hgr %}
   <div class="alert-hgr">
-    <div class="summary-label" style="color:#ffb3b3; font-weight:800;">URGENTE</div>
+    <div class="summary-label" style="color:#ffb3b3; font-weight:800;">ALERTA 1</div>
+
     <div class="summary-value" style="color:#fecaca;">
       Hiperglucemia persistente grave
     </div>
-    <div class="summary-subtext" style="color:#fecaca;">
-      Observación: Evaluar protocolo 2
+
+    <div class="summary-subtext" style="color:#fecaca; margin-top:10px;">
+      <strong>Próximo control</strong><br>
+      A) Verificar infusión y control reciente<br><br>
+
+      <strong>Consulta sugerida</strong><br>
+      B) Evaluar aviso al médico<br><br>
+
+      <strong>Conducta</strong><br>
+      C) Evaluar protocolo 2
     </div>
   </div>
   {% endif %}

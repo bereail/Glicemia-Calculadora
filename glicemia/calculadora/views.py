@@ -149,6 +149,7 @@ def home(request):
                     clase = "warn"
                     conducta = "Suspender infusión"
                     mensaje = "Glucemia menor a 120 mg/dL. Recontrol frecuente según protocolo."
+                    proximo_control = "Según protocolo"
                     observacion = "Vigilar descenso / reevaluar"
                     hero_text = "Detener infusión"
 
@@ -173,9 +174,6 @@ def home(request):
                         observacion = "Recontrolar"
 
                     hero_text = _safe_decimal_text(velocidad_sugerida)
-
-                if alerta_hgr:
-                    observacion = "URGENTE: Hiperglucemia persistente grave. Evaluar protocolo 2"
 
                 if glucemia_previa is not None and g > glucemia_previa:
                     tendencia = "Ascenso"
