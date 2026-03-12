@@ -1,28 +1,188 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ingreso al sistema</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: linear-gradient(135deg, #eef4ff, #f7fbff);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1f2937;
+        }
+
+        .login-wrapper {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: #ffffff;
+            border-radius: 18px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+            padding: 32px 28px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .login-title {
+            margin: 0 0 8px 0;
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+            color: #1e3a8a;
+        }
+
+        .login-subtitle {
+            margin: 0 0 24px 0;
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .alert {
+            margin-bottom: 18px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-info {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+        }
+
+        form p {
+            margin-bottom: 16px;
+        }
+
+        form label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        form input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            transition: 0.2s ease;
+        }
+
+        form input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .btn-login {
+            width: 100%;
+            border: none;
+            background: #2563eb;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .btn-login:hover {
+            background: #1d4ed8;
+        }
+
+        .footer-text {
+            margin-top: 18px;
+            text-align: center;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .brand {
+            text-align: center;
+            margin-bottom: 14px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #2563eb;
+            letter-spacing: 0.4px;
+        }
+    </style>
 </head>
 <body>
-    <h2>Ingreso al sistema</h2>
 
-    {% if form.errors %}
-        <p>Usuario o contraseña incorrectos.</p>
-    {% endif %}
+    <div class="login-wrapper">
+        <div class="login-card">
 
-    {% if next %}
-        {% if user.is_authenticated %}
-            <p>No tenés permiso para acceder a esa página.</p>
-        {% else %}
-            <p>Iniciá sesión para continuar.</p>
-        {% endif %}
-    {% endif %}
+            <div class="brand">SISTEMA DE CONTROL GLUCÉMICO</div>
+            <h2 class="login-title">Ingreso al sistema</h2>
+            <p class="login-subtitle">Accedé con tu usuario y contraseña</p>
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Ingresar</button>
-    </form>
+            {% if form.errors %}
+                <div class="alert alert-error">
+                    Usuario o contraseña incorrectos.
+                </div>
+            {% endif %}
+
+            {% if next %}
+                {% if user.is_authenticated %}
+                    <div class="alert alert-error">
+                        No tenés permiso para acceder a esa página.
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        Iniciá sesión para continuar.
+                    </div>
+                {% endif %}
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                <p>
+                    <label for="{{ form.username.id_for_label }}">Usuario</label>
+                    {{ form.username }}
+                </p>
+
+                <p>
+                    <label for="{{ form.password.id_for_label }}">Contraseña</label>
+                    {{ form.password }}
+                </p>
+
+                <button type="submit" class="btn-login">Ingresar</button>
+
+                {% if next %}
+                    <input type="hidden" name="next" value="{{ next }}">
+                {% endif %}
+            </form>
+
+            <div class="footer-text">
+                Uso interno hospitalario
+            </div>
+
+        </div>
+    </div>
+
 </body>
 </html>

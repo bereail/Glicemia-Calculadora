@@ -1,4 +1,7 @@
 {% extends "calculadora/base.html" %}
+
+{% block title %}Nueva medición{% endblock %}
+
 {% block content %}
 
 <div class="card">
@@ -9,14 +12,28 @@
     Objetivo glucémico: <strong>140–200 mg/dL</strong>
   </div>
 
-  <form method="post" action="{% url 'resultado' %}" style="margin-top:16px">
+  {% if error_general %}
+    <div class="form-alert form-alert-error">
+      {{ error_general }}
+    </div>
+  {% endif %}
+
+  {% if form.errors %}
+    <div class="form-alert form-alert-error">
+      Revisá los campos marcados. Hay datos inválidos o incompletos.
+    </div>
+  {% endif %}
+
+  <form method="post" style="margin-top:16px">
     {% csrf_token %}
 
     <div class="form-row">
-
       <div class="form-col">
         <label class="label">{{ form.glucemia.label }}</label>
         {{ form.glucemia }}
+        {% if form.glucemia.errors %}
+          <div class="field-error">{{ form.glucemia.errors.0 }}</div>
+        {% endif %}
       </div>
 
       <div class="form-col">
@@ -25,29 +42,88 @@
           <span class="muted" style="font-size:12px">(opcional)</span>
         </label>
         {{ form.glucemia_previa }}
+        {% if form.glucemia_previa.errors %}
+          <div class="field-error">{{ form.glucemia_previa.errors.0 }}</div>
+        {% endif %}
       </div>
-
     </div>
 
     <div class="form-row" style="margin-top:12px;">
       <div class="form-col">
         <label class="label">{{ form.modo.label }}</label>
         {{ form.modo }}
+        {% if form.modo.errors %}
+          <div class="field-error">{{ form.modo.errors.0 }}</div>
+        {% endif %}
       </div>
 
       <div class="form-col">
         <label class="label">{{ form.infusion_activa.label }}</label>
         {{ form.infusion_activa }}
+        {% if form.infusion_activa.errors %}
+          <div class="field-error">{{ form.infusion_activa.errors.0 }}</div>
+        {% endif %}
       </div>
-
     </div>
 
-    <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap">
+    <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
       <button class="btn primary" type="submit">Calcular</button>
       <a class="btn" href="{% url 'home' %}">Limpiar</a>
     </div>
-
   </form>
+
+</div>
+
+{% if resultado %}
+
+<div class="card" style="margin-top:18px;">
+  <div class="page-title">Resultado</div>
+
+  <div class="hero-result {{ resultado.clase }}">
+    <div class="hero-top">
+      <div class="hero-label">Velocidad de infusión sugerida</div>
+      <div class="status-badge {{ resultado.clase }}">
+        {{ resultado.estado|default:"Sin estado" }}
+      </div>
+    </div>
+
+    <div class="hero-value hero-main">
+      {{ resultado.hero_text|default:"—" }}
+    </div>
+  </div>
+
+  <div class="summary-grid">
+
+    <div class="summary-card">
+      <div class="summary-label">Próximo control</div>
+      <div class="summary-value">{{ resultado.proximo_control|default:"—" }}</div>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-label">Conducta sugerida</div>
+      <div class="summary-value">{{ resultado.conducta|default:"—" }}</div>
+      <div class="summary-subtext">{{ resultado.mensaje|default:"Sin observaciones." }}</div>
+    </div>
+
+    <div class="summary-card observation-card">
+      <div class="summary-label">Observación</div>
+      <div class="summary-value">{{ resultado.observacion|default:"—" }}</div>
+    </div>
+
+  </div>
+
+  {% if resultado.alerta_hgr %}
+  <div class="alert-hgr">
+    <div class="summary-label" style="color:#ffb3b3; font-weight:800;">URGENTE</div>
+    <div class="summary-value" style="color:#fecaca;">
+      Hiperglucemia persistente grave
+    </div>
+    <div class="summary-subtext" style="color:#fecaca;">
+      Observación: Evaluar protocolo 2
+    </div>
+  </div>
+  {% endif %}
+
 </div>
 
 {% endif %}

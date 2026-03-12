@@ -1,13 +1,14 @@
-from decimal import Decimal, ROUND_HALF_UP
-from django.shortcuts import render
+from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
+
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 
 from .forms import GlucemiaForm
+
 
 OBJ_MIN = 140
 OBJ_MAX = 200
 
-# Algoritmo 1 = Inicio / Reinicio
 ALG1 = [
     (None, 119, None),
     (120, 149, Decimal("0.5")),
@@ -74,125 +75,151 @@ def _round_to_half(x: Decimal) -> Decimal:
     return (x * 2).quantize(Decimal("1"), rounding=ROUND_HALF_UP) / 2
 
 
+def _safe_decimal_text(value):
+    if value is None:
+        return "—"
+    return f"{value} UI/h"
+
+
 @login_required
 def home(request):
-    form = GlucemiaForm()
-    return render(request, "calculadora/home.html", {"form": form})
+    form = GlucemiaForm(request.POST or None)
+    resultado = None
+    error_general = None
 
+    if request.method == "POST":
+        if form.is_valid():
+            try:
+                g = int(form.cleaned_data["glucemia"])
+                modo = form.cleaned_data["modo"]
+                infusion_activa = form.cleaned_data.get("infusion_activa")
+                glucemia_previa = form.cleaned_data.get("glucemia_previa")
 
-def resultado(request):
-    if request.method != "POST":
-        return redirect("home")
+                rango_objetivo = f"{OBJ_MIN}–{OBJ_MAX} mg/dL"
+                modo_label = _get_mode_label(modo)
 
-    form = GlucemiaForm(request.POST)
-    if not form.is_valid():
-        return render(request, "calculadora/home.html", {"form": form})
+                es_hipoglucemia = g < 70
+                suspender = g < 120
 
-    g = int(form.cleaned_data["glucemia"])
-    modo = form.cleaned_data["modo"]
+                algoritmo_usado = None
+                velocidad_sugerida = None
 
-    rango_objetivo = f"{OBJ_MIN}–{OBJ_MAX} mg/dL"
-    modo_label = _get_mode_label(modo)
+                if modo == "inicio":
+                    algoritmo_usado = "Inicio / Reinicio (Algoritmo 1)"
+                    velocidad_sugerida = _rate_from_table(g, ALG1)
+                elif modo == "alg2":
+                    algoritmo_usado = "Seguimiento - Algoritmo 2"
+                    velocidad_sugerida = _rate_from_table(g, ALG2)
+                else:
+                    algoritmo_usado = "No definido"
 
-    # ===== 1) Controles consecutivos >=180 para inicio/reinicio =====
-    streak = int(request.session.get("gt180_streak", 0))
-    if g >= 180:
-        streak += 1
-    else:
-        streak = 0
-    request.session["gt180_streak"] = streak
+                bolo_ui = None
+                tasa_inicial_ui_h = None
 
-        iniciar_ev = streak >= 2
+                if modo == "inicio" and not suspender and g >= 180:
+                    base = _round_to_half(Decimal(g) / Decimal("100"))
+                    bolo_ui = base
+                    tasa_inicial_ui_h = base
 
-        # Estados críticos
-        es_hipoglucemia = g < 70
-        suspender = g < 120
+                proximo_control = _monitoring_text(g)
 
-        # Algoritmo y velocidad sugerida
-        algoritmo_usado = None
-        velocidad_sugerida = None
+                gt360_streak = int(request.session.get("gt360_streak", 0))
+                if g > 360:
+                    gt360_streak += 1
+                else:
+                    gt360_streak = 0
+                request.session["gt360_streak"] = gt360_streak
 
-        if modo == "inicio":
-            algoritmo_usado = "Inicio / Reinicio (Algoritmo 1)"
-            velocidad_sugerida = _rate_from_table(g, ALG1)
-        elif modo == "alg2":
-            algoritmo_usado = "Seguimiento - Algoritmo 2"
-            velocidad_sugerida = _rate_from_table(g, ALG2)
+                alerta_hgr = gt360_streak >= 2
 
-        # Bolo / tasa inicial
-        bolo_ui = None
-        tasa_inicial_ui_h = None
+                observacion = ""
+                hero_text = "—"
 
-        if modo == "inicio" and iniciar_ev and not suspender:
-            base = _round_to_half(Decimal(g) / Decimal(100))
-            bolo_ui = base
-            tasa_inicial_ui_h = base
+                if es_hipoglucemia:
+                    estado = "Hipoglucemia"
+                    clase = "danger"
+                    conducta = "Suspender insulina EV"
+                    mensaje = "Administrar dextrosa al 25% 50 ml y recontrolar a los 30 minutos."
+                    proximo_control = "30 minutos"
+                    observacion = "Evaluar / avisar médico"
+                    hero_text = "Suspender infusión"
 
-        # Monitoreo
-        proximo_control = _monitoring_text(g)
+                elif suspender:
+                    estado = "Detener infusión"
+                    clase = "warn"
+                    conducta = "Suspender infusión"
+                    mensaje = "Glucemia menor a 120 mg/dL. Recontrol frecuente según protocolo."
+                    observacion = "Vigilar descenso / reevaluar"
+                    hero_text = "Detener infusión"
 
-    # ===== 6) Alertas =====
-    gt360_streak = int(request.session.get("gt360_streak", 0))
-    if g > 360:
-        gt360_streak += 1
-    else:
-        gt360_streak = 0
-    request.session["gt360_streak"] = gt360_streak
+                else:
+                    if OBJ_MIN <= g <= OBJ_MAX:
+                        estado = "En objetivo"
+                        clase = "ok"
+                        conducta = "Mantener conducta actual"
+                        mensaje = f"Glucemia dentro del rango objetivo ({rango_objetivo})."
+                        observacion = "Continuar monitoreo"
+                    elif g > OBJ_MAX:
+                        estado = "Hiperglucemia"
+                        clase = "warn"
+                        conducta = "Ajustar infusión según algoritmo"
+                        mensaje = "Glucemia por encima del objetivo. Ajustar según la escala correspondiente."
+                        observacion = "Evaluar protocolo 2" if modo == "inicio" else "Continuar ajuste"
+                    else:
+                        estado = "Bajo objetivo"
+                        clase = "warn"
+                        conducta = "Revisar descenso / considerar suspensión"
+                        mensaje = "Glucemia por debajo del objetivo. Vigilar riesgo de hipoglucemia."
+                        observacion = "Recontrolar"
 
-    alerta_hgr = gt360_streak >= 2
-    alerta_hgp = False  # se deja pendiente para una versión siguiente
+                    hero_text = _safe_decimal_text(velocidad_sugerida)
 
-    # ===== 7) Salida clínica =====
-    if es_hipoglucemia:
-        estado = "Hipoglucemia"
-        clase = "danger"
-        conducta = "Suspender insulina EV"
-        mensaje = "Administrar dextrosa 25% 50 ml y recontrolar a los 30 minutos."
-        proximo_control = "30 minutos"
-    elif suspender:
-        estado = "Detener infusión"
-        clase = "warn"
-        conducta = "Suspender infusión"
-        mensaje = "Glucemia menor a 120 mg/dL. Recontrol frecuente según protocolo."
-    elif modo == "inicio" and not iniciar_ev:
-        estado = "Aún no iniciar EV"
-        clase = "warn"
-        conducta = "Esperar segundo control consecutivo"
-        mensaje = "La insulinización EV inicia con 2 controles consecutivos de 180 mg/dL o más."
-    else:
-        if OBJ_MIN <= g <= OBJ_MAX:
-            estado = "En objetivo"
-            clase = "ok"
-            conducta = "Mantener conducta actual"
-            mensaje = f"Glucemia dentro del rango objetivo ({rango_objetivo})."
-        elif g > OBJ_MAX:
-            estado = "Hiperglucemia"
-            clase = "warn"
-            conducta = "Ajustar infusión según algoritmo"
-            mensaje = "Glucemia por encima del objetivo. Ajustar según la escala correspondiente."
+                if alerta_hgr:
+                    observacion = "URGENTE: Hiperglucemia persistente grave. Evaluar protocolo 2"
+
+                if glucemia_previa is not None and g > glucemia_previa:
+                    tendencia = "Ascenso"
+                elif glucemia_previa is not None and g < glucemia_previa:
+                    tendencia = "Descenso"
+                elif glucemia_previa is not None:
+                    tendencia = "Sin cambios"
+                else:
+                    tendencia = "No informada"
+
+                resultado = {
+                    "g": g,
+                    "modo": modo,
+                    "modo_label": modo_label,
+                    "estado": estado,
+                    "clase": clase,
+                    "conducta": conducta,
+                    "mensaje": mensaje,
+                    "hero_text": hero_text,
+                    "proximo_control": proximo_control,
+                    "observacion": observacion,
+                    "algoritmo_usado": algoritmo_usado,
+                    "velocidad_sugerida": velocidad_sugerida,
+                    "bolo_ui": bolo_ui,
+                    "tasa_inicial_ui_h": tasa_inicial_ui_h,
+                    "alerta_hgr": alerta_hgr,
+                    "infusion_activa": infusion_activa,
+                    "glucemia_previa": glucemia_previa,
+                    "tendencia": tendencia,
+                }
+
+            except (ValueError, TypeError, InvalidOperation):
+                error_general = "No se pudo calcular el resultado. Revisá los datos ingresados."
+            except Exception:
+                error_general = "Ocurrió un error inesperado al procesar la medición."
         else:
-            estado = "Bajo objetivo"
-            clase = "warn"
-            conducta = "Revisar descenso / considerar suspensión"
-            mensaje = "Glucemia por debajo del objetivo. Vigilar riesgo de hipoglucemia."
+            error_general = "Hay datos inválidos en el formulario."
 
-    ctx = {
-        "g": g,
-        "modo": modo,
-        "modo_label": modo_label,
-        "estado": estado,
-        "clase": clase,
-        "conducta": conducta,
-        "mensaje": mensaje,
-        "iniciar_ev": iniciar_ev,
-        "streak": streak,
-        "rango_objetivo": rango_objetivo,
-        "bolo_ui": bolo_ui,
-        "tasa_inicial_ui_h": tasa_inicial_ui_h,
-        "algoritmo_usado": algoritmo_usado,
-        "velocidad_sugerida": velocidad_sugerida,
-        "proximo_control": proximo_control,
-        "alerta_hgp": alerta_hgp,
-        "alerta_hgr": alerta_hgr,
-    }
-    return render(request, "calculadora/resultado.html", ctx)
+    return render(
+        request,
+        "calculadora/home.html",
+        {
+            "form": form,
+            "resultado": resultado,
+            "error_general": error_general,
+        },
+    )
