@@ -39,7 +39,7 @@ ROOT_URLCONF = 'glicemia.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -50,7 +50,6 @@ TEMPLATES = [
         },
     },
 ]
-
 WSGI_APPLICATION = 'glicemia.wsgi.application'
 
 
@@ -93,5 +92,8 @@ USE_I18N = True
 
 USE_TZ = True
 
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/login/'
 
 STATIC_URL = 'static/'

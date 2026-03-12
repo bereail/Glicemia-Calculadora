@@ -1,6 +1,4 @@
 {% extends "calculadora/base.html" %}
-{% block title %}Nueva medición{% endblock %}
-
 {% block content %}
 
 <div class="card">
@@ -12,7 +10,6 @@
   </div>
 
   <form method="post" action="{% url 'resultado' %}" style="margin-top:16px">
-
     {% csrf_token %}
 
     <div class="form-row">
@@ -32,8 +29,7 @@
 
     </div>
 
-    <div class="form-row">
-
+    <div class="form-row" style="margin-top:12px;">
       <div class="form-col">
         <label class="label">{{ form.modo.label }}</label>
         {{ form.modo }}
@@ -47,19 +43,13 @@
     </div>
 
     <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap">
-
-      <button class="btn primary" type="submit">
-        Calcular
-      </button>
-
-      <a class="btn" href="{% url 'home' %}">
-        Limpiar
-      </a>
-
+      <button class="btn primary" type="submit">Calcular</button>
+      <a class="btn" href="{% url 'home' %}">Limpiar</a>
     </div>
 
   </form>
-
 </div>
+
+{% endif %}
 
 {% endblock %}

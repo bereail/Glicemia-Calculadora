@@ -1,8 +1,7 @@
 from django import forms
 
 MODO_CHOICES = [
-    ("inicio", "Inicio / Reinicio"),
-    ("alg1", "Seguimiento - Algoritmo 1"),
+    ("inicio", "Inicio / Reinicio (Algoritmo 1)"),
     ("alg2", "Seguimiento - Algoritmo 2"),
 ]
 

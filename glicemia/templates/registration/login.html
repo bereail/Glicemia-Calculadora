@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Ingreso al sistema</title>
+</head>
+<body>
+    <h2>Ingreso al sistema</h2>
+
+    {% if form.errors %}
+        <p>Usuario o contraseña incorrectos.</p>
+    {% endif %}
+
+    {% if next %}
+        {% if user.is_authenticated %}
+            <p>No tenés permiso para acceder a esa página.</p>
+        {% else %}
+            <p>Iniciá sesión para continuar.</p>
+        {% endif %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Ingresar</button>
+    </form>
+</body>
+</html>
