@@ -11,8 +11,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-
-
 INSTALLED_APPS = [
     'pacientes',
     'calculadora',
@@ -83,7 +81,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
@@ -92,7 +89,10 @@ USE_I18N = True
 
 USE_TZ = True
 
+LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL = "/accounts/login/"
+LOGOUT_REDIRECT_URL = "/login/"
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_AGE = 1800
 
 STATIC_URL = 'static/'

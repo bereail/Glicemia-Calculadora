@@ -1,0 +1,97 @@
+{% extends "calculadora/base.html" %}
+
+{% block title %}Historial de mediciones{% endblock %}
+
+{% block content %}
+
+<div class="card">
+  <div class="page-title">Historial de mediciones</div>
+
+  <form method="get" style="margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: end;">
+    <div>
+      <label for="usuario"><strong>Usuario</strong></label><br>
+      <select name="usuario" id="usuario">
+        <option value="">Todos</option>
+        {% for u in usuarios %}
+          <option value="{{ u }}" {% if usuario_seleccionado == u %}selected{% endif %}>{{ u }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label for="estado"><strong>Estado</strong></label><br>
+      <select name="estado" id="estado">
+        <option value="">Todos</option>
+        {% for e in estados %}
+          <option value="{{ e }}" {% if estado_seleccionado == e %}selected{% endif %}>{{ e }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <button type="submit" class="btn primary">Filtrar</button>
+      <a href="{% url 'historial' %}" class="btn">Limpiar</a>
+    </div>
+  </form>
+</div>
+
+<div class="summary-grid" style="margin-top: 16px;">
+  <div class="summary-card">
+    <div class="summary-label">Total</div>
+    <div class="summary-value">{{ total }}</div>
+    <div class="summary-subtext">Mediciones encontradas</div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-label">Hipoglucemias</div>
+    <div class="summary-value">{{ hipoglucemias }}</div>
+    <div class="summary-subtext">Valores críticos bajos</div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-label">En objetivo</div>
+    <div class="summary-value">{{ en_objetivo }}</div>
+    <div class="summary-subtext">Dentro del rango esperado</div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-label">Hiperglucemias</div>
+    <div class="summary-value">{{ hiperglucemias }}</div>
+    <div class="summary-subtext">Valores por encima del objetivo</div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 16px;">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Usuario</th>
+        <th>Glucemia</th>
+        <th>Modo</th>
+        <th>Estado</th>
+        <th>Conducta</th>
+        <th>Tendencia</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in mediciones %}
+      <tr>
+        <td>{{ m.fecha_hora|date:"d/m/Y H:i" }}</td>
+        <td>{{ m.usuario.username }}</td>
+        <td>{{ m.glucemia }} mg/dL</td>
+        <td>{{ m.get_modo_display }}</td>
+        <td>{{ m.estado }}</td>
+        <td>{{ m.conducta }}</td>
+        <td>{{ m.tendencia }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7">No hay mediciones registradas.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

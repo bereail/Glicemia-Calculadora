@@ -1,6 +1,6 @@
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
-
-from django.contrib.auth.decorators import login_required
+from .models import MedicionGlucemia
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render
 
 from .forms import GlucemiaForm
@@ -34,6 +34,14 @@ ALG2 = [
     (330, 359, Decimal("6")),
     (360, None, Decimal("8")),
 ]
+
+
+def tiene_acceso_home(user):
+    return user.is_authenticated and (
+        user.is_superuser
+        or user.groups.filter(name="Enfermeria").exists()
+        or user.groups.filter(name="Medicos").exists()
+    )
 
 
 def _get_mode_label(modo: str) -> str:
@@ -82,6 +90,56 @@ def _safe_decimal_text(value):
 
 
 @login_required
+@user_passes_test(tiene_acceso_home, login_url="/login/")
+def historial(request):
+    mediciones = MedicionGlucemia.objects.all().order_by("-fecha_hora")
+
+    usuario = request.GET.get("usuario")
+    estado = request.GET.get("estado")
+
+    if usuario:
+        mediciones = mediciones.filter(usuario__username=usuario)
+
+    if estado:
+        mediciones = mediciones.filter(estado=estado)
+
+    total = mediciones.count()
+    hipoglucemias = mediciones.filter(estado="Hipoglucemia").count()
+    en_objetivo = mediciones.filter(estado="En objetivo").count()
+    hiperglucemias = mediciones.filter(estado="Hiperglucemia").count()
+
+    mediciones = mediciones[:50]
+
+    usuarios = (
+        MedicionGlucemia.objects.values_list("usuario__username", flat=True)
+        .distinct()
+        .order_by("usuario__username")
+    )
+
+    estados = (
+        MedicionGlucemia.objects.values_list("estado", flat=True)
+        .distinct()
+        .order_by("estado")
+    )
+
+    return render(
+        request,
+        "calculadora/historial.html",
+        {
+            "mediciones": mediciones,
+            "usuarios": usuarios,
+            "estados": estados,
+            "usuario_seleccionado": usuario,
+            "estado_seleccionado": estado,
+            "total": total,
+            "hipoglucemias": hipoglucemias,
+            "en_objetivo": en_objetivo,
+            "hiperglucemias": hiperglucemias,
+        },
+    )
+
+@login_required
+@user_passes_test(tiene_acceso_home, login_url="/login/")
 def home(request):
     form = GlucemiaForm(request.POST or None)
     resultado = None
@@ -205,12 +263,35 @@ def home(request):
                     "tendencia": tendencia,
                 }
 
+                MedicionGlucemia.objects.create(
+                    usuario=request.user,
+                    glucemia=g,
+                    modo=modo,
+                    infusion_activa=bool(infusion_activa),
+                    glucemia_previa=glucemia_previa,
+                    estado=estado,
+                    clase=clase,
+                    conducta=conducta,
+                    mensaje=mensaje,
+                    proximo_control=proximo_control,
+                    observacion=observacion,
+                    tendencia=tendencia,
+                    algoritmo_usado=algoritmo_usado,
+                    velocidad_sugerida=str(velocidad_sugerida) if velocidad_sugerida is not None else "",
+                    bolo_ui=str(bolo_ui) if bolo_ui is not None else "",
+                    tasa_inicial_ui_h=str(tasa_inicial_ui_h) if tasa_inicial_ui_h is not None else "",
+                    alerta_hgr=alerta_hgr,
+                )
+
             except (ValueError, TypeError, InvalidOperation):
                 error_general = "No se pudo calcular el resultado. Revisá los datos ingresados."
             except Exception:
                 error_general = "Ocurrió un error inesperado al procesar la medición."
         else:
             error_general = "Hay datos inválidos en el formulario."
+
+    es_enfermeria = request.user.groups.filter(name="Enfermeria").exists()
+    es_medico = request.user.groups.filter(name="Medicos").exists()
 
     return render(
         request,
@@ -219,5 +300,7 @@ def home(request):
             "form": form,
             "resultado": resultado,
             "error_general": error_general,
+            "es_enfermeria": es_enfermeria,
+            "es_medico": es_medico,
         },
     )

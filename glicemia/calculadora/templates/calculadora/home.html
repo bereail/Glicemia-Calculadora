@@ -4,6 +4,23 @@
 
 {% block content %}
 
+{% if es_medico %}
+<div class="card">
+  <div class="page-title">Panel médico</div>
+
+  <div class="summary-subtext">
+    Acceso de solo lectura.
+  </div>
+
+  <div style="margin-top:16px;">
+    <a href="{% url 'historial' %}" class="btn primary">
+      Ver historial de mediciones
+    </a>
+  </div>
+</div>
+{% endif %}
+
+{% if es_enfermeria or user.is_superuser %}
 <div class="card">
 
   <div class="page-title">Ingresar medición</div>
@@ -73,9 +90,9 @@
   </form>
 
 </div>
+{% endif %}
 
-{% if resultado %}
-
+{% if resultado and (es_enfermeria or user.is_superuser) %}
 <div class="card" style="margin-top:18px;">
   <div class="page-title">Resultado</div>
 
@@ -134,7 +151,6 @@
   {% endif %}
 
 </div>
-
 {% endif %}
 
 {% endblock %}

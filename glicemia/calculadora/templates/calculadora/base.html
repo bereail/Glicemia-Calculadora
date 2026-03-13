@@ -7,20 +7,42 @@
   <title>{% block title %}Glicemia MVP{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'calculadora/styles.css' %}?v=7">
 </head>
+
 <body>
-  <header class="topbar">
-    <div class="container">
+
+<header class="topbar">
+  <div class="container" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+
+      <a href="{% url 'historial' %}" class="btn">
+Ver historial
+</a>
+
+    <div>
       <div class="brand">Control Glicemia - Infusión de Insulina</div>
       <div class="muted">Calculadora de apoyo clínico (no guarda datos)</div>
     </div>
-  </header>
 
-  <main class="container">
-    {% block content %}{% endblock %}
-  </main>
+    {% if user.is_authenticated %}
+  <div class="muted" style="margin-top: 10px;">
+    Usuario: <strong>{{ user.username }}</strong>
+  </div>
 
-  <footer class="footer container muted">
-    Herramienta de apoyo para uso interno. No reemplaza el criterio médico ni la historia clínica.
-  </footer>
+  <form method="post" action="{% url 'logout' %}" style="margin-top: 10px;">
+    {% csrf_token %}
+    <button type="submit" class="btn">Cerrar sesión</button>
+  </form>
+{% endif %}
+
+  </div>
+</header>
+
+<main class="container">
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="footer container muted">
+  Herramienta de apoyo para uso interno. No reemplaza el criterio médico ni la historia clínica.
+</footer>
+
 </body>
 </html>
