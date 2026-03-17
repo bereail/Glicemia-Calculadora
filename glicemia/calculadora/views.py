@@ -1,8 +1,22 @@
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
-from .models import MedicionGlucemia
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.shortcuts import render
+from datetime import timedelta
+from io import BytesIO
 
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.http import HttpResponse
+from django.shortcuts import render
+from django.utils import timezone
+
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.units import mm
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+
+from .models import MedicionGlucemia
 from .forms import GlucemiaForm
 
 
@@ -89,13 +103,29 @@ def _safe_decimal_text(value):
     return f"{value} UI/h"
 
 
-@login_required
-@user_passes_test(tiene_acceso_home, login_url="/login/")
-def historial(request):
-    mediciones = MedicionGlucemia.objects.all().order_by("-fecha_hora")
+def _normalizar_infusion_activa(value):
+    """
+    Convierte el valor del formulario a bool de forma segura.
+    Sirve si el campo devuelve bool real o choices tipo 'si'/'no', '1'/'0', etc.
+    """
+    if isinstance(value, bool):
+        return value
 
-    usuario = request.GET.get("usuario")
-    estado = request.GET.get("estado")
+    if value in (None, "", 0, "0", "false", "False", "no", "No"):
+        return False
+
+    if value in (1, "1", "true", "True", "si", "sí", "Si", "Sí", "activa", "Activa"):
+        return True
+
+    return False
+
+
+def _filtrar_mediciones_desde_request(request):
+    usuario = request.GET.get("usuario", "").strip()
+    estado = request.GET.get("estado", "").strip()
+    periodo = request.GET.get("periodo", "").strip().lower()
+
+    mediciones = MedicionGlucemia.objects.select_related("usuario").all().order_by("-fecha_hora")
 
     if usuario:
         mediciones = mediciones.filter(usuario__username=usuario)
@@ -103,12 +133,29 @@ def historial(request):
     if estado:
         mediciones = mediciones.filter(estado=estado)
 
-    total = mediciones.count()
-    hipoglucemias = mediciones.filter(estado="Hipoglucemia").count()
-    en_objetivo = mediciones.filter(estado="En objetivo").count()
-    hiperglucemias = mediciones.filter(estado="Hiperglucemia").count()
+    ahora = timezone.now()
 
-    mediciones = mediciones[:50]
+    if periodo == "semanal":
+        desde = ahora - timedelta(days=7)
+        mediciones = mediciones.filter(fecha_hora__gte=desde)
+    elif periodo == "mensual":
+        desde = ahora - timedelta(days=30)
+        mediciones = mediciones.filter(fecha_hora__gte=desde)
+
+    return mediciones, usuario, estado, periodo
+
+
+@login_required
+@user_passes_test(tiene_acceso_home, login_url="/login/")
+def historial(request):
+    mediciones_qs, usuario_seleccionado, estado_seleccionado, periodo = _filtrar_mediciones_desde_request(request)
+
+    total = mediciones_qs.count()
+    hipoglucemias = mediciones_qs.filter(estado="Hipoglucemia").count()
+    en_objetivo = mediciones_qs.filter(estado="En objetivo").count()
+    hiperglucemias = mediciones_qs.filter(estado="Hiperglucemia").count()
+
+    mediciones = mediciones_qs[:50]
 
     usuarios = (
         MedicionGlucemia.objects.values_list("usuario__username", flat=True)
@@ -129,14 +176,156 @@ def historial(request):
             "mediciones": mediciones,
             "usuarios": usuarios,
             "estados": estados,
-            "usuario_seleccionado": usuario,
-            "estado_seleccionado": estado,
+            "usuario_seleccionado": usuario_seleccionado,
+            "estado_seleccionado": estado_seleccionado,
+            "periodo_seleccionado": periodo,
             "total": total,
             "hipoglucemias": hipoglucemias,
             "en_objetivo": en_objetivo,
             "hiperglucemias": hiperglucemias,
         },
     )
+
+
+@login_required
+@user_passes_test(tiene_acceso_home, login_url="/login/")
+def exportar_historial_excel(request):
+    mediciones, usuario, estado, periodo = _filtrar_mediciones_desde_request(request)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Historial"
+
+    titulo = f"Reporte de mediciones - {periodo or 'completo'}"
+    ws["A1"] = titulo
+    ws["A1"].font = Font(bold=True, size=14)
+
+    ws["A2"] = f"Usuario: {usuario or 'Todos'}"
+    ws["B2"] = f"Estado: {estado or 'Todos'}"
+    ws["C2"] = f"Generado: {timezone.localtime().strftime('%d/%m/%Y %H:%M')}"
+
+    headers = ["Fecha", "Usuario", "Glucemia", "Modo", "Estado", "Conducta", "Tendencia"]
+    header_fill = PatternFill("solid", fgColor="1F4E78")
+    header_font = Font(color="FFFFFF", bold=True)
+
+    fila_header = 4
+    for col, header in enumerate(headers, start=1):
+        cell = ws.cell(row=fila_header, column=col, value=header)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center")
+
+    fila = 5
+    for m in mediciones:
+        ws.cell(row=fila, column=1, value=timezone.localtime(m.fecha_hora).strftime("%d/%m/%Y %H:%M"))
+        ws.cell(row=fila, column=2, value=m.usuario.username if m.usuario else "")
+        ws.cell(row=fila, column=3, value=f"{m.glucemia} mg/dL")
+        ws.cell(row=fila, column=4, value=m.get_modo_display())
+        ws.cell(row=fila, column=5, value=m.estado)
+        ws.cell(row=fila, column=6, value=m.conducta)
+        ws.cell(row=fila, column=7, value=m.tendencia or "")
+        fila += 1
+
+    widths = {
+        "A": 18,
+        "B": 18,
+        "C": 14,
+        "D": 28,
+        "E": 18,
+        "F": 30,
+        "G": 18,
+    }
+    for col, width in widths.items():
+        ws.column_dimensions[col].width = width
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    nombre = f"historial_{periodo or 'completo'}.xlsx"
+    response = HttpResponse(
+        output.getvalue(),
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    response["Content-Disposition"] = f'attachment; filename="{nombre}"'
+    return response
+
+
+@login_required
+@user_passes_test(tiene_acceso_home, login_url="/login/")
+def exportar_historial_pdf(request):
+    mediciones, usuario, estado, periodo = _filtrar_mediciones_desde_request(request)
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        leftMargin=12 * mm,
+        rightMargin=12 * mm,
+        topMargin=12 * mm,
+        bottomMargin=12 * mm,
+    )
+
+    styles = getSampleStyleSheet()
+    elements = []
+
+    elements.append(Paragraph(f"Reporte de mediciones - {periodo or 'completo'}", styles["Title"]))
+    elements.append(Spacer(1, 8))
+    elements.append(Paragraph(f"Usuario: {usuario or 'Todos'}", styles["Normal"]))
+    elements.append(Paragraph(f"Estado: {estado or 'Todos'}", styles["Normal"]))
+    elements.append(Paragraph(f"Generado: {timezone.localtime().strftime('%d/%m/%Y %H:%M')}", styles["Normal"]))
+    elements.append(Spacer(1, 12))
+
+    data = [[
+        "Fecha",
+        "Usuario",
+        "Glucemia",
+        "Modo",
+        "Estado",
+        "Conducta",
+        "Tendencia",
+    ]]
+
+    for m in mediciones:
+        data.append([
+            timezone.localtime(m.fecha_hora).strftime("%d/%m/%Y %H:%M"),
+            m.usuario.username if m.usuario else "",
+            f"{m.glucemia} mg/dL",
+            m.get_modo_display(),
+            m.estado,
+            m.conducta,
+            m.tendencia or "",
+        ])
+
+    table = Table(
+        data,
+        colWidths=[30 * mm, 28 * mm, 22 * mm, 45 * mm, 28 * mm, 55 * mm, 25 * mm]
+    )
+
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1F4E78")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#C7D3E0")),
+        ("BACKGROUND", (0, 1), (-1, -1), colors.whitesmoke),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("FONTSIZE", (0, 0), (-1, -1), 8),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
+        ("TOPPADDING", (0, 0), (-1, 0), 8),
+    ]))
+
+    elements.append(table)
+    doc.build(elements)
+
+    pdf = buffer.getvalue()
+    buffer.close()
+
+    nombre = f"historial_{periodo or 'completo'}.pdf"
+    response = HttpResponse(pdf, content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{nombre}"'
+    return response
+
 
 @login_required
 @user_passes_test(tiene_acceso_home, login_url="/login/")
@@ -150,7 +339,8 @@ def home(request):
             try:
                 g = int(form.cleaned_data["glucemia"])
                 modo = form.cleaned_data["modo"]
-                infusion_activa = form.cleaned_data.get("infusion_activa")
+                infusion_activa_raw = form.cleaned_data.get("infusion_activa")
+                infusion_activa = _normalizar_infusion_activa(infusion_activa_raw)
                 glucemia_previa = form.cleaned_data.get("glucemia_previa")
 
                 rango_objetivo = f"{OBJ_MIN}–{OBJ_MAX} mg/dL"
@@ -267,7 +457,7 @@ def home(request):
                     usuario=request.user,
                     glucemia=g,
                     modo=modo,
-                    infusion_activa=bool(infusion_activa),
+                    infusion_activa=infusion_activa,
                     glucemia_previa=glucemia_previa,
                     estado=estado,
                     clase=clase,
@@ -285,8 +475,8 @@ def home(request):
 
             except (ValueError, TypeError, InvalidOperation):
                 error_general = "No se pudo calcular el resultado. Revisá los datos ingresados."
-            except Exception:
-                error_general = "Ocurrió un error inesperado al procesar la medición."
+            except Exception as e:
+                error_general = f"Ocurrió un error inesperado al procesar la medición: {e}"
         else:
             error_general = "Hay datos inválidos en el formulario."
 

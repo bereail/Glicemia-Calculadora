@@ -92,7 +92,7 @@
 </div>
 {% endif %}
 
-{% if resultado and (es_enfermeria or user.is_superuser) %}
+{% if resultado and es_enfermeria or resultado and user.is_superuser %}
 <div class="card" style="margin-top:18px;">
   <div class="page-title">Resultado</div>
 

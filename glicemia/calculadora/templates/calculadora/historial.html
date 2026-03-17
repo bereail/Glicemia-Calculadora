@@ -7,28 +7,41 @@
 <div class="card">
   <div class="page-title">Historial de mediciones</div>
 
-  <form method="get" style="margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: end;">
-    <div>
-      <label for="usuario"><strong>Usuario</strong></label><br>
+  <form method="get" class="filters-bar">
+    <div class="filter-group">
+      <label for="usuario" class="label">Usuario</label>
       <select name="usuario" id="usuario">
-        <option value="">Todos</option>
+        <option value="">Todos los usuarios</option>
         {% for u in usuarios %}
-          <option value="{{ u }}" {% if usuario_seleccionado == u %}selected{% endif %}>{{ u }}</option>
+          <option value="{{ u }}" {% if usuario_seleccionado == u %}selected{% endif %}>
+            {{ u }}
+          </option>
         {% endfor %}
       </select>
     </div>
 
-    <div>
-      <label for="estado"><strong>Estado</strong></label><br>
+    <div class="filter-group">
+      <label for="estado" class="label">Estado</label>
       <select name="estado" id="estado">
-        <option value="">Todos</option>
+        <option value="">Todos los estados</option>
         {% for e in estados %}
-          <option value="{{ e }}" {% if estado_seleccionado == e %}selected{% endif %}>{{ e }}</option>
+          <option value="{{ e }}" {% if estado_seleccionado == e %}selected{% endif %}>
+            {{ e }}
+          </option>
         {% endfor %}
       </select>
     </div>
 
-    <div>
+    <div class="filter-group">
+      <label for="periodo" class="label">Período</label>
+      <select name="periodo" id="periodo">
+        <option value="" {% if not periodo_seleccionado %}selected{% endif %}>Completo</option>
+        <option value="semanal" {% if periodo_seleccionado == "semanal" %}selected{% endif %}>Semanal</option>
+        <option value="mensual" {% if periodo_seleccionado == "mensual" %}selected{% endif %}>Mensual</option>
+      </select>
+    </div>
+
+    <div class="filter-actions">
       <button type="submit" class="btn primary">Filtrar</button>
       <a href="{% url 'historial' %}" class="btn">Limpiar</a>
     </div>
@@ -36,25 +49,25 @@
 </div>
 
 <div class="summary-grid" style="margin-top: 16px;">
-  <div class="summary-card">
+  <div class="summary-card metric-card metric-card-total">
     <div class="summary-label">Total</div>
     <div class="summary-value">{{ total }}</div>
     <div class="summary-subtext">Mediciones encontradas</div>
   </div>
 
-  <div class="summary-card">
+  <div class="summary-card metric-card metric-card-hypo">
     <div class="summary-label">Hipoglucemias</div>
     <div class="summary-value">{{ hipoglucemias }}</div>
     <div class="summary-subtext">Valores críticos bajos</div>
   </div>
 
-  <div class="summary-card">
+  <div class="summary-card metric-card metric-card-ok">
     <div class="summary-label">En objetivo</div>
     <div class="summary-value">{{ en_objetivo }}</div>
     <div class="summary-subtext">Dentro del rango esperado</div>
   </div>
 
-  <div class="summary-card">
+  <div class="summary-card metric-card metric-card-hyper">
     <div class="summary-label">Hiperglucemias</div>
     <div class="summary-value">{{ hiperglucemias }}</div>
     <div class="summary-subtext">Valores por encima del objetivo</div>
@@ -62,36 +75,64 @@
 </div>
 
 <div class="card" style="margin-top: 16px;">
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Fecha</th>
-        <th>Usuario</th>
-        <th>Glucemia</th>
-        <th>Modo</th>
-        <th>Estado</th>
-        <th>Conducta</th>
-        <th>Tendencia</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for m in mediciones %}
-      <tr>
-        <td>{{ m.fecha_hora|date:"d/m/Y H:i" }}</td>
-        <td>{{ m.usuario.username }}</td>
-        <td>{{ m.glucemia }} mg/dL</td>
-        <td>{{ m.get_modo_display }}</td>
-        <td>{{ m.estado }}</td>
-        <td>{{ m.conducta }}</td>
-        <td>{{ m.tendencia }}</td>
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="7">No hay mediciones registradas.</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px;">
+    <div class="page-title" style="font-size:16px;">Exportar reporte</div>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <a href="{% url 'exportar_historial_excel' %}?periodo={{ periodo_seleccionado }}&usuario={{ usuario_seleccionado }}&estado={{ estado_seleccionado }}" class="btn">
+        Exportar Excel
+      </a>
+
+      <a href="{% url 'exportar_historial_pdf' %}?periodo={{ periodo_seleccionado }}&usuario={{ usuario_seleccionado }}&estado={{ estado_seleccionado }}" class="btn">
+        Exportar PDF
+      </a>
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="table history-table">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Usuario</th>
+          <th>Glucemia</th>
+          <th>Modo</th>
+          <th>Estado</th>
+          <th>Conducta</th>
+          <th>Tendencia</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in mediciones %}
+        <tr>
+          <td class="cell-date">{{ m.fecha_hora|date:"d/m/Y H:i" }}</td>
+          <td>{{ m.usuario.username }}</td>
+          <td class="cell-glucose">
+            {{ m.glucemia }} <span style="opacity:0.65; font-weight:500;">mg/dL</span>
+          </td>
+          <td>{{ m.get_modo_display }}</td>
+          <td>
+            {% if m.estado == "En objetivo" %}
+              <span class="status-pill status-pill-ok">{{ m.estado }}</span>
+            {% elif m.estado == "Hipoglucemia" %}
+              <span class="status-pill status-pill-hypo">{{ m.estado }}</span>
+            {% elif m.estado == "Hiperglucemia" %}
+              <span class="status-pill status-pill-hyper">{{ m.estado }}</span>
+            {% else %}
+              <span class="status-pill">{{ m.estado }}</span>
+            {% endif %}
+          </td>
+          <td class="cell-conduct">{{ m.conducta }}</td>
+          <td>{{ m.tendencia|default:"—" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="empty-row">No hay mediciones registradas.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 
 {% endblock %}

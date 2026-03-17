@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path
 from django.contrib.auth import views as auth_views
 
-from calculadora.views import home, historial
+from calculadora.views import home, historial, exportar_historial_excel, exportar_historial_pdf
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -19,5 +19,8 @@ urlpatterns = [
     path("", home, name="home"),
 
     # HISTORIAL
+
     path("historial/", historial, name="historial"),
+    path("historial/exportar/excel/", exportar_historial_excel, name="exportar_historial_excel"),
+    path("historial/exportar/pdf/", exportar_historial_pdf, name="exportar_historial_pdf"),
 ]
