@@ -1,0 +1,295 @@
+{% load static %}
+
+
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Calculadora Guiada</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .card {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            padding: 28px;
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #163a63;
+            font-size: 28px;
+        }
+
+        h2 {
+            color: #1f4f8a;
+            margin-top: 28px;
+            margin-bottom: 12px;
+            font-size: 20px;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .field {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #223;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cfd8e3;
+            border-radius: 10px;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+
+        .radio-group {
+            background: #f8fafc;
+            border: 1px solid #dbe4ef;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+        }
+
+        .radio-group label {
+            display: inline-block;
+            margin-right: 20px;
+            font-weight: 500;
+        }
+
+        .btn {
+            background: #1f4f8a;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #173d6b;
+        }
+
+        .error {
+            margin-top: 14px;
+            background: #fdeaea;
+            color: #a12626;
+            border: 1px solid #efc2c2;
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        .resultado {
+            margin-top: 24px;
+            padding: 18px;
+            border-radius: 12px;
+            background: #eef5ff;
+            border: 1px solid #cfe0fb;
+        }
+
+        .resultado h3 {
+            margin-top: 0;
+            color: #163a63;
+        }
+
+        .muted {
+            color: #5f6b7a;
+            font-size: 14px;
+        }
+
+        .bloque {
+            margin-top: 22px;
+            padding-top: 16px;
+            border-top: 1px solid #e6ebf2;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Calculadora Guiada</h1>
+        <p class="muted">
+            Complete los datos. A medida que corresponda, se habilitarán nuevas preguntas.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="bloque">
+                <h2>1. Glicemias</h2>
+                <div class="row">
+                    <div class="field">
+                        <label for="glucemia_actual">Glicemia actual</label>
+                        <input
+                            type="number"
+                            name="glucemia_actual"
+                            id="glucemia_actual"
+                            value="{{ glucemia_actual }}"
+                            min="1"
+                        >
+                    </div>
+
+                    <div class="field">
+                        <label for="glucemia_previa">Glicemia previa</label>
+                        <input
+                            type="number"
+                            name="glucemia_previa"
+                            id="glucemia_previa"
+                            value="{{ glucemia_previa }}"
+                            min="1"
+                        >
+                    </div>
+                </div>
+            </div>
+
+            {% if mostrar_infusion_activa %}
+                <div class="bloque">
+                    <h2>2. ¿Infusión activa?</h2>
+                    <div class="radio-group">
+                        <label>
+                            <input type="radio" name="infusion_activa" value="si"
+                                   {% if infusion_activa == "si" %}checked{% endif %}>
+                            Sí
+                        </label>
+                        <label>
+                            <input type="radio" name="infusion_activa" value="no"
+                                   {% if infusion_activa == "no" %}checked{% endif %}>
+                            No
+                        </label>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if mostrar_algoritmo %}
+                <div class="bloque">
+                    <h2>3. Algoritmo actual</h2>
+                    <div class="radio-group">
+                        <label>
+                            <input type="radio" name="algoritmo" value="alg1"
+                                   {% if algoritmo == "alg1" %}checked{% endif %}>
+                            Algoritmo 1
+                        </label>
+                        <label>
+                            <input type="radio" name="algoritmo" value="alg2"
+                                   {% if algoritmo == "alg2" %}checked{% endif %}>
+                            Algoritmo 2
+                        </label>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if mostrar_hgp %}
+                <div class="bloque">
+                    <h2>4. Criterios HGP</h2>
+
+                    <div class="field">
+                        <label>¿Está en el último escalón?</label>
+                        <div class="radio-group">
+                            <label>
+                                <input type="radio" name="ultimo_escalon_hgp" value="si"
+                                       {% if ultimo_escalon_hgp == "si" %}checked{% endif %}>
+                                Sí
+                            </label>
+                            <label>
+                                <input type="radio" name="ultimo_escalon_hgp" value="no"
+                                       {% if ultimo_escalon_hgp == "no" %}checked{% endif %}>
+                                No
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>¿Subió de escalón en las últimas 2 mediciones?</label>
+                        <div class="radio-group">
+                            <label>
+                                <input type="radio" name="subio_ultimas_2" value="si"
+                                       {% if subio_ultimas_2 == "si" %}checked{% endif %}>
+                                Sí
+                            </label>
+                            <label>
+                                <input type="radio" name="subio_ultimas_2" value="no"
+                                       {% if subio_ultimas_2 == "no" %}checked{% endif %}>
+                                No
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>¿Permanece en el mismo escalón en 3 controles consecutivos?</label>
+                        <div class="radio-group">
+                            <label>
+                                <input type="radio" name="mismo_escalon_3" value="si"
+                                       {% if mismo_escalon_3 == "si" %}checked{% endif %}>
+                                Sí
+                            </label>
+                            <label>
+                                <input type="radio" name="mismo_escalon_3" value="no"
+                                       {% if mismo_escalon_3 == "no" %}checked{% endif %}>
+                                No
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if mostrar_hgr %}
+                <div class="bloque">
+                    <h2>4. Evaluación Algoritmo 2</h2>
+                    <div class="field">
+                        <label>¿Está en el último escalón del Algoritmo 2?</label>
+                        <div class="radio-group">
+                            <label>
+                                <input type="radio" name="ultimo_escalon_alg2" value="si"
+                                       {% if ultimo_escalon_alg2 == "si" %}checked{% endif %}>
+                                Sí
+                            </label>
+                            <label>
+                                <input type="radio" name="ultimo_escalon_alg2" value="no"
+                                       {% if ultimo_escalon_alg2 == "no" %}checked{% endif %}>
+                                No
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div style="margin-top: 24px;">
+                <button type="submit" class="btn">Continuar</button>
+            </div>
+        </form>
+
+        {% if error_general %}
+            <div class="error">
+                {{ error_general }}
+            </div>
+        {% endif %}
+
+        {% if resultado %}
+            <div class="resultado">
+                <h3>{{ titulo_resultado }}</h3>
+                <p>{{ mensaje_resultado }}</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

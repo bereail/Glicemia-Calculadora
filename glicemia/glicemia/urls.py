@@ -1,26 +1,12 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.contrib.auth import views as auth_views
-
-from calculadora.views import home, historial, exportar_historial_excel, exportar_historial_pdf
 
 urlpatterns = [
     path("admin/", admin.site.urls),
 
-    # LOGIN
-    path("login/", auth_views.LoginView.as_view(
-        template_name="registration/login.html"
-    ), name="login"),
-
-    # LOGOUT
+    path("login/", auth_views.LoginView.as_view(template_name="registration/login.html"), name="login"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
 
-    # HOME
-    path("", home, name="home"),
-
-    # HISTORIAL
-
-    path("historial/", historial, name="historial"),
-    path("historial/exportar/excel/", exportar_historial_excel, name="exportar_historial_excel"),
-    path("historial/exportar/pdf/", exportar_historial_pdf, name="exportar_historial_pdf"),
+    path("", include("calculadora.urls")),
 ]
