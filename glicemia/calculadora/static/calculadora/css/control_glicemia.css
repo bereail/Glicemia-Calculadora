@@ -1,29 +1,45 @@
+/* =========================================================
+   CONTROL GLICEMIA - CSS FINAL PRO
+   ========================================================= */
+
 :root {
-    --bg-1: #05101e;
-    --bg-2: #071a31;
-    --panel: rgba(15, 39, 72, 0.94);
-    --panel-border: rgba(61, 112, 181, 0.35);
-    --text: #f5f8ff;
-    --muted: #b8c7db;
-    --input-bg: #0a1f3b;
+    --bg-1: #06111f;
+    --bg-2: #0a1b31;
+
+    --panel: #0d2748;
+    --panel-soft: #102d52;
+    --panel-deeper: #0a213d;
+
+    --border: rgba(95, 148, 224, 0.22);
+    --border-strong: rgba(122, 178, 255, 0.38);
+
+    --text: #f4f8ff;
+    --muted: #b2c3db;
+    --muted-2: #89a2c4;
+
+    --input-bg: #0a1f39;
     --input-border: #2f68ab;
-    --input-border-focus: #7ab2ff;
+    --input-focus: #7ab2ff;
 
-    --primary: #2ac769;
-    --primary-hover: #22af5b;
-    --primary-text: #05131c;
+    --primary: #31cb6a;
+    --primary-hover: #29b95f;
+    --primary-text: #04131a;
 
-    --danger: #ff5d5d;
-    --danger-soft: rgba(255, 93, 93, 0.12);
-
-    --success: #3bd17f;
-    --success-soft: rgba(59, 209, 127, 0.12);
+    --danger: #ff5b5b;
+    --danger-soft: rgba(255, 91, 91, 0.14);
 
     --warning: #ffc24a;
-    --warning-soft: rgba(255, 194, 74, 0.12);
+    --warning-soft: rgba(255, 194, 74, 0.14);
 
-    --shadow-lg: 0 18px 50px rgba(0, 0, 0, 0.28);
-    --shadow-sm: 0 6px 18px rgba(0, 0, 0, 0.18);
+    --success: #3bd17f;
+    --success-soft: rgba(59, 209, 127, 0.14);
+
+    --info: #59a8ff;
+    --info-soft: rgba(89, 168, 255, 0.14);
+
+    --shadow-lg: 0 22px 55px rgba(0, 0, 0, 0.28);
+    --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.20);
+    --shadow-sm: 0 8px 18px rgba(0, 0, 0, 0.16);
 
     --radius-xl: 24px;
     --radius-lg: 18px;
@@ -37,7 +53,8 @@
     box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
     margin: 0;
     padding: 0;
 }
@@ -47,52 +64,72 @@ body {
     font-family: Arial, Helvetica, sans-serif;
     color: var(--text);
     background:
-        radial-gradient(circle at top left, rgba(39, 104, 176, 0.16), transparent 30%),
+        radial-gradient(circle at top left, rgba(55, 122, 219, 0.12), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(32, 84, 158, 0.12), transparent 24%),
         linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
 }
 
 .app-shell {
     min-height: 100vh;
-    padding: 28px 18px 40px;
+    padding: 28px 16px 40px;
 }
 
 .layout {
-    max-width: 980px;
+    max-width: 920px;
     margin: 0 auto;
 }
+
+/* =========================================================
+   HERO
+   ========================================================= */
 
 .hero {
     margin-bottom: 18px;
 }
 
+.hero__text {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 .eyebrow {
-    margin: 0 0 6px;
+    margin: 0;
     color: #90bbff;
-    font-size: 0.92rem;
-    font-weight: 700;
+    font-size: 0.88rem;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
 }
 
 .hero h1 {
     margin: 0;
-    font-size: 2.35rem;
-    line-height: 1.08;
+    font-size: 2.2rem;
+    line-height: 1.05;
     font-weight: 800;
 }
 
-.subtitle {
-    margin: 10px 0 0;
-    font-size: 1rem;
-    color: var(--muted);
+.alerta-protocolo {
+    margin-top: 6px;
+    padding: 14px 16px;
+    border-left: 4px solid var(--warning);
+    border-radius: 14px;
+    background: rgba(255, 194, 74, 0.12);
+    color: #ffe5a8;
+    font-size: 0.95rem;
+    line-height: 1.45;
 }
 
+/* =========================================================
+   PANELES
+   ========================================================= */
+
 .panel {
-    background: var(--panel);
-    border: 1px solid var(--panel-border);
+    background: rgba(13, 39, 72, 0.96);
+    border: 1px solid var(--border);
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-lg);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(8px);
 }
 
 .panel + .panel {
@@ -100,7 +137,7 @@ body {
 }
 
 .panel-form {
-    padding: 26px 22px 24px;
+    padding: 24px 22px 22px;
 }
 
 .panel__header {
@@ -109,119 +146,131 @@ body {
 
 .panel__header h2 {
     margin: 0 0 8px;
-    font-size: 2rem;
-    line-height: 1.1;
+    font-size: 1.9rem;
+    line-height: 1.08;
 }
 
 .panel__header p {
     margin: 0;
     color: var(--muted);
     font-size: 1rem;
+    line-height: 1.45;
 }
 
+/* =========================================================
+   FORMULARIO
+   ========================================================= */
+
 .field-group {
-    margin-bottom: 22px;
+    margin-bottom: 20px;
 }
 
 label {
     display: block;
     margin-bottom: 10px;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
+    color: var(--text);
 }
 
-.input-number,
-input[type="number"] {
+input[type="number"],
+.input-number {
     width: 100%;
-    max-width: 360px;
-    height: 62px;
-    padding: 0 18px;
+    max-width: 100%;
+    height: 58px;
+    padding: 0 16px;
     border-radius: var(--radius-md);
     border: 2px solid var(--input-border);
     background: var(--input-bg);
     color: var(--text);
-    font-size: 1.9rem;
-    font-weight: 700;
+    font-size: 1.55rem;
+    font-weight: 800;
     outline: none;
-    transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+    transition:
+        border-color var(--transition),
+        box-shadow var(--transition),
+        transform var(--transition);
 }
 
-.input-number::placeholder,
-input[type="number"]::placeholder {
-    color: #7f9abc;
-    font-weight: 500;
+input[type="number"]::placeholder,
+.input-number::placeholder {
+    color: #7e9abb;
     font-size: 1rem;
+    font-weight: 500;
 }
 
-.input-number:focus,
-input[type="number"]:focus {
-    border-color: var(--input-border-focus);
-    box-shadow: 0 0 0 5px rgba(122, 178, 255, 0.16);
+input[type="number"]:focus,
+.input-number:focus {
+    border-color: var(--input-focus);
+    box-shadow: 0 0 0 5px rgba(122, 178, 255, 0.14);
 }
+
+/* =========================================================
+   SEGMENTED CONTROL
+   ========================================================= */
 
 .segmented-control {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     flex-wrap: wrap;
 }
 
 .segment-btn {
-    min-width: 94px;
-    height: 54px;
-    padding: 0 20px;
+    min-width: 90px;
+    height: 48px;
+    padding: 0 18px;
     border: 2px solid var(--input-border);
-    border-radius: var(--radius-md);
-    background: #0b1f39;
+    border-radius: 12px;
+    background: #0a1f39;
     color: var(--text);
-    font-size: 1.08rem;
+    font-size: 1rem;
     font-weight: 800;
     cursor: pointer;
     transition:
-        transform var(--transition),
-        border-color var(--transition),
         background var(--transition),
+        border-color var(--transition),
+        transform var(--transition),
         box-shadow var(--transition);
 }
 
 .segment-btn:hover {
     transform: translateY(-1px);
-    border-color: #7ab2ff;
+    border-color: var(--input-focus);
 }
 
 .segment-btn.active {
-    background: linear-gradient(180deg, #133966 0%, #0f2f56 100%);
-    border-color: #7ab2ff;
-    box-shadow: 0 0 0 5px rgba(122, 178, 255, 0.14);
+    background: linear-gradient(180deg, #17406f 0%, #11345d 100%);
+    border-color: var(--input-focus);
+    box-shadow: 0 0 0 4px rgba(122, 178, 255, 0.12);
 }
 
 .helper-text {
     display: block;
     margin-top: 8px;
     color: var(--muted);
-    font-size: 0.95rem;
-    line-height: 1.35;
+    font-size: 0.92rem;
+    line-height: 1.4;
 }
 
 .actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-top: 8px;
+    margin-top: 4px;
 }
 
 .btn-primary {
-    min-width: 170px;
-    height: 56px;
-    padding: 0 24px;
+    width: 100%;
+    height: 54px;
     border: none;
-    border-radius: var(--radius-md);
+    border-radius: 12px;
     background: var(--primary);
     color: var(--primary-text);
-    font-size: 1.08rem;
+    font-size: 1rem;
     font-weight: 900;
     cursor: pointer;
-    transition: transform var(--transition), background var(--transition), box-shadow var(--transition);
-    box-shadow: 0 10px 24px rgba(42, 199, 105, 0.24);
+    transition:
+        background var(--transition),
+        transform var(--transition),
+        box-shadow var(--transition);
+    box-shadow: 0 10px 24px rgba(49, 203, 106, 0.22);
 }
 
 .btn-primary:hover {
@@ -234,7 +283,7 @@ input[type="number"]:focus {
     border: none;
     background: transparent;
     color: #94c0ff;
-    font-size: 1rem;
+    font-size: 0.96rem;
     font-weight: 800;
     cursor: pointer;
 }
@@ -247,6 +296,10 @@ input[type="number"]:focus {
     display: none;
 }
 
+/* =========================================================
+   ERRORES
+   ========================================================= */
+
 .error-list {
     margin-top: 10px;
 }
@@ -255,32 +308,61 @@ input[type="number"]:focus {
     display: inline-block;
     padding: 8px 12px;
     border-radius: 999px;
-    background: rgba(255, 93, 93, 0.12);
-    border: 1px solid rgba(255, 93, 93, 0.35);
-    color: #ffd0d0;
-    font-size: 0.92rem;
+    background: rgba(255, 91, 91, 0.12);
+    border: 1px solid rgba(255, 91, 91, 0.28);
+    color: #ffd1d1;
+    font-size: 0.9rem;
     font-weight: 700;
 }
 
+/* =========================================================
+   RESULTADO BASE
+   ========================================================= */
+
 .panel-result {
-    padding: 24px 22px;
-    border-width: 2px;
+    position: relative;
+    padding: 22px;
+    overflow: hidden;
+    border-left: 6px solid #64748b;
+    background:
+        linear-gradient(180deg, rgba(14, 39, 72, 0.98) 0%, rgba(9, 30, 55, 0.98) 100%);
 }
 
-.panel-result.hipo {
-    border-color: var(--danger);
-    background: linear-gradient(180deg, var(--danger-soft) 0%, rgba(15, 39, 72, 0.96) 100%);
+.estado-critico {
+    border-left-color: var(--danger);
+    box-shadow:
+        0 0 0 1px rgba(255, 91, 91, 0.18),
+        var(--shadow-lg);
 }
 
-.panel-result.objetivo {
-    border-color: var(--success);
-    background: linear-gradient(180deg, var(--success-soft) 0%, rgba(15, 39, 72, 0.96) 100%);
+.estado-alerta {
+    border-left-color: var(--warning);
+    box-shadow:
+        0 0 0 1px rgba(255, 194, 74, 0.16),
+        var(--shadow-lg);
 }
 
-.panel-result.alerta {
-    border-color: var(--warning);
-    background: linear-gradient(180deg, var(--warning-soft) 0%, rgba(15, 39, 72, 0.96) 100%);
+.estado-vigilancia {
+    border-left-color: var(--info);
+    box-shadow:
+        0 0 0 1px rgba(89, 168, 255, 0.14),
+        var(--shadow-lg);
 }
+
+.estado-estable {
+    border-left-color: var(--success);
+    box-shadow:
+        0 0 0 1px rgba(59, 209, 127, 0.14),
+        var(--shadow-lg);
+}
+
+.estado-neutro {
+    border-left-color: #64748b;
+}
+
+/* =========================================================
+   HEADER DEL RESULTADO
+   ========================================================= */
 
 .result-top {
     margin-bottom: 12px;
@@ -289,61 +371,202 @@ input[type="number"]:focus {
 .result-chip {
     display: inline-flex;
     align-items: center;
-    height: 34px;
-    padding: 0 14px;
+    min-height: 32px;
+    padding: 0 12px;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.08);
-    color: var(--text);
-    font-size: 0.85rem;
+    color: #f8fbff;
+    font-size: 0.78rem;
     font-weight: 900;
     letter-spacing: 0.06em;
     text-transform: uppercase;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.estado-critico .result-chip {
+    background: var(--danger-soft);
+    color: #ffd8d8;
+    border-color: rgba(255, 91, 91, 0.28);
+}
+
+.estado-alerta .result-chip {
+    background: var(--warning-soft);
+    color: #ffe4a0;
+    border-color: rgba(255, 194, 74, 0.28);
+}
+
+.estado-vigilancia .result-chip {
+    background: var(--info-soft);
+    color: #d7eaff;
+    border-color: rgba(89, 168, 255, 0.28);
+}
+
+.estado-estable .result-chip {
+    background: var(--success-soft);
+    color: #d8ffe7;
+    border-color: rgba(59, 209, 127, 0.28);
 }
 
 .result-title {
-    margin: 0 0 12px;
-    font-size: 2.2rem;
-    line-height: 1.04;
+    margin: 0 0 14px;
+    font-size: 1.9rem;
+    line-height: 1.05;
     font-weight: 900;
+    color: var(--text);
+}
+
+.estado-box {
+    margin-bottom: 12px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.estado-box__label {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: var(--muted-2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 5px;
+}
+
+.estado-box__value {
+    font-size: 1.28rem;
+    font-weight: 900;
+    color: var(--text);
+    word-break: break-word;
 }
 
 .result-subtitle {
-    margin: 0 0 18px;
-    color: var(--text);
-    font-size: 1.03rem;
-    line-height: 1.45;
+    margin: 0 0 16px;
+    color: var(--muted);
+    font-size: 0.98rem;
+    line-height: 1.5;
 }
 
-.result-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-}
-
-.result-card {
+.tendencia-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    border-radius: 14px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--radius-lg);
+}
+
+.tendencia-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--muted-2);
+}
+
+.tendencia-value {
+    font-size: 0.95rem;
+    font-weight: 900;
+    color: var(--text);
+}
+
+/* =========================================================
+   PRIORIDAD TERAPÉUTICA
+   ========================================================= */
+
+.resultado-prioridad {
+    margin: 18px 0;
     padding: 16px;
+    border-radius: 18px;
+    background: rgba(255, 194, 74, 0.10);
+    border: 1px solid rgba(255, 194, 74, 0.18);
+}
+
+.section-title {
+    margin: 0 0 12px;
+    font-size: 1rem;
+    font-weight: 900;
+    color: #ffe6a8;
+}
+
+.prioridad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.prioridad-item {
+    padding: 14px;
+    border-radius: 14px;
+    background: rgba(5, 19, 36, 0.34);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     box-shadow: var(--shadow-sm);
 }
 
-.result-card--full {
-    grid-column: 1 / -1;
+.prioridad-item .label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #d8b96e;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.prioridad-item .valor {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--text);
+    line-height: 1.2;
+}
+
+/* =========================================================
+   GRID RESULTADO
+   ========================================================= */
+
+.result-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 14px;
+    margin-top: 6px;
+}
+
+.result-card {
+    padding: 16px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: var(--shadow-sm);
+}
+
+.result-card--highlight {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.10);
 }
 
 .result-card h3 {
     margin: 0 0 8px;
-    font-size: 1rem;
+    font-size: 0.96rem;
     font-weight: 900;
+    color: #d8e6fa;
 }
 
 .result-card p {
     margin: 0;
-    font-size: 1.02rem;
-    line-height: 1.5;
-    color: #f5f7fb;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    color: var(--text);
 }
+
+.proximo-control {
+    font-size: 1.08rem;
+    font-weight: 900;
+    color: #ffffff;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
 
 @media (max-width: 760px) {
     .app-shell {
@@ -351,23 +574,22 @@ input[type="number"]:focus {
     }
 
     .hero h1 {
-        font-size: 1.9rem;
+        font-size: 1.85rem;
     }
 
     .panel-form,
     .panel-result {
-        padding: 20px 16px;
+        padding: 18px 16px;
     }
 
     .panel__header h2 {
-        font-size: 1.65rem;
+        font-size: 1.6rem;
     }
 
-    .input-number,
-    input[type="number"] {
-        max-width: 100%;
-        height: 58px;
-        font-size: 1.7rem;
+    input[type="number"],
+    .input-number {
+        height: 54px;
+        font-size: 1.35rem;
     }
 
     .segment-btn {
@@ -375,23 +597,16 @@ input[type="number"]:focus {
         min-width: 0;
     }
 
-    .btn-primary {
-        width: 100%;
-    }
-
-    .actions {
-        display: block;
-    }
-
-    .result-title {
-        font-size: 1.8rem;
-    }
-
+    .prioridad-grid,
     .result-grid {
         grid-template-columns: 1fr;
     }
 
-    .result-card--full {
-        grid-column: auto;
+    .estado-box__value {
+        font-size: 1.12rem;
+    }
+
+    .result-title {
+        font-size: 1.65rem;
     }
 }

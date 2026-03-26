@@ -6,24 +6,38 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.views import View
-
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
-
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
-
+from .forms import PasoInicialForm, GlucemiaForm
+from .models import MedicionGlucemia
+from .services import resolver_flujo_glucemia
+from decimal import Decimal, ROUND_HALF_UP
+from datetime import timedelta
+from django.shortcuts import render
+from django.utils import timezone
 from .forms import PasoInicialForm, GlucemiaForm
 from .models import MedicionGlucemia
 from .services import resolver_flujo_glucemia
 
+
+# Objetivo glucémico general usado en el flujo guiado
 OBJ_MIN = Decimal("140")
 OBJ_MAX = Decimal("200")
 
+
 def control_glicemia_view(request):
+    """
+    Vista simple:
+    - recibe glucemia actual
+    - recibe si el paciente está insulinizado
+    - recibe glucemia previa opcional
+    - delega la lógica clínica al service resolver_flujo_glucemia
+    """
     resultado = None
 
     if request.method == "POST":
@@ -33,6 +47,8 @@ def control_glicemia_view(request):
             insulinizado = form.cleaned_data["paciente_insulinizado"]
             previa = form.cleaned_data.get("glicemia_previa")
 
+            # OJO:
+            # La función del service espera actual / insulinizado / previa
             resultado = resolver_flujo_glucemia(
                 actual=actual,
                 insulinizado=insulinizado,
@@ -41,10 +57,15 @@ def control_glicemia_view(request):
     else:
         form = GlucemiaForm()
 
-    return render(request, "calculadora/control_glicemia.html", {
-        "form": form,
-        "resultado": resultado,
-    })
+    return render(
+        request,
+        "calculadora/control_glicemia.html",
+        {
+            "form": form,
+            "resultado": resultado,
+        },
+    )
+
 
 def evaluar_flujo_guiado(
     glicemia_actual,
@@ -53,6 +74,13 @@ def evaluar_flujo_guiado(
     mayor_200=None,
     hgp=None,
 ):
+    """
+    Evalúa el flujo guiado manual en pasos.
+
+    Este flujo NO reemplaza la lógica del service principal.
+    Sirve para mostrar bloques visuales / decisiones guiadas
+    según las respuestas del usuario.
+    """
     actual = Decimal(str(glicemia_actual))
     previa = Decimal(str(glicemia_previa))
 
@@ -66,33 +94,35 @@ def evaluar_flujo_guiado(
         "finalizado": False,
     }
 
-    # 1) PRIORIDAD ABSOLUTA: ambas >= 180
-    if actual >= 180 and previa >= 180:
+    # 1) PRIORIDAD ABSOLUTA:
+    # Si actual y previa son >= 180, hay hiperglucemia sostenida
+    if actual >= Decimal("180") and previa >= Decimal("180"):
         resultado["bloque_principal"] = {
             "titulo": "Hiperglucemia sostenida",
             "mensaje": [
-                "Glicemia actual / previa ≥ 180",
-                "Evaluar inicio inicial",
-                "PASA A INFUSIÓN INICIAL",
+                "Glicemia actual y previa ≥ 180 mg/dL",
+                "Evaluar inicio de infusión EV",
+                "Pasar a infusión inicial",
             ],
             "rojo": True,
         }
         resultado["mostrar_infusion_actual"] = True
         return continuar_flujo(resultado, infusion_actual, mayor_200, hgp)
 
-    # 2) Recién después: en objetivo
+    # 2) Recién después evaluar si está en objetivo
     if OBJ_MIN <= actual <= OBJ_MAX:
         resultado["bloque_principal"] = {
             "titulo": "En objetivo",
             "mensaje": [
-                "Ritmo infusión sugerido",
-                "Monitoreo glucémico",
+                "Dentro del rango objetivo",
+                "Continuar monitoreo glucémico",
             ],
-            "rojo": True,
+            "rojo": False,
         }
         resultado["finalizado"] = True
         return resultado
 
+    # 3) Todo lo demás queda como fuera de objetivo
     resultado["bloque_principal"] = {
         "titulo": "Fuera de objetivo",
         "mensaje": [
@@ -105,15 +135,21 @@ def evaluar_flujo_guiado(
 
 
 def continuar_flujo(resultado, infusion_actual, mayor_200, hgp):
+    """
+    Continúa el flujo guiado una vez detectada hiperglucemia sostenida.
+    """
+
+    # Todavía no respondieron si hay infusión actual
     if infusion_actual is None:
         return resultado
 
+    # Si NO hay infusión actual
     if infusion_actual == "no":
         resultado["bloque_secundario"] = {
             "titulo": "Conducta",
             "mensaje": [
                 "Seguir algoritmo 1",
-                "Próximo control",
+                "Definir próximo control",
                 "Sugerir monitoreo glucémico",
             ],
             "rojo": False,
@@ -121,17 +157,19 @@ def continuar_flujo(resultado, infusion_actual, mayor_200, hgp):
         resultado["finalizado"] = True
         return resultado
 
+    # Si sí hay infusión actual, preguntar si sigue > 200
     resultado["mostrar_mayor_200"] = True
 
     if mayor_200 is None:
         return resultado
 
+    # Si NO es mayor a 200
     if mayor_200 == "no":
         resultado["bloque_secundario"] = {
             "titulo": "Conducta",
             "mensaje": [
                 "Seguir algoritmo 1",
-                "Próximo control",
+                "Definir próximo control",
                 "Sugerir monitoreo glucémico",
             ],
             "rojo": False,
@@ -139,6 +177,7 @@ def continuar_flujo(resultado, infusion_actual, mayor_200, hgp):
         resultado["finalizado"] = True
         return resultado
 
+    # Si sí es > 200, preguntar si cumple HGP
     resultado["mostrar_hgp"] = True
 
     if hgp is None:
@@ -164,6 +203,9 @@ def continuar_flujo(resultado, infusion_actual, mayor_200, hgp):
 
     resultado["finalizado"] = True
     return resultado
+
+
+# Tablas de algoritmos
 ALG1 = [
     (None, 119, None),
     (120, 149, 0.5),
@@ -190,7 +232,15 @@ ALG2 = [
     (360, None, 8),
 ]
 
+
 def calculadora_guiada(request):
+    """
+    Vista principal guiada.
+
+    Corrige el error que había en el archivo:
+    - se llamaba a resolver_flujo_glicemia (mal)
+    - se enviaban parámetros glicemia_actual / glicemia_previa (mal)
+    """
     resultado = None
 
     if request.method == "POST":
@@ -200,10 +250,12 @@ def calculadora_guiada(request):
             insulinizado = form.cleaned_data["insulinizado"]
             glicemia_previa = form.cleaned_data.get("glicemia_previa")
 
-            resultado = resolver_flujo_glicemia(
-                glicemia_actual=glicemia_actual,
+            # La función correcta es resolver_flujo_glucemia
+            # y espera actual / insulinizado / previa
+            resultado = resolver_flujo_glucemia(
+                actual=glicemia_actual,
                 insulinizado=insulinizado,
-                glicemia_previa=glicemia_previa,
+                previa=glicemia_previa,
             )
     else:
         form = PasoInicialForm()
@@ -217,7 +269,12 @@ def calculadora_guiada(request):
         },
     )
 
+
 def obtener_escalon(glucemia, tabla):
+    """
+    Devuelve el índice del escalón y la tasa correspondiente
+    según la glucemia y la tabla recibida.
+    """
     for i, (minimo, maximo, tasa) in enumerate(tabla):
         ok_min = minimo is None or glucemia >= minimo
         ok_max = maximo is None or glucemia <= maximo
@@ -226,34 +283,46 @@ def obtener_escalon(glucemia, tabla):
     return None, None
 
 
-def es_hgp_algoritmo_1(g1, g2, ultimo_escalon=False, subio_ultimas_2=False, mismo_escalon_3=False):
+def es_hgp_algoritmo_1(
+    g1,
+    g2,
+    ultimo_escalon=False,
+    subio_ultimas_2=False,
+    mismo_escalon_3=False,
+):
     """
-    HGP:
-    - glicemia actual > 200
-    - glicemia previa > 200
+    HGP en algoritmo 1:
+    - glucemia actual > 200
+    - glucemia previa > 200
     - y además se cumple alguno de estos criterios:
       - último escalón
       - subió escalón en últimas 2
       - mismo escalón en 3 controles
     """
     return (
-        g1 > 200 and
-        g2 > 200 and
-        (ultimo_escalon or subio_ultimas_2 or mismo_escalon_3)
+        g1 > 200
+        and g2 > 200
+        and (ultimo_escalon or subio_ultimas_2 or mismo_escalon_3)
     )
 
 
 def es_hgr_algoritmo_2(g1, g2, ultimo_escalon=False):
     """
-    HGR:
-    - glicemia actual > 360
-    - glicemia previa > 360
+    HGR en algoritmo 2:
+    - glucemia actual > 360
+    - glucemia previa > 360
     - y estar en último escalón del algoritmo 2
     """
     return g1 > 360 and g2 > 360 and ultimo_escalon
 
 
 def tiene_acceso_home(user):
+    """
+    Permite acceso solo a:
+    - superusuarios
+    - grupo Enfermeria
+    - grupo Medicos
+    """
     return user.is_authenticated and (
         user.is_superuser
         or user.groups.filter(name="Enfermeria").exists()
@@ -262,6 +331,9 @@ def tiene_acceso_home(user):
 
 
 def _get_mode_label(modo: str) -> str:
+    """
+    Etiqueta legible para el modo de cálculo.
+    """
     labels = {
         "inicio": "Inicio / Reinicio (Algoritmo 1)",
         "alg2": "Seguimiento - Algoritmo 2",
@@ -270,6 +342,10 @@ def _get_mode_label(modo: str) -> str:
 
 
 def _in_range(g, lo, hi):
+    """
+    Evalúa si un valor está dentro de un rango.
+    Soporta extremos None.
+    """
     if lo is None and hi is None:
         return True
     if lo is None:
@@ -280,6 +356,9 @@ def _in_range(g, lo, hi):
 
 
 def _monitoring_text(g: int) -> str:
+    """
+    Devuelve el texto de monitoreo glucémico según el valor.
+    """
     if g > 400:
         return "Cada 1 hora"
     if 300 <= g <= 400:
@@ -290,6 +369,9 @@ def _monitoring_text(g: int) -> str:
 
 
 def _rate_from_table(g, table):
+    """
+    Busca la tasa correspondiente a una glucemia dentro de una tabla.
+    """
     for lo, hi, rate in table:
         if _in_range(g, lo, hi):
             return rate
@@ -297,10 +379,16 @@ def _rate_from_table(g, table):
 
 
 def _round_to_half(x: Decimal) -> Decimal:
+    """
+    Redondea al 0.5 más cercano.
+    """
     return (x * 2).quantize(Decimal("1"), rounding=ROUND_HALF_UP) / 2
 
 
 def _safe_decimal_text(value):
+    """
+    Devuelve un texto amigable para mostrar una tasa.
+    """
     if value is None:
         return "—"
     return f"{value} UI/h"
@@ -309,7 +397,8 @@ def _safe_decimal_text(value):
 def _normalizar_infusion_activa(value):
     """
     Convierte el valor del formulario a bool de forma segura.
-    Sirve si el campo devuelve bool real o choices tipo 'si'/'no', '1'/'0', etc.
+    Sirve si el campo devuelve bool real o choices tipo
+    'si'/'no', '1'/'0', etc.
     """
     if isinstance(value, bool):
         return value
@@ -324,11 +413,22 @@ def _normalizar_infusion_activa(value):
 
 
 def _filtrar_mediciones_desde_request(request):
+    """
+    Filtra mediciones por:
+    - usuario
+    - estado
+    - periodo (semanal / mensual)
+    """
     usuario = request.GET.get("usuario", "").strip()
     estado = request.GET.get("estado", "").strip()
     periodo = request.GET.get("periodo", "").strip().lower()
 
-    mediciones = MedicionGlucemia.objects.select_related("usuario").all().order_by("-fecha_hora")
+    mediciones = (
+        MedicionGlucemia.objects
+        .select_related("usuario")
+        .all()
+        .order_by("-fecha_hora")
+    )
 
     if usuario:
         mediciones = mediciones.filter(usuario__username=usuario)
