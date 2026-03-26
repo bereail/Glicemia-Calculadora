@@ -3,39 +3,167 @@ from datetime import timedelta
 from io import BytesIO
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils import timezone
+from django.views import View
+
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
+
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
-from django.shortcuts import render
-from .forms import GlucemiaGuiadaForm, CalculadoraGuiadaPaso1Form
+
+from .forms import PasoInicialForm, GlucemiaForm
 from .models import MedicionGlucemia
-from .forms import GlucemiaForm
-from django.shortcuts import render
-from django.shortcuts import render, redirect
-from django.views import View
-from .forms import (
-    PasoInicialForm,
-    InfusionActivaForm,
-    AlgoritmoActualForm,
-    CriteriosHGPForm,
-    UltimoEscalonAlg2Form,
-)
-from .services import (
-    evaluar_paso_inicial,
-    evaluar_infusion_activa,
-    evaluar_algoritmo_1,
-    evaluar_algoritmo_2,
-)
+from .services import resolver_flujo_glucemia
 
-OBJ_MIN = 140
-OBJ_MAX = 200
+OBJ_MIN = Decimal("140")
+OBJ_MAX = Decimal("200")
 
+def control_glicemia_view(request):
+    resultado = None
+
+    if request.method == "POST":
+        form = GlucemiaForm(request.POST)
+        if form.is_valid():
+            actual = form.cleaned_data["glicemia_actual"]
+            insulinizado = form.cleaned_data["paciente_insulinizado"]
+            previa = form.cleaned_data.get("glicemia_previa")
+
+            resultado = resolver_flujo_glucemia(
+                actual=actual,
+                insulinizado=insulinizado,
+                previa=previa,
+            )
+    else:
+        form = GlucemiaForm()
+
+    return render(request, "calculadora/control_glicemia.html", {
+        "form": form,
+        "resultado": resultado,
+    })
+
+def evaluar_flujo_guiado(
+    glicemia_actual,
+    glicemia_previa,
+    infusion_actual=None,
+    mayor_200=None,
+    hgp=None,
+):
+    actual = Decimal(str(glicemia_actual))
+    previa = Decimal(str(glicemia_previa))
+
+    resultado = {
+        "paso": "inicial",
+        "bloque_principal": None,
+        "bloque_secundario": None,
+        "mostrar_infusion_actual": False,
+        "mostrar_mayor_200": False,
+        "mostrar_hgp": False,
+        "finalizado": False,
+    }
+
+    # 1) PRIORIDAD ABSOLUTA: ambas >= 180
+    if actual >= 180 and previa >= 180:
+        resultado["bloque_principal"] = {
+            "titulo": "Hiperglucemia sostenida",
+            "mensaje": [
+                "Glicemia actual / previa ≥ 180",
+                "Evaluar inicio inicial",
+                "PASA A INFUSIÓN INICIAL",
+            ],
+            "rojo": True,
+        }
+        resultado["mostrar_infusion_actual"] = True
+        return continuar_flujo(resultado, infusion_actual, mayor_200, hgp)
+
+    # 2) Recién después: en objetivo
+    if OBJ_MIN <= actual <= OBJ_MAX:
+        resultado["bloque_principal"] = {
+            "titulo": "En objetivo",
+            "mensaje": [
+                "Ritmo infusión sugerido",
+                "Monitoreo glucémico",
+            ],
+            "rojo": True,
+        }
+        resultado["finalizado"] = True
+        return resultado
+
+    resultado["bloque_principal"] = {
+        "titulo": "Fuera de objetivo",
+        "mensaje": [
+            "Continuar evaluación clínica",
+        ],
+        "rojo": False,
+    }
+    resultado["finalizado"] = True
+    return resultado
+
+
+def continuar_flujo(resultado, infusion_actual, mayor_200, hgp):
+    if infusion_actual is None:
+        return resultado
+
+    if infusion_actual == "no":
+        resultado["bloque_secundario"] = {
+            "titulo": "Conducta",
+            "mensaje": [
+                "Seguir algoritmo 1",
+                "Próximo control",
+                "Sugerir monitoreo glucémico",
+            ],
+            "rojo": False,
+        }
+        resultado["finalizado"] = True
+        return resultado
+
+    resultado["mostrar_mayor_200"] = True
+
+    if mayor_200 is None:
+        return resultado
+
+    if mayor_200 == "no":
+        resultado["bloque_secundario"] = {
+            "titulo": "Conducta",
+            "mensaje": [
+                "Seguir algoritmo 1",
+                "Próximo control",
+                "Sugerir monitoreo glucémico",
+            ],
+            "rojo": False,
+        }
+        resultado["finalizado"] = True
+        return resultado
+
+    resultado["mostrar_hgp"] = True
+
+    if hgp is None:
+        return resultado
+
+    if hgp == "si":
+        resultado["bloque_secundario"] = {
+            "titulo": "Dar aviso a médico de guardia",
+            "mensaje": [
+                "Pasar a algoritmo 2",
+            ],
+            "rojo": True,
+        }
+    else:
+        resultado["bloque_secundario"] = {
+            "titulo": "Conducta",
+            "mensaje": [
+                "Continuar algoritmo 1",
+                "Monitoreo glucémico",
+            ],
+            "rojo": False,
+        }
+
+    resultado["finalizado"] = True
+    return resultado
 ALG1 = [
     (None, 119, None),
     (120, 149, 0.5),
@@ -62,6 +190,32 @@ ALG2 = [
     (360, None, 8),
 ]
 
+def calculadora_guiada(request):
+    resultado = None
+
+    if request.method == "POST":
+        form = PasoInicialForm(request.POST)
+        if form.is_valid():
+            glicemia_actual = form.cleaned_data["glicemia_actual"]
+            insulinizado = form.cleaned_data["insulinizado"]
+            glicemia_previa = form.cleaned_data.get("glicemia_previa")
+
+            resultado = resolver_flujo_glicemia(
+                glicemia_actual=glicemia_actual,
+                insulinizado=insulinizado,
+                glicemia_previa=glicemia_previa,
+            )
+    else:
+        form = PasoInicialForm()
+
+    return render(
+        request,
+        "calculadora/home.html",
+        {
+            "form": form,
+            "resultado": resultado,
+        },
+    )
 
 def obtener_escalon(glucemia, tabla):
     for i, (minimo, maximo, tasa) in enumerate(tabla):
@@ -97,168 +251,6 @@ def es_hgr_algoritmo_2(g1, g2, ultimo_escalon=False):
     - y estar en último escalón del algoritmo 2
     """
     return g1 > 360 and g2 > 360 and ultimo_escalon
-
-
-def calculadora_guiada(request):
-    contexto = {
-        "glucemia_actual": "",
-        "glucemia_previa": "",
-        "infusion_activa": "",
-        "algoritmo": "",
-        "ultimo_escalon_hgp": "",
-        "subio_ultimas_2": "",
-        "mismo_escalon_3": "",
-        "ultimo_escalon_alg2": "",
-        "resultado": None,
-        "error_general": None,
-        "mostrar_infusion_activa": False,
-        "mostrar_algoritmo": False,
-        "mostrar_hgp": False,
-        "mostrar_hgr": False,
-        "titulo_resultado": "",
-        "mensaje_resultado": "",
-    }
-
-    if request.method == "POST":
-        glucemia_actual = request.POST.get("glucemia_actual", "").strip()
-        glucemia_previa = request.POST.get("glucemia_previa", "").strip()
-        infusion_activa = request.POST.get("infusion_activa", "").strip()
-        algoritmo = request.POST.get("algoritmo", "").strip()
-
-        ultimo_escalon_hgp = request.POST.get("ultimo_escalon_hgp", "").strip()
-        subio_ultimas_2 = request.POST.get("subio_ultimas_2", "").strip()
-        mismo_escalon_3 = request.POST.get("mismo_escalon_3", "").strip()
-        ultimo_escalon_alg2 = request.POST.get("ultimo_escalon_alg2", "").strip()
-
-        contexto["glucemia_actual"] = glucemia_actual
-        contexto["glucemia_previa"] = glucemia_previa
-        contexto["infusion_activa"] = infusion_activa
-        contexto["algoritmo"] = algoritmo
-        contexto["ultimo_escalon_hgp"] = ultimo_escalon_hgp
-        contexto["subio_ultimas_2"] = subio_ultimas_2
-        contexto["mismo_escalon_3"] = mismo_escalon_3
-        contexto["ultimo_escalon_alg2"] = ultimo_escalon_alg2
-
-        try:
-            ga = int(glucemia_actual) if glucemia_actual else None
-            gp = int(glucemia_previa) if glucemia_previa else None
-        except ValueError:
-            contexto["error_general"] = "Los valores de glicemia deben ser numéricos."
-            return render(request, "calculadora/guiada.html", contexto)
-
-        if ga is None or gp is None:
-            contexto["error_general"] = "Debés ingresar la glicemia actual y la previa."
-            return render(request, "calculadora/guiada.html", contexto)
-
-        # Paso 1: evaluación inicial
-        if ga < 70:
-            contexto["resultado"] = True
-            contexto["titulo_resultado"] = "Hipoglucemia"
-            contexto["mensaje_resultado"] = "La glicemia actual es menor a 70 mg/dL."
-            return render(request, "calculadora/guiada.html", contexto)
-
-        if 70 <= ga <= 119:
-            contexto["resultado"] = True
-            contexto["titulo_resultado"] = "Suspender infusión"
-            contexto["mensaje_resultado"] = "La glicemia actual está entre 70 y 119 mg/dL. Corresponde suspender infusión."
-            return render(request, "calculadora/guiada.html", contexto)
-
-        # Si llegó hasta acá, mostrar siguiente pregunta
-        contexto["mostrar_infusion_activa"] = True
-
-        # Si todavía no respondió infusión activa, volver mostrando esa pregunta
-        if infusion_activa not in ["si", "no"]:
-            return render(request, "calculadora/guiada.html", contexto)
-
-        # Paso 2: hiperglucemia sostenida
-        if not (ga >= 180 and gp >= 180):
-            contexto["resultado"] = True
-            contexto["titulo_resultado"] = "Sin hiperglucemia sostenida"
-            contexto["mensaje_resultado"] = "No cumple criterio de hiperglucemia sostenida. Continuar control."
-            return render(request, "calculadora/guiada.html", contexto)
-
-        # Paso 3: infusión activa
-        if infusion_activa == "no":
-            contexto["resultado"] = True
-            contexto["titulo_resultado"] = "Iniciar manejo"
-            contexto["mensaje_resultado"] = "No hay infusión activa. Iniciar bolo inicial, comenzar Algoritmo 1 y realizar monitoreo."
-            return render(request, "calculadora/guiada.html", contexto)
-
-        # Si hay infusión activa, mostrar algoritmo
-        contexto["mostrar_algoritmo"] = True
-
-        if algoritmo not in ["alg1", "alg2"]:
-            return render(request, "calculadora/guiada.html", contexto)
-
-        # Paso 4A: Algoritmo 1
-        if algoritmo == "alg1":
-            contexto["mostrar_hgp"] = True
-
-            if ga <= 200 or gp <= 200:
-                contexto["resultado"] = True
-                contexto["titulo_resultado"] = "Continuar Algoritmo 1"
-                contexto["mensaje_resultado"] = "No cumple criterio base de HGP. Ajustar tasa y recontrol."
-                return render(request, "calculadora/guiada.html", contexto)
-
-            # Esperar a que responda criterios HGP
-            if (
-                ultimo_escalon_hgp not in ["si", "no"] or
-                subio_ultimas_2 not in ["si", "no"] or
-                mismo_escalon_3 not in ["si", "no"]
-            ):
-                return render(request, "calculadora/guiada.html", contexto)
-
-            hgp = es_hgp_algoritmo_1(
-                ga,
-                gp,
-                ultimo_escalon=(ultimo_escalon_hgp == "si"),
-                subio_ultimas_2=(subio_ultimas_2 == "si"),
-                mismo_escalon_3=(mismo_escalon_3 == "si"),
-            )
-
-            contexto["resultado"] = True
-            if hgp:
-                contexto["titulo_resultado"] = "HGP"
-                contexto["mensaje_resultado"] = "Cumple criterios de hiperglucemia persistente. Corresponde pasar a Algoritmo 2."
-            else:
-                contexto["titulo_resultado"] = "Continuar Algoritmo 1"
-                contexto["mensaje_resultado"] = "No cumple criterios de HGP. Ajustar tasa y recontrol."
-
-            return render(request, "calculadora/guiada.html", contexto)
-
-        # Paso 4B: Algoritmo 2
-        if algoritmo == "alg2":
-            contexto["mostrar_hgr"] = True
-
-            if ga <= 360 or gp <= 360:
-                contexto["resultado"] = True
-                contexto["titulo_resultado"] = "Continuar Algoritmo 2"
-                contexto["mensaje_resultado"] = "No cumple criterio de hiperglucemia refractaria. Recontrol."
-                return render(request, "calculadora/guiada.html", contexto)
-
-            if ultimo_escalon_alg2 not in ["si", "no"]:
-                return render(request, "calculadora/guiada.html", contexto)
-
-            hgr = es_hgr_algoritmo_2(
-                ga,
-                gp,
-                ultimo_escalon=(ultimo_escalon_alg2 == "si"),
-            )
-
-            contexto["resultado"] = True
-            if hgr:
-                contexto["titulo_resultado"] = "Hiperglucemia refractaria"
-                contexto["mensaje_resultado"] = "Cumple criterio y está en último escalón del Algoritmo 2. Avisar médico."
-            else:
-                contexto["titulo_resultado"] = "Continuar Algoritmo 2"
-                contexto["mensaje_resultado"] = "Cumple glicemias > 360 pero no está en último escalón. Continuar Algoritmo 2 y recontrol."
-
-            return render(request, "calculadora/guiada.html", contexto)
-
-    return render(request, "calculadora/guiada.html", contexto)
-
-
-
 
 
 def tiene_acceso_home(user):
@@ -355,6 +347,7 @@ def _filtrar_mediciones_desde_request(request):
 
     return mediciones, usuario, estado, periodo
 
+####################################################################################################
 
 @login_required
 @user_passes_test(tiene_acceso_home, login_url="/login/")
@@ -541,158 +534,22 @@ def exportar_historial_pdf(request):
 @login_required
 @user_passes_test(tiene_acceso_home, login_url="/login/")
 def home(request):
-    form = GlucemiaForm(request.POST or None)
     resultado = None
-    error_general = None
 
     if request.method == "POST":
+        form = PasoInicialForm(request.POST)
         if form.is_valid():
-            try:
-                g = int(form.cleaned_data["glucemia"])
-                modo = form.cleaned_data["modo"]
-                infusion_activa_raw = form.cleaned_data.get("infusion_activa")
-                infusion_activa = _normalizar_infusion_activa(infusion_activa_raw)
-                glucemia_previa = form.cleaned_data.get("glucemia_previa")
+            glicemia_actual = form.cleaned_data["glicemia_actual"]
+            insulinizado = form.cleaned_data["insulinizado"]
+            glicemia_previa = form.cleaned_data.get("glicemia_previa")
 
-                rango_objetivo = f"{OBJ_MIN}–{OBJ_MAX} mg/dL"
-                modo_label = _get_mode_label(modo)
-
-                es_hipoglucemia = g < 70
-                suspender = g < 120
-
-                algoritmo_usado = None
-                velocidad_sugerida = None
-
-                if modo == "inicio":
-                    algoritmo_usado = "Inicio / Reinicio (Algoritmo 1)"
-                    velocidad_sugerida = _rate_from_table(g, ALG1)
-                elif modo == "alg2":
-                    algoritmo_usado = "Seguimiento - Algoritmo 2"
-                    velocidad_sugerida = _rate_from_table(g, ALG2)
-                else:
-                    algoritmo_usado = "No definido"
-
-                bolo_ui = None
-                tasa_inicial_ui_h = None
-
-                if modo == "inicio" and not suspender and g >= 180:
-                    base = _round_to_half(Decimal(g) / Decimal("100"))
-                    bolo_ui = base
-                    tasa_inicial_ui_h = base
-
-                proximo_control = _monitoring_text(g)
-
-                gt360_streak = int(request.session.get("gt360_streak", 0))
-                if g > 360:
-                    gt360_streak += 1
-                else:
-                    gt360_streak = 0
-                request.session["gt360_streak"] = gt360_streak
-
-                alerta_hgr = gt360_streak >= 2
-
-                observacion = ""
-                hero_text = "—"
-
-                if es_hipoglucemia:
-                    estado = "Hipoglucemia"
-                    clase = "danger"
-                    conducta = "Suspender insulina EV"
-                    mensaje = "Administrar dextrosa al 25% 50 ml y recontrolar a los 30 minutos."
-                    proximo_control = "30 minutos"
-                    observacion = "Evaluar / avisar médico"
-                    hero_text = "Suspender infusión"
-
-                elif suspender:
-                    estado = "Detener infusión"
-                    clase = "warn"
-                    conducta = "Suspender infusión"
-                    mensaje = "Glucemia menor a 120 mg/dL. Recontrol frecuente según protocolo."
-                    proximo_control = "Según protocolo"
-                    observacion = "Vigilar descenso / reevaluar"
-                    hero_text = "Detener infusión"
-
-                else:
-                    if OBJ_MIN <= g <= OBJ_MAX:
-                        estado = "En objetivo"
-                        clase = "ok"
-                        conducta = "Mantener conducta actual"
-                        mensaje = f"Glucemia dentro del rango objetivo ({rango_objetivo})."
-                        observacion = "Continuar monitoreo"
-                    elif g > OBJ_MAX:
-                        estado = "Hiperglucemia"
-                        clase = "warn"
-                        conducta = "Ajustar infusión según algoritmo"
-                        mensaje = "Glucemia por encima del objetivo. Ajustar según la escala correspondiente."
-                        observacion = "Evaluar protocolo 2" if modo == "inicio" else "Continuar ajuste"
-                    else:
-                        estado = "Bajo objetivo"
-                        clase = "warn"
-                        conducta = "Revisar descenso / considerar suspensión"
-                        mensaje = "Glucemia por debajo del objetivo. Vigilar riesgo de hipoglucemia."
-                        observacion = "Recontrolar"
-
-                    hero_text = _safe_decimal_text(velocidad_sugerida)
-
-                if glucemia_previa is not None and g > glucemia_previa:
-                    tendencia = "Ascenso"
-                elif glucemia_previa is not None and g < glucemia_previa:
-                    tendencia = "Descenso"
-                elif glucemia_previa is not None:
-                    tendencia = "Sin cambios"
-                else:
-                    tendencia = "No informada"
-
-                resultado = {
-                    "g": g,
-                    "modo": modo,
-                    "modo_label": modo_label,
-                    "estado": estado,
-                    "clase": clase,
-                    "conducta": conducta,
-                    "mensaje": mensaje,
-                    "hero_text": hero_text,
-                    "proximo_control": proximo_control,
-                    "observacion": observacion,
-                    "algoritmo_usado": algoritmo_usado,
-                    "velocidad_sugerida": velocidad_sugerida,
-                    "bolo_ui": bolo_ui,
-                    "tasa_inicial_ui_h": tasa_inicial_ui_h,
-                    "alerta_hgr": alerta_hgr,
-                    "infusion_activa": infusion_activa,
-                    "glucemia_previa": glucemia_previa,
-                    "tendencia": tendencia,
-                }
-
-                MedicionGlucemia.objects.create(
-                    usuario=request.user,
-                    glucemia=g,
-                    modo=modo,
-                    infusion_activa=infusion_activa,
-                    glucemia_previa=glucemia_previa,
-                    estado=estado,
-                    clase=clase,
-                    conducta=conducta,
-                    mensaje=mensaje,
-                    proximo_control=proximo_control,
-                    observacion=observacion,
-                    tendencia=tendencia,
-                    algoritmo_usado=algoritmo_usado,
-                    velocidad_sugerida=str(velocidad_sugerida) if velocidad_sugerida is not None else "",
-                    bolo_ui=str(bolo_ui) if bolo_ui is not None else "",
-                    tasa_inicial_ui_h=str(tasa_inicial_ui_h) if tasa_inicial_ui_h is not None else "",
-                    alerta_hgr=alerta_hgr,
-                )
-
-            except (ValueError, TypeError, InvalidOperation):
-                error_general = "No se pudo calcular el resultado. Revisá los datos ingresados."
-            except Exception as e:
-                error_general = f"Ocurrió un error inesperado al procesar la medición: {e}"
-        else:
-            error_general = "Hay datos inválidos en el formulario."
-
-    es_enfermeria = request.user.groups.filter(name="Enfermeria").exists()
-    es_medico = request.user.groups.filter(name="Medicos").exists()
+            resultado = resolver_flujo_glicemia(
+                glicemia_actual=glicemia_actual,
+                insulinizado=insulinizado,
+                glicemia_previa=glicemia_previa,
+            )
+    else:
+        form = PasoInicialForm()
 
     return render(
         request,
@@ -700,8 +557,5 @@ def home(request):
         {
             "form": form,
             "resultado": resultado,
-            "error_general": error_general,
-            "es_enfermeria": es_enfermeria,
-            "es_medico": es_medico,
         },
     )

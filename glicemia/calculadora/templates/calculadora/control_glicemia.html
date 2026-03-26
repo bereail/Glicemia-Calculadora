@@ -1,0 +1,210 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control Glicemia - Infusión de Insulina</title>
+    <link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}">
+</head>
+<body>
+    <main class="app-shell">
+        <section class="layout">
+            <header class="hero">
+                <div class="hero__text">
+                    <p class="eyebrow">Apoyo clínico</p>
+                    <h1>Control Glicemia</h1>
+                    <p class="subtitle">Interfaz rápida para uso en guardia y terapia.</p>
+                </div>
+            </header>
+
+            <section class="panel panel-form">
+                <div class="panel__header">
+                    <h2>Ingresar medición</h2>
+                    <p>Complete los datos mínimos para evaluar la conducta.</p>
+                </div>
+
+                <form method="post" id="form-glicemia" novalidate>
+                    {% csrf_token %}
+
+                    {{ form.paciente_insulinizado }}
+
+                    <div class="field-group">
+                        <label for="{{ form.glicemia_actual.id_for_label }}">Glicemia actual</label>
+                        {{ form.glicemia_actual }}
+                        {% if form.glicemia_actual.errors %}
+                            <div class="error-list">
+                                {% for error in form.glicemia_actual.errors %}
+                                    <div class="error-item">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="field-group">
+                        <label>¿Insulinización activa?</label>
+
+                        <div class="segmented-control" role="group" aria-label="Insulinización activa">
+                            <button type="button" class="segment-btn" id="btn-insulina-si" data-value="si">
+                                Sí
+                            </button>
+                            <button type="button" class="segment-btn" id="btn-insulina-no" data-value="no">
+                                No
+                            </button>
+                        </div>
+
+                        {% if form.paciente_insulinizado.errors %}
+                            <div class="error-list">
+                                {% for error in form.paciente_insulinizado.errors %}
+                                    <div class="error-item">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div id="previa-opcional-wrap" class="field-group hidden">
+                        <button type="button" id="btn-mostrar-previa" class="btn-ghost-inline">
+                            + Agregar glicemia previa
+                        </button>
+                    </div>
+
+                    <div id="previa-wrap" class="field-group hidden">
+                        <label for="{{ form.glicemia_previa.id_for_label }}">Glicemia previa</label>
+                        {{ form.glicemia_previa }}
+                        <small id="texto-previa" class="helper-text"></small>
+
+                        {% if form.glicemia_previa.errors %}
+                            <div class="error-list">
+                                {% for error in form.glicemia_previa.errors %}
+                                    <div class="error-item">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="actions">
+                        <button type="submit" class="btn-primary">Calcular</button>
+                    </div>
+                </form>
+            </section>
+
+            {% if resultado %}
+                <section class="panel panel-result {{ resultado.clase_css }}">
+                    <div class="result-top">
+                        <span class="result-chip">{{ resultado.titulo_principal }}</span>
+                    </div>
+
+                    <h2 class="result-title">{{ resultado.clasificacion }}</h2>
+
+                    {% if resultado.subclasificacion %}
+                        <p class="result-subtitle">
+                            <strong>Subclasificación:</strong> {{ resultado.subclasificacion }}
+                        </p>
+                    {% endif %}
+
+                    <div class="result-grid">
+                        <article class="result-card">
+                            <h3>Conducta</h3>
+                            <p>{{ resultado.conducta }}</p>
+                        </article>
+
+                        <article class="result-card">
+                            <h3>Próximo control</h3>
+                            <p>{{ resultado.proximo_control }}</p>
+                        </article>
+
+                        {% if resultado.observacion %}
+                            <article class="result-card result-card--full">
+                                <h3>Observación</h3>
+                                <p>{{ resultado.observacion }}</p>
+                            </article>
+                        {% endif %}
+                    </div>
+                </section>
+            {% endif %}
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const insulinizadoInput = document.getElementById("id_paciente_insulinizado");
+            const btnSi = document.getElementById("btn-insulina-si");
+            const btnNo = document.getElementById("btn-insulina-no");
+
+            const previaWrap = document.getElementById("previa-wrap");
+            const previaOpcionalWrap = document.getElementById("previa-opcional-wrap");
+            const btnMostrarPrevia = document.getElementById("btn-mostrar-previa");
+            const previaInput = document.getElementById("id_glicemia_previa");
+            const textoPrevia = document.getElementById("texto-previa");
+
+            let previaVisibleManual = false;
+
+            function marcarSegmentoActivo() {
+                btnSi.classList.remove("active");
+                btnNo.classList.remove("active");
+
+                if (insulinizadoInput.value === "si") {
+                    btnSi.classList.add("active");
+                } else if (insulinizadoInput.value === "no") {
+                    btnNo.classList.add("active");
+                }
+            }
+
+            function actualizarVista() {
+                previaWrap.classList.add("hidden");
+                previaOpcionalWrap.classList.add("hidden");
+
+                if (previaInput) {
+                    previaInput.required = false;
+                }
+
+                if (insulinizadoInput.value === "si") {
+                    previaWrap.classList.remove("hidden");
+                    previaInput.required = true;
+                    textoPrevia.textContent = "Obligatoria si hay insulinización activa.";
+                }
+
+                if (insulinizadoInput.value === "no") {
+                    previaOpcionalWrap.classList.remove("hidden");
+
+                    if (previaVisibleManual || (previaInput && previaInput.value.trim() !== "")) {
+                        previaWrap.classList.remove("hidden");
+                        textoPrevia.textContent = "Opcional. Puede ayudar a evaluar tendencia.";
+                    }
+                }
+
+                marcarSegmentoActivo();
+            }
+
+            btnSi.addEventListener("click", function () {
+                insulinizadoInput.value = "si";
+                previaVisibleManual = true;
+                actualizarVista();
+
+                if (previaInput) {
+                    setTimeout(() => previaInput.focus(), 80);
+                }
+            });
+
+            btnNo.addEventListener("click", function () {
+                insulinizadoInput.value = "no";
+                previaVisibleManual = false;
+                actualizarVista();
+            });
+
+            if (btnMostrarPrevia) {
+                btnMostrarPrevia.addEventListener("click", function () {
+                    previaVisibleManual = true;
+                    previaWrap.classList.remove("hidden");
+                    textoPrevia.textContent = "Opcional. Puede ayudar a evaluar tendencia.";
+                    if (previaInput) {
+                        previaInput.focus();
+                    }
+                });
+            }
+
+            actualizarVista();
+        });
+    </script>
+</body>
+</html>

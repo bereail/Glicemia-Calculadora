@@ -1,181 +1,150 @@
-from dataclasses import dataclass
-from typing import Optional, Literal
 from decimal import Decimal
 
-Algoritmo = Literal["alg1", "alg2"]
 
-ALG1 = [
-    (None, 119, None),
-    (120, 149, Decimal("0.5")),
-    (150, 179, Decimal("1")),
-    (180, 209, Decimal("1.5")),
-    (210, 239, Decimal("2")),
-    (240, 269, Decimal("2.5")),
-    (270, 299, Decimal("3")),
-    (300, 329, Decimal("3.5")),
-    (330, 359, Decimal("4")),
-    (360, None, Decimal("5")),
-]
+OBJETIVO_MIN = Decimal("140")
+OBJETIVO_MAX = Decimal("200")
 
-ALG2 = [
-    (None, 119, None),
-    (120, 149, Decimal("1")),
-    (150, 179, Decimal("1.5")),
-    (180, 209, Decimal("2.5")),
-    (210, 239, Decimal("3")),
-    (240, 269, Decimal("3.5")),
-    (270, 299, Decimal("4")),
-    (300, 329, Decimal("4.5")),
-    (330, 359, Decimal("5")),
-    (360, None, Decimal("6")),
-]
+UMBRAL_HIPO = Decimal("70")              # protocolo: hipoglucemia < 70
+UMBRAL_INICIO_INSULINA = Decimal("180")  # no insulinizados: >=180 en 2 controles consecutivos
+UMBRAL_ALERTA_ALTA = Decimal("200")
 
 
-@dataclass
-class ResultadoFlujo:
-    estado: str
-    titulo: str
-    mensaje: str
-    requiere_paso: Optional[str] = None
-    mostrar_algoritmo: bool = False
-    mostrar_hgp: bool = False
-    mostrar_hgr: bool = False
-
-def evaluar_paso_inicial(glucemia_actual: int, glucemia_previa: int) -> ResultadoFlujo:
-    if glucemia_actual < 70:
-        return ResultadoFlujo(
-            estado="hipoglucemia",
-            titulo="Hipoglucemia",
-            mensaje="La glicemia actual es menor a 70 mg/dL.",
-        )
-
-    if glucemia_actual <= 119:
-        return ResultadoFlujo(
-            estado="suspender",
-            titulo="Suspender infusión",
-            mensaje="La glicemia actual está entre 70 y 119 mg/dL. Corresponde suspender infusión.",
-        )
-
-    if glucemia_actual >= 180 and glucemia_previa >= 180:
-        return ResultadoFlujo(
-            estado="hiperglucemia_sostenida",
-            titulo="Hiperglucemia sostenida",
-            mensaje="La glicemia actual y la previa son mayores o iguales a 180 mg/dL.",
-            requiere_paso="infusion_activa",
-        )
-
-    return ResultadoFlujo(
-        estado="sin_hiperglucemia_sostenida",
-        titulo="Sin hiperglucemia sostenida",
-        mensaje="No cumple criterio de hiperglucemia sostenida. Continuar control.",
-    )
+def calcular_tendencia(actual, previa):
+    if previa is None:
+        return None
+    if actual > previa:
+        return "sube"
+    if actual < previa:
+        return "baja"
+    return "igual"
 
 
-def evaluar_infusion_activa(infusion_activa: bool) -> ResultadoFlujo:
-    if not infusion_activa:
-        return ResultadoFlujo(
-            estado="iniciar_manejo",
-            titulo="Iniciar manejo",
-            mensaje="No hay infusión activa. Iniciar bolo inicial, comenzar Algoritmo 1 y realizar monitoreo.",
-        )
+def resolver_flujo_glucemia(actual, insulinizado, previa=None):
+    actual = Decimal(str(actual))
+    previa = Decimal(str(previa)) if previa not in (None, "") else None
+    tendencia = calcular_tendencia(actual, previa)
 
-    return ResultadoFlujo(
-        estado="continuar_con_algoritmo",
-        titulo="Infusión activa",
-        mensaje="La infusión está activa. Seleccionar algoritmo actual.",
-        requiere_paso="algoritmo_actual",
-    )
+    # 1) Hipoglucemia
+    if actual < UMBRAL_HIPO:
+        return {
+            "titulo_principal": "Urgente",
+            "clasificacion": "Hipoglucemia",
+            "subclasificacion": (
+                "Hipoglucemia en paciente insulinizado"
+                if insulinizado == "si"
+                else "Hipoglucemia en paciente no insulinizado"
+            ),
+            "conducta": "Activar manejo de hipoglucemia según protocolo institucional.",
+            "proximo_control": "Control inmediato según protocolo.",
+            "observacion": (
+                f"Tendencia: {tendencia}."
+                if tendencia else "No se registró glicemia previa."
+            ),
+            "clase_css": "hipo",
+        }
 
+    # 2) Paciente NO insulinizado:
+    # >=180 en 2 controles consecutivos = hiperglucemia sostenida / inicio de insulinización
+    if insulinizado == "no":
+        if (
+            previa is not None
+            and actual >= UMBRAL_INICIO_INSULINA
+            and previa >= UMBRAL_INICIO_INSULINA
+        ):
+            if actual >= Decimal("400") or previa >= Decimal("400"):
+                sub = "Hiperglucemia sostenida severa"
+            elif actual >= Decimal("300") or previa >= Decimal("300"):
+                sub = "Hiperglucemia sostenida marcada"
+            elif actual > UMBRAL_ALERTA_ALTA or previa > UMBRAL_ALERTA_ALTA:
+                sub = "Hiperglucemia sostenida > 200"
+            else:
+                sub = "≥ 180 mg/dL en 2 controles consecutivos"
 
-def evaluar_algoritmo_1(
-    glucemia_actual: int,
-    glucemia_previa: int,
-    ultimo_escalon: bool,
-    subio_ultimas_2: bool,
-    mismo_escalon_3_controles: bool,
-) -> ResultadoFlujo:
-    if not (glucemia_actual > 200 and glucemia_previa > 200):
-        return ResultadoFlujo(
-            estado="continuar_algoritmo_1",
-            titulo="Continuar Algoritmo 1",
-            mensaje="No cumple criterio base de HGP. Ajustar tasa y recontrol.",
-        )
+            return {
+                "titulo_principal": "Atención",
+                "clasificacion": "Hiperglucemia sostenida",
+                "subclasificacion": sub,
+                "conducta": "Corresponde valorar inicio de insulinización según protocolo y condición clínica.",
+                "proximo_control": "Repetir control según protocolo institucional.",
+                "observacion": f"Actual: {actual} / Previa: {previa}. Tendencia: {tendencia}.",
+                "clase_css": "alerta",
+            }
 
-    hgp = any([ultimo_escalon, subio_ultimas_2, mismo_escalon_3_controles])
+    # 3) Paciente insulinizado:
+    # 140-200 = objetivo glucémico
+    if insulinizado == "si" and OBJETIVO_MIN <= actual <= OBJETIVO_MAX:
+        observacion = "Paciente insulinizado dentro del objetivo glucémico (140-200 mg/dL)."
+        if tendencia:
+            observacion += f" Tendencia: {tendencia}."
 
-    if hgp:
-        return ResultadoFlujo(
-            estado="pasar_algoritmo_2",
-            titulo="HGP",
-            mensaje="Cumple criterios de HGP. Corresponde pasar a Algoritmo 2.",
-        )
+        return {
+            "titulo_principal": "En rango",
+            "clasificacion": "Objetivo glucémico",
+            "subclasificacion": "Paciente insulinizado dentro de objetivo",
+            "conducta": "Mantener conducta según protocolo y situación clínica.",
+            "proximo_control": "Continuar monitoreo según protocolo.",
+            "observacion": observacion,
+            "clase_css": "objetivo",
+        }
 
-    return ResultadoFlujo(
-        estado="continuar_algoritmo_1",
-        titulo="Continuar Algoritmo 1",
-        mensaje="No cumple criterios de HGP. Ajustar tasa y recontrol.",
-    )
+    # 4) Si no está insulinizado y el valor actual está en 140-200,
+    # no significa 'objetivo terapéutico' igual que el insulinizado.
+    # Lo tomamos como valor en rango intermedio, pero sin llamarlo objetivo del protocolo de infusión.
+    if insulinizado == "no" and OBJETIVO_MIN <= actual <= OBJETIVO_MAX:
+        observacion = "Paciente no insulinizado. Si hay glicemia previa, puede ayudar a evaluar tendencia o persistencia."
+        if tendencia:
+            observacion = f"Paciente no insulinizado. Tendencia: {tendencia}."
 
+        return {
+            "titulo_principal": "Vigilancia",
+            "clasificacion": "Valor intermedio",
+            "subclasificacion": "Paciente no insulinizado",
+            "conducta": "Continuar monitoreo y evaluar evolución según protocolo.",
+            "proximo_control": "Repetir control según protocolo.",
+            "observacion": observacion,
+            "clase_css": "alerta",
+        }
 
-def evaluar_algoritmo_2(
-    glucemia_actual: int,
-    glucemia_previa: int,
-    ultimo_escalon: bool,
-) -> ResultadoFlujo:
-    if not (glucemia_actual > 360 and glucemia_previa > 360):
-        return ResultadoFlujo(
-            estado="continuar_algoritmo_2",
-            titulo="Continuar Algoritmo 2",
-            mensaje="No cumple criterio de hiperglucemia refractaria. Recontrol.",
-        )
+    # 5) Por debajo del objetivo, sin hipoglucemia
+    if UMBRAL_HIPO <= actual < OBJETIVO_MIN:
+        observacion = "Valor por debajo del objetivo, sin criterios de hipoglucemia."
+        if tendencia:
+            observacion += f" Tendencia: {tendencia}."
 
-    if ultimo_escalon:
-        return ResultadoFlujo(
-            estado="avisar_medico",
-            titulo="Hiperglucemia refractaria",
-            mensaje="Cumple criterio y está en último escalón. Avisar médico.",
-        )
+        return {
+            "titulo_principal": "Vigilancia",
+            "clasificacion": "Por debajo del objetivo",
+            "subclasificacion": "Sin hipoglucemia",
+            "conducta": "Vigilar evolución y reevaluar según protocolo.",
+            "proximo_control": "Repetir control según protocolo.",
+            "observacion": observacion,
+            "clase_css": "alerta",
+        }
 
-    return ResultadoFlujo(
-        estado="continuar_algoritmo_2",
-        titulo="Continuar Algoritmo 2",
-        mensaje="Cumple glicemias > 360 pero no está en último escalón. Continuar Algoritmo 2 y recontrol.",
-    )
+    # 6) Por encima del objetivo, sin cumplir criterio de sostenida en no insulinizado
+    if actual > OBJETIVO_MAX:
+        observacion = "Valor por encima del objetivo."
+        if tendencia:
+            observacion += f" Tendencia: {tendencia}."
 
+        return {
+            "titulo_principal": "Atención",
+            "clasificacion": "Por encima del objetivo",
+            "subclasificacion": (
+                "Hiperglucemia aislada" if previa is None else "Hiperglucemia no sostenida"
+            ),
+            "conducta": "Valorar conducta según protocolo, tendencia y condición clínica.",
+            "proximo_control": "Repetir control según protocolo.",
+            "observacion": observacion,
+            "clase_css": "alerta",
+        }
 
-def in_range(g, lo, hi):
-    if lo is None and hi is None:
-        return True
-    if lo is None:
-        return g <= hi
-    if hi is None:
-        return g >= lo
-    return lo <= g <= hi
-
-
-def _rate_from_table(g, table):
-    for lo, hi, rate in table:
-        if in_range(g, lo, hi):
-            return rate
-    return None
-
-
-def rate_from_table(g, table):
-    return _rate_from_table(g, table)
-
-
-def es_hipoglucemia(glucemia: int) -> bool:
-    return glucemia < 70
-
-
-def debe_suspender(glucemia: int) -> bool:
-    return glucemia < 120
-
-
-def esta_en_objetivo(glucemia: int, obj_min: int = 140, obj_max: int = 200) -> bool:
-    return obj_min <= glucemia <= obj_max
-
-
-def es_hiperglucemia(glucemia: int, obj_max: int = 200) -> bool:
-    return glucemia > obj_max
-    return _rate_from_table(g, table)
+    return {
+        "titulo_principal": "Evaluación",
+        "clasificacion": "Resultado no categorizado",
+        "subclasificacion": None,
+        "conducta": "Revisar datos ingresados.",
+        "proximo_control": "Según criterio clínico.",
+        "observacion": None,
+        "clase_css": "alerta",
+    }
