@@ -9,6 +9,80 @@ UMBRAL_INICIO_INSULINA = Decimal("180")
 UMBRAL_ALERTA_ALTA = Decimal("200")
 
 
+# HIPOGLICEMIA #
+def resolver_flujo_hipoglucemia(actual, previa=None, insulinizado=False):
+    actual = _a_decimal(actual)
+    previa = _a_decimal(previa, permitir_none=True)
+    insulinizado = _a_bool(insulinizado)
+
+    resultado = {
+        "estado": None,
+        "subestado": None,
+        "tendencia": calcular_tendencia(actual, previa),
+        "bolo_inicial": None,
+        "tasa_inicial": None,
+        "tasa_algoritmo": None,
+        "proximo_control": None,
+        "recontrol_post_hipo": False,
+        "suspender_insulina": False,
+        "administrar_dextrosa": False,
+        "evaluar_goteo_mantenimiento": False,
+        "reiniciar_insulina": False,
+    }
+
+    LIMITE_ZONA_INTERMEDIA = Decimal("120")
+
+    # 1) Hipoglucemia actual
+    if actual < UMBRAL_HIPO:
+        resultado["estado"] = "hipoglucemia"
+        resultado["subestado"] = "Glucemia actual < 70 mg/dL"
+        resultado["suspender_insulina"] = insulinizado
+        resultado["administrar_dextrosa"] = True
+        resultado["proximo_control"] = "Controlar glucemia a los 30 minutos"
+        return resultado
+
+    # 2) Recontrol post-hipo:
+    # actual >= 70 y previa < 70
+    if previa is not None and previa < UMBRAL_HIPO:
+        resultado["recontrol_post_hipo"] = True
+
+        # Sigue en hipoglucemia
+        if actual <= UMBRAL_HIPO:
+            resultado["estado"] = "hipoglucemia_persistente"
+            resultado["subestado"] = "Recontrol post-hipo con glucemia actual ≤ 70 mg/dL"
+            resultado["suspender_insulina"] = insulinizado
+            resultado["administrar_dextrosa"] = True
+            resultado["evaluar_goteo_mantenimiento"] = True
+            resultado["proximo_control"] = "Repetir control a los 30 minutos"
+            return resultado
+
+        # > 70 y <= 120
+        if UMBRAL_HIPO < actual <= LIMITE_ZONA_INTERMEDIA:
+            resultado["estado"] = "recontrol_post_hipo"
+            resultado["subestado"] = "Glucemia > 70 y ≤ 120 mg/dL"
+            resultado["suspender_insulina"] = insulinizado
+            resultado["proximo_control"] = "Controlar glucemia cada 1 hora"
+            return resultado
+
+        # > 120 y <= 180
+        if LIMITE_ZONA_INTERMEDIA < actual <= UMBRAL_INICIO_INSULINA:
+            resultado["estado"] = "recontrol_post_hipo"
+            resultado["subestado"] = "Glucemia > 120 y ≤ 180 mg/dL"
+            resultado["suspender_insulina"] = insulinizado
+            resultado["proximo_control"] = "Continuar monitoreo (no reiniciar insulina)"
+            return resultado
+
+        # > 180
+        if actual > UMBRAL_INICIO_INSULINA:
+            resultado["estado"] = "reinicio_insulina"
+            resultado["subestado"] = "Glucemia > 180 mg/dL en recontrol post-hipo"
+            resultado["reiniciar_insulina"] = True
+            resultado["tasa_algoritmo"] = obtener_tasa_algoritmo_inicio(actual)
+            resultado["proximo_control"] = "Reiniciar insulina EV y seguir Algoritmo 1"
+            return resultado
+
+    return None
+
 def _a_decimal(valor, permitir_none=False):
     """
     Convierte un valor a Decimal de forma segura.
@@ -131,18 +205,19 @@ def obtener_tasa_algoritmo_inicio(glucemia):
 
 
 def resolver_flujo_glucemia(actual, insulinizado, previa=None, horas_desde_inicio=None, estable=False):
-    """
-    Resuelve el flujo principal según:
-    - glucemia actual
-    - si el paciente está insulinizado
-    - glucemia previa opcional
-    - horas desde inicio opcional
-    - estabilidad opcional
-    """
     actual = _a_decimal(actual)
     previa = _a_decimal(previa, permitir_none=True)
     insulinizado = _a_bool(insulinizado)
     estable = _a_bool(estable)
+
+    # 0) Resolver primero el flujo de hipoglucemia / recontrol post-hipo
+    resultado_hipo = resolver_flujo_hipoglucemia(
+        actual=actual,
+        previa=previa,
+        insulinizado=insulinizado,
+    )
+    if resultado_hipo is not None:
+        return resultado_hipo
 
     resultado = {
         "estado": None,

@@ -1,0 +1,238 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control Glicemia - Infusión de Insulina</title>
+    <link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}">
+</head>
+
+<body>
+<main class="app-shell">
+<section class="layout">
+
+<!-- =========================
+     CABECERA
+========================= -->
+<header class="hero">
+    <div class="hero__text">
+        <p class="eyebrow">Apoyo clínico</p>
+        <h1>Control Glicemia</h1>
+
+        <div class="alerta-protocolo">
+            <strong>Uso restringido:</strong>
+            Protocolo exclusivo para pacientes de UCI con TNM,
+            sin CAD ni estado hiperosmolar.
+        </div>
+    </div>
+</header>
+
+<!-- =========================
+     FORMULARIO
+========================= -->
+<section class="panel panel-form">
+
+    <div class="panel__header">
+        <h2>Ingresar medición</h2>
+        <p>Complete los datos mínimos para obtener la conducta sugerida.</p>
+    </div>
+
+    <form method="post" id="form-glicemia" novalidate>
+        {% csrf_token %}
+
+        {{ form.paciente_insulinizado }}
+
+        <!-- GLICEMIA ACTUAL -->
+        <div class="field-group">
+            <label>Glicemia actual</label>
+            {{ form.glicemia_actual }}
+
+            {% if form.glicemia_actual.errors %}
+                <div class="error-list">
+                    {% for error in form.glicemia_actual.errors %}
+                        <div class="error-item">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- INSULINIZACIÓN -->
+        <div class="field-group">
+            <label>¿Insulinización activa?</label>
+
+            <div class="segmented-control">
+                <button type="button" class="segment-btn" id="btn-insulina-si">Sí</button>
+                <button type="button" class="segment-btn" id="btn-insulina-no">No</button>
+            </div>
+        </div>
+
+        <!-- PREVIA OPCIONAL -->
+        <div id="previa-opcional-wrap" class="hidden">
+            <button type="button" id="btn-mostrar-previa" class="btn-ghost-inline">
+                + Agregar glicemia previa
+            </button>
+        </div>
+
+        <!-- GLICEMIA PREVIA -->
+        <div id="previa-wrap" class="hidden">
+            <label>Glicemia previa</label>
+            {{ form.glicemia_previa }}
+            <small id="texto-previa"></small>
+        </div>
+
+        <button type="submit" class="btn-primary">Calcular</button>
+    </form>
+</section>
+
+<!-- =========================
+     RESULTADO
+========================= -->
+{% if resultado %}
+<section class="panel panel-result
+    {% if resultado.estado == 'hipoglucemia' %}estado-critico
+    {% elif resultado.estado == 'inicio_insulina_ev' %}estado-alerta
+    {% elif resultado.estado == 'hiperglucemia' or resultado.estado == 'alerta_hiperglucemia' or resultado.estado == 'fuera_de_objetivo' %}estado-vigilancia
+    {% elif resultado.estado == 'objetivo' %}estado-estable
+    {% else %}estado-neutro
+    {% endif %}">
+
+    <!-- CHIP -->
+    <div class="result-top">
+        <span class="result-chip">
+            {% if resultado.estado == 'hipoglucemia' %}
+                URGENTE
+            {% elif resultado.estado == 'inicio_insulina_ev' %}
+                ATENCIÓN
+            {% elif resultado.estado == 'objetivo' %}
+                ESTABLE
+            {% else %}
+                VIGILANCIA
+            {% endif %}
+        </span>
+    </div>
+
+    <h2 class="result-title">Resultado clínico</h2>
+
+    <div class="estado-box">
+        <div class="estado-box__label">Estado</div>
+        <div class="estado-box__value">{{ resultado.estado|capfirst|cut:"_" }}</div>
+    </div>
+
+    {% if resultado.subestado %}
+        <p class="result-subtitle">{{ resultado.subestado }}</p>
+    {% endif %}
+
+ <!-- =========================
+     ACCIÓN PRINCIPAL
+========================= -->
+<div class="result-card result-card--highlight">
+    <h3>Acción inmediata</h3>
+
+    <p class="proximo-control">
+        {% if resultado.bolo_inicial and resultado.tasa_inicial %}
+            Iniciar bolo {{ resultado.bolo_inicial }} e infusión {{ resultado.tasa_inicial }}
+        
+        {% elif resultado.tasa_algoritmo %}
+            {% if resultado.tasa_algoritmo == "Suspender" %}
+                Suspender infusión
+            {% else %}
+                Ajustar infusión a {{ resultado.tasa_algoritmo }}
+            {% endif %}
+
+        {% elif resultado.estado == 'hipoglucemia' %}
+            Suspender infusión y tratar hipoglucemia
+
+        {% else %}
+            Continuar vigilancia clínica
+        {% endif %}
+    </p>
+</div>
+
+
+<!-- =========================
+     PRÓXIMO CONTROL
+========================= -->
+<div class="result-card">
+    <h3>Próximo control</h3>
+    <p class="proximo-control">{{ resultado.proximo_control }}</p>
+</div>
+
+
+<!-- =========================
+     DETALLE CLÍNICO
+========================= -->
+<div class="result-card">
+    <h3>Detalle clínico</h3>
+
+    <p><strong>Estado:</strong> {{ resultado.estado|capfirst|cut:"_" }}</p>
+
+    {% if resultado.subestado %}
+        <p>{{ resultado.subestado }}</p>
+    {% endif %}
+
+    {% if resultado.tendencia %}
+        <p><strong>Tendencia:</strong> {{ resultado.tendencia }}</p>
+    {% endif %}
+</div>
+</section>
+{% endif %}
+
+</section>
+</main>
+
+<!-- =========================
+     SCRIPT
+========================= -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const insulinizadoInput = document.getElementById("id_paciente_insulinizado");
+    const btnSi = document.getElementById("btn-insulina-si");
+    const btnNo = document.getElementById("btn-insulina-no");
+
+    const previaWrap = document.getElementById("previa-wrap");
+    const previaOpcionalWrap = document.getElementById("previa-opcional-wrap");
+    const btnMostrarPrevia = document.getElementById("btn-mostrar-previa");
+
+    let previaVisibleManual = false;
+
+    function actualizarVista() {
+        previaWrap.classList.add("hidden");
+        previaOpcionalWrap.classList.add("hidden");
+
+        if (insulinizadoInput.value === "si") {
+            previaWrap.classList.remove("hidden");
+        }
+
+        if (insulinizadoInput.value === "no") {
+            previaOpcionalWrap.classList.remove("hidden");
+            if (previaVisibleManual) {
+                previaWrap.classList.remove("hidden");
+            }
+        }
+    }
+
+    btnSi.onclick = () => {
+        insulinizadoInput.value = "si";
+        previaVisibleManual = true;
+        actualizarVista();
+    };
+
+    btnNo.onclick = () => {
+        insulinizadoInput.value = "no";
+        previaVisibleManual = false;
+        actualizarVista();
+    };
+
+    btnMostrarPrevia.onclick = () => {
+        previaVisibleManual = true;
+        previaWrap.classList.remove("hidden");
+    };
+
+    actualizarVista();
+});
+</script>
+
+</body>
+</html>
