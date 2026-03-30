@@ -1,36 +1,43 @@
 from django import forms
 
+
 SI_NO_CHOICES = [
     ("si", "Sí"),
     ("no", "No"),
 ]
 
-from django import forms
 
 class GlucemiaForm(forms.Form):
+    """
+    Formulario principal para evaluar glucemia.
+    """
+
     glicemia_actual = forms.DecimalField(
         label="Glicemia actual",
+        required=True,
         min_value=0,
         decimal_places=0,
-        max_digits=5,
-        widget=forms.NumberInput(
-            attrs={
-                "placeholder": "Ej: 185",
-                "inputmode": "numeric",
-                "autocomplete": "off",
-                "class": "input-number",
-            }
-        ),
+        max_digits=6,
+        widget=forms.NumberInput(attrs={
+            "class": "input-control",
+            "placeholder": "Ej: 185",
+            "id": "id_glicemia_actual",
+            "inputmode": "numeric",
+        }),
     )
 
-    paciente_insulinizado = forms.ChoiceField(
+    infusion_activa = forms.TypedChoiceField(
+        label="¿Infusión activa?",
         required=True,
-        choices=[
-            ("", "Seleccionar"),
-            ("si", "Sí"),
-            ("no", "No"),
-        ],
-        widget=forms.HiddenInput(),
+        coerce=lambda x: str(x).lower() in ("true", "1", "si", "sí"),
+        choices=(
+            ("True", "Sí"),
+            ("False", "No"),
+        ),
+        widget=forms.RadioSelect(attrs={
+            "class": "radio-inline",
+            "id": "id_infusion_activa",
+        }),
     )
 
     glicemia_previa = forms.DecimalField(
@@ -38,181 +45,130 @@ class GlucemiaForm(forms.Form):
         required=False,
         min_value=0,
         decimal_places=0,
-        max_digits=5,
-        widget=forms.NumberInput(
-            attrs={
-                "placeholder": "Ej: 190",
-                "inputmode": "numeric",
-                "autocomplete": "off",
-                "class": "input-number",
-            }
+        max_digits=6,
+        widget=forms.NumberInput(attrs={
+            "class": "input-control",
+            "placeholder": "Ej: 160",
+            "id": "id_glicemia_previa",
+            "inputmode": "numeric",
+        }),
+    )
+
+    hubo_ajuste_insulina = forms.TypedChoiceField(
+        label="¿Hubo ajuste de insulina?",
+        required=False,
+        coerce=lambda x: str(x).lower() in ("true", "1", "si", "sí"),
+        choices=(
+            ("", "Seleccionar"),
+            ("True", "Sí"),
+            ("False", "No"),
         ),
+        widget=forms.RadioSelect(attrs={
+            "class": "radio-inline",
+            "id": "id_hubo_ajuste_insulina",
+        }),
+    )
+
+    tercera_medicion = forms.DecimalField(
+        label="Tercera medición",
+        required=False,
+        min_value=0,
+        decimal_places=0,
+        max_digits=6,
+        widget=forms.NumberInput(attrs={
+            "class": "input-control",
+            "placeholder": "Ej: 210",
+            "id": "id_tercera_medicion",
+            "inputmode": "numeric",
+        }),
+    )
+
+    modo = forms.ChoiceField(
+        label="Modo",
+        required=False,
+        choices=(
+            ("inicio", "Inicio / Reinicio"),
+            ("seguimiento", "Seguimiento"),
+        ),
+        initial="seguimiento",
+        widget=forms.Select(attrs={
+            "class": "input-control",
+            "id": "id_modo",
+        }),
     )
 
     def clean(self):
         cleaned_data = super().clean()
-        insulinizado = cleaned_data.get("paciente_insulinizado")
+
+        actual = cleaned_data.get("glicemia_actual")
         previa = cleaned_data.get("glicemia_previa")
+        infusion_activa = cleaned_data.get("infusion_activa")
+        tercera_medicion = cleaned_data.get("tercera_medicion")
+        hubo_ajuste_insulina = cleaned_data.get("hubo_ajuste_insulina")
 
-        if insulinizado not in ["si", "no"]:
-            self.add_error(
-                "paciente_insulinizado",
-                "Debe indicar si el paciente está insulinizado."
-            )
+        if actual is None:
+            return cleaned_data
 
-        if insulinizado == "si" and previa is None:
+        # Si hay infusión activa, la previa debe existir
+        if infusion_activa and previa is None:
             self.add_error(
                 "glicemia_previa",
-                "La glicemia previa es obligatoria si el paciente está insulinizado."
+                "La glicemia previa es obligatoria si hay infusión activa."
+            )
+
+        # Si se carga tercera medición, tiene sentido que exista previa
+        if tercera_medicion is not None and previa is None:
+            self.add_error(
+                "glicemia_previa",
+                "Para usar tercera medición, primero necesitás una glicemia previa."
+            )
+
+        # Si hubo ajuste, tiene más sentido dentro de un contexto con infusión activa
+        if hubo_ajuste_insulina and not infusion_activa:
+            self.add_error(
+                "hubo_ajuste_insulina",
+                "El ajuste de insulina solo aplica si hay infusión activa."
             )
 
         return cleaned_data
-
-class GlucemiaGuiadaForm(forms.Form):
-    glicemia_actual = forms.DecimalField(
+    
+class PasoInicialForm(forms.Form):
+    glicemia_actual = forms.IntegerField(
         label="Glicemia actual",
         min_value=0,
-        decimal_places=0,
-        max_digits=5,
         widget=forms.NumberInput(attrs={
             "class": "input-control",
-            "placeholder": "Ej: 185",
+            "placeholder": "Ej: 180",
             "inputmode": "numeric",
-        })
+        }),
     )
 
-    insulinizacion_activa = forms.ChoiceField(
-        label="Insulinización activa",
-        choices=(
-            ("", "Seleccionar"),
-            ("si", "Sí"),
-            ("no", "No"),
-        ),
-        widget=forms.RadioSelect(attrs={"class": "radio-inline"})
+    infusion_activa = forms.ChoiceField(
+        label="¿Infusión activa?",
+        choices=SI_NO_CHOICES,
+        widget=forms.RadioSelect(attrs={"class": "radio-inline"}),
     )
 
-    usar_previa_opcional = forms.BooleanField(
-        required=False,
-        label="Agregar glicemia previa"
-    )
-
-    glicemia_previa = forms.DecimalField(
+    glicemia_previa = forms.IntegerField(
         label="Glicemia previa",
-        required=False,
         min_value=0,
-        decimal_places=0,
-        max_digits=5,
+        required=False,
         widget=forms.NumberInput(attrs={
             "class": "input-control",
             "placeholder": "Ej: 160",
             "inputmode": "numeric",
-        })
+        }),
     )
 
     def clean(self):
         cleaned_data = super().clean()
-        insulinizacion = cleaned_data.get("insulinizacion_activa")
+        infusion_activa = cleaned_data.get("infusion_activa")
         glicemia_previa = cleaned_data.get("glicemia_previa")
 
-        if insulinizacion == "si" and glicemia_previa is None:
-            self.add_error("glicemia_previa", "La glicemia previa es obligatoria si hay insulinización activa.")
-
-        return cleaned_data
-
-class PasoInicialForm(forms.Form):
-    glicemia_actual = forms.IntegerField(
-        label="Glicemia actual",
-        min_value=1,
-        widget=forms.NumberInput(attrs={
-            "placeholder": "Ej: 180"
-        })
-    )
-
-    insulinizado = forms.ChoiceField(
-        label="¿Paciente insulinizado?",
-        choices=SI_NO_CHOICES,
-        widget=forms.RadioSelect
-    )
-
-    glicemia_previa = forms.IntegerField(
-        label="Glicemia previa",
-        min_value=1,
-        required=False,
-        widget=forms.NumberInput(attrs={
-            "placeholder": "Ej: 190"
-        })
-    )
-
-    def clean(self):
-        cleaned_data = super().clean()
-        insulinizado = cleaned_data.get("insulinizado")
-        glicemia_previa = cleaned_data.get("glicemia_previa")
-
-        if insulinizado == "si" and not glicemia_previa:
+        if infusion_activa == "si" and glicemia_previa is None:
             self.add_error(
                 "glicemia_previa",
-                "La glicemia previa es obligatoria si el paciente está insulinizado."
+                "La glicemia previa es obligatoria si hay infusión activa."
             )
 
         return cleaned_data
-
-
-class ConfirmarPreviaForm(forms.Form):
-    tiene_previa = forms.ChoiceField(
-        label="¿Tenés una glicemia previa para comparar?",
-        choices=SI_NO_CHOICES,
-        widget=forms.RadioSelect(attrs={
-            "class": "form-check-input"
-        })
-    )
-
-
-class GlicemiaPreviaOpcionalForm(forms.Form):
-    glicemia_previa = forms.IntegerField(
-        label="Glicemia previa",
-        min_value=1,
-        required=False,
-        widget=forms.NumberInput(attrs={
-            "class": "form-control",
-            "placeholder": "Ej: 185"
-        })
-    )
-
-
-class CriteriosHGPForm(forms.Form):
-    ultimo_escalon = forms.ChoiceField(
-        label="¿Está en el último escalón?",
-        choices=SI_NO_CHOICES,
-        widget=forms.RadioSelect(attrs={
-            "class": "form-check-input"
-        })
-    )
-
-    subio_ultimas_2 = forms.ChoiceField(
-        label="¿Subió de escalón en las últimas 2 mediciones?",
-        choices=SI_NO_CHOICES,
-        widget=forms.RadioSelect(attrs={
-            "class": "form-check-input"
-        })
-    )
-
-    mismo_escalon_3_controles = forms.ChoiceField(
-        label="¿Permanece en el mismo escalón en 3 controles consecutivos?",
-        choices=SI_NO_CHOICES,
-        widget=forms.RadioSelect(attrs={
-            "class": "form-check-input"
-        })
-    )
-
-
-class AlgoritmoActualForm(forms.Form):
-    algoritmo_actual = forms.ChoiceField(
-        label="Algoritmo actual",
-        choices=[
-            ("alg1", "Algoritmo 1"),
-            ("alg2", "Algoritmo 2"),
-        ],
-        widget=forms.RadioSelect(attrs={
-            "class": "form-check-input"
-        })
-    )

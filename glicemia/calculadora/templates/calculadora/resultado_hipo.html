@@ -1,0 +1,68 @@
+<div class="card border-danger shadow-sm mb-4">
+    <div class="card-header bg-danger text-white">
+        <h2 class="h5 mb-0">Hipoglucemia</h2>
+    </div>
+
+    <div class="card-body">
+        <p><strong>Estado:</strong> {{ resultado.estado }}</p>
+
+        {% if resultado.subestado %}
+            <p><strong>Subestado:</strong> {{ resultado.subestado }}</p>
+        {% endif %}
+
+        {% if resultado.mensaje %}
+            <p><strong>Mensaje:</strong> {{ resultado.mensaje }}</p>
+        {% endif %}
+
+        {% if resultado.tendencia %}
+            <p>
+                <strong>Tendencia:</strong>
+                {{ resultado.tendencia }}
+                {% if resultado.flecha_tendencia %}{{ resultado.flecha_tendencia }}{% endif %}
+                {% if resultado.delta %}(Δ {{ resultado.delta }}){% endif %}
+            </p>
+        {% endif %}
+
+        {% if resultado.conducta %}
+            <div class="alert alert-danger">
+                <strong>Conducta:</strong> {{ resultado.conducta }}
+            </div>
+        {% endif %}
+
+        <div class="row g-3 mt-1">
+            <div class="col-md-4">
+                <div class="border rounded p-3 h-100">
+                    <strong>Suspender insulina</strong><br>
+                    {% if resultado.suspender_insulina %}Sí{% else %}No{% endif %}
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="border rounded p-3 h-100">
+                    <strong>Administrar dextrosa</strong><br>
+                    {% if resultado.administrar_dextrosa %}Sí{% else %}No{% endif %}
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="border rounded p-3 h-100">
+                    <strong>Reiniciar insulina</strong><br>
+                    {% if resultado.reiniciar_insulina %}Sí{% else %}No{% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if resultado.requiere_recontrol %}
+            <div class="alert alert-warning mt-3 mb-0">
+                <strong>Requiere recontrol.</strong>
+                {% if resultado.proximo_control %}
+                    {{ resultado.proximo_control }}
+                {% endif %}
+            </div>
+        {% elif resultado.proximo_control %}
+            <p class="mt-3 mb-0">
+                <strong>Próximo control:</strong> {{ resultado.proximo_control }}
+            </p>
+        {% endif %}
+    </div>
+</div>

@@ -2,46 +2,52 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="stylesheet" href="{% static 'calculadora/styles.css' %}?v=20">
-</head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Control Glicemia{% endblock %}</title>
 
+  <link rel="stylesheet" href="{% static 'calculadora/css/styles.css' %}?v=21">
+  <link rel="stylesheet" href="{% static 'calculadora/css/base.css' %}?v=21">
+  <link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=21">
+
+  {% block extra_css %}{% endblock %}
+</head>
 <body>
 
-<header class="topbar">
-  <div class="container" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+  <header class="topbar">
+    <div class="container topbar__inner">
 
       <a href="{% url 'historial' %}" class="btn">
-Ver historial
-</a>
+        Ver historial
+      </a>
 
-    <div>
-      <div class="brand">Control Glicemia - Infusión de Insulina</div>
-      <div class="muted">Calculadora de apoyo clínico (no guarda datos)</div>
+      <div class="topbar__brand">
+        <div class="brand">Control Glicemia - Infusión de Insulina</div>
+        <div class="muted">Calculadora de apoyo clínico</div>
+      </div>
+
+      {% if user.is_authenticated %}
+        <div class="topbar__user muted">
+          Usuario: <strong>{{ user.username }}</strong>
+        </div>
+
+        <form method="post" action="{% url 'logout' %}" class="topbar__logout">
+          {% csrf_token %}
+          <button type="submit" class="btn">Cerrar sesión</button>
+        </form>
+      {% endif %}
     </div>
+  </header>
 
-    {% if user.is_authenticated %}
-  <div class="muted" style="margin-top: 10px;">
-    Usuario: <strong>{{ user.username }}</strong>
-  </div>
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
 
-  <form method="post" action="{% url 'logout' %}" style="margin-top: 10px;">
-    {% csrf_token %}
-    <button type="submit" class="btn">Cerrar sesión</button>
-  </form>
-{% endif %}
+  <footer class="footer container muted">
+    Herramienta de apoyo para uso interno. No reemplaza el criterio médico ni la historia clínica.
+  </footer>
 
-  </div>
-</header>
-
-<main class="container">
-  {% block content %}{% endblock %}
-</main>
-
-<footer class="footer container muted">
-  Herramienta de apoyo para uso interno. No reemplaza el criterio médico ni la historia clínica.
-</footer>
-
+  <script src="{% static 'calculadora/main.js' %}?v=21"></script>
+  {% block extra_js %}{% endblock %}
 </body>
 </html>

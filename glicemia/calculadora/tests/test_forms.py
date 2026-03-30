@@ -1,67 +1,33 @@
-from django.test import TestCase
+from django.test import SimpleTestCase
 from calculadora.forms import GlucemiaForm
 
 
-class GlucemiaFormTest(TestCase):
-
-    def _get_valid_choice(self, field_name):
-        """
-        Devuelve la primera choice válida no vacía del campo.
-        Sirve para no adivinar valores como 'si', '1', 'true', etc.
-        """
-        field = GlucemiaForm().fields[field_name]
-        for value, label in field.choices:
-            if value not in ("", None):
-                return value
-        return None
-
-    def test_form_valido_con_datos_minimos(self):
-        infusion_choice = self._get_valid_choice("infusion_activa")
-
+class GlucemiaFormTests(SimpleTestCase):
+    def test_form_valido_con_actual_e_infusion(self):
         form = GlucemiaForm(data={
-            "glucemia": 150,
-            "modo": "inicio",
-            "infusion_activa": infusion_choice,
+            "glicemia_actual": 150,
+            "infusion_activa": "no",
         })
-
-        if not form.is_valid():
-            print("ERROR FORM MINIMO:", form.errors)
-
         self.assertTrue(form.is_valid())
 
-    def test_form_invalido_sin_glucemia(self):
-        infusion_choice = self._get_valid_choice("infusion_activa")
-
+    def test_form_invalido_sin_glicemia_actual(self):
         form = GlucemiaForm(data={
-            "modo": "inicio",
-            "infusion_activa": infusion_choice,
+            "infusion_activa": "no",
         })
-
         self.assertFalse(form.is_valid())
-        self.assertIn("glucemia", form.errors)
+        self.assertIn("glicemia_actual", form.errors)
 
-    def test_form_invalido_sin_modo(self):
-        infusion_choice = self._get_valid_choice("infusion_activa")
-
+    def test_form_invalido_sin_infusion_activa(self):
         form = GlucemiaForm(data={
-            "glucemia": 150,
-            "infusion_activa": infusion_choice,
+            "glicemia_actual": 150,
         })
-
         self.assertFalse(form.is_valid())
-        self.assertIn("modo", form.errors)
+        self.assertIn("infusion_activa", form.errors)
 
-    def test_form_valido_con_glucemia_previa_en_algoritmo_seguimiento(self):
-        infusion_choice = self._get_valid_choice("infusion_activa")
-
+    def test_previa_opcional(self):
         form = GlucemiaForm(data={
-            "glucemia": 220,
-            "modo": "alg2",
-            "glucemia_previa": 200,
-            "infusion_activa": infusion_choice,
+            "glicemia_actual": 160,
+            "infusion_activa": "no",
+            "glicemia_previa": "",
         })
-
-        if not form.is_valid():
-            print("ERROR FORM ALG2:", form.errors)
-
         self.assertTrue(form.is_valid())

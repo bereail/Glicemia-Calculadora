@@ -3,34 +3,99 @@ from django.contrib.auth.models import User
 
 
 class MedicionGlucemia(models.Model):
+    """
+    Guarda una evaluación de glucemia realizada por el usuario.
+    """
+
     MODO_CHOICES = [
-        ("inicio", "Inicio / Reinicio (Algoritmo 1)"),
-        ("alg2", "Seguimiento - Algoritmo 2"),
+        ("inicio", "Inicio / Reinicio"),
+        ("seguimiento", "Seguimiento"),
     ]
 
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    CLASE_CHOICES = [
+        ("hipoglucemia", "Hipoglucemia"),
+        ("post_hipoglucemia", "Post-hipoglucemia"),
+        ("en_rango", "En rango"),
+        ("hiperglucemia", "Hiperglucemia"),
+        ("sin_clasificacion", "Sin clasificación"),
+    ]
+
+    usuario = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="mediciones_glucemia",
+    )
+
     fecha_hora = models.DateTimeField(auto_now_add=True)
 
-    glucemia = models.IntegerField()
-    modo = models.CharField(max_length=20, choices=MODO_CHOICES)
+    # -----------------------------
+    # DATOS DE ENTRADA
+    # -----------------------------
+    glucemia_actual = models.PositiveIntegerField()
+    glucemia_previa = models.PositiveIntegerField(null=True, blank=True)
 
     infusion_activa = models.BooleanField(default=False)
-    glucemia_previa = models.IntegerField(null=True, blank=True)
+    hubo_ajuste_insulina = models.BooleanField(default=False)
 
-    estado = models.CharField(max_length=100)
-    clase = models.CharField(max_length=30)
-    conducta = models.CharField(max_length=255)
+    tercera_medicion = models.PositiveIntegerField(null=True, blank=True)
+
+    modo = models.CharField(
+        max_length=20,
+        choices=MODO_CHOICES,
+        default="seguimiento",
+    )
+
+    # -----------------------------
+    # RESULTADO CLÍNICO
+    # -----------------------------
+    estado = models.CharField(max_length=100, blank=True)
+    subestado = models.CharField(max_length=150, blank=True)
+
+    clase = models.CharField(
+        max_length=30,
+        choices=CLASE_CHOICES,
+        default="sin_clasificacion",
+    )
+
     mensaje = models.TextField(blank=True)
+    conducta = models.TextField(blank=True)
     proximo_control = models.CharField(max_length=255, blank=True)
     observacion = models.CharField(max_length=255, blank=True)
-    tendencia = models.CharField(max_length=50, blank=True)
 
+    # -----------------------------
+    # TENDENCIA
+    # -----------------------------
+    tendencia = models.CharField(max_length=50, blank=True)
+    flecha_tendencia = models.CharField(max_length=5, blank=True)
+    delta = models.CharField(max_length=20, blank=True)
+
+    # -----------------------------
+    # DATOS TERAPÉUTICOS / ALGORITMO
+    # -----------------------------
     algoritmo_usado = models.CharField(max_length=100, blank=True)
     velocidad_sugerida = models.CharField(max_length=30, blank=True)
     bolo_ui = models.CharField(max_length=30, blank=True)
     tasa_inicial_ui_h = models.CharField(max_length=30, blank=True)
+    tasa_algoritmo = models.CharField(max_length=30, blank=True)
+
+    # -----------------------------
+    # FLAGS CLÍNICOS
+    # -----------------------------
+    requiere_recontrol = models.BooleanField(default=False)
+    suspender_insulina = models.BooleanField(default=False)
+    administrar_dextrosa = models.BooleanField(default=False)
+    reiniciar_insulina = models.BooleanField(default=False)
 
     alerta_hgr = models.BooleanField(default=False)
 
+    class Meta:
+        ordering = ["-fecha_hora"]
+        verbose_name = "Medición de glucemia"
+        verbose_name_plural = "Mediciones de glucemia"
+
     def __str__(self):
-        return f"{self.fecha_hora:%d/%m/%Y %H:%M} - {self.glucemia} mg/dL - {self.usuario.username}"
+        return (
+            f"{self.fecha_hora:%d/%m/%Y %H:%M} - "
+            f"{self.glucemia_actual} mg/dL - "
+            f"{self.usuario.username}"
+        )

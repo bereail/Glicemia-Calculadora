@@ -5,13 +5,33 @@ from .models import MedicionGlucemia
 @admin.register(MedicionGlucemia)
 class MedicionGlucemiaAdmin(admin.ModelAdmin):
     list_display = (
+        "id",
         "fecha_hora",
+        "glucemia_actual",
+        "glucemia_previa",
         "usuario",
-        "glucemia",
-        "modo",
         "estado",
-        "conducta",
-        "tendencia",
+        "subestado",
+        "clase",
+        "infusion_activa",
+        "requiere_recontrol",
     )
-    list_filter = ("modo", "estado", "fecha_hora", "usuario")
-    search_fields = ("usuario__username", "glucemia", "estado", "conducta")
+
+    list_filter = (
+        "estado",
+        "clase",
+        "infusion_activa",
+        "requiere_recontrol",
+        "fecha_hora",
+    )
+
+    search_fields = (
+        "usuario__username",
+        "estado",
+        "subestado",
+        "mensaje",
+        "conducta",
+    )
+
+    ordering = ("-fecha_hora",)
+    readonly_fields = ("fecha_hora",)

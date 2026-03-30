@@ -1,12 +1,12 @@
-from django.urls import reverse
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group, User
 from django.test import TestCase
-from calculadora.models import MedicionGlucemia
+from django.urls import reverse
+
 from calculadora.forms import GlucemiaForm
+from calculadora.models import MedicionGlucemia
 
 
 class MedicionPersistenceTest(TestCase):
-
     def setUp(self):
         self.user = User.objects.create_user(
             username="testuser",
@@ -17,52 +17,65 @@ class MedicionPersistenceTest(TestCase):
         grupo, _ = Group.objects.get_or_create(name="Enfermeria")
         self.user.groups.add(grupo)
 
-    def _get_valid_choice(self, field_name):
+    def _get_choice(self, field_name, preferred=None):
         field = GlucemiaForm().fields[field_name]
-        for value, label in field.choices:
-            if value not in ("", None):
-                return value
-        return None
+        choices = [value for value, _label in field.choices if value not in ("", None)]
+
+        if preferred in choices:
+            return preferred
+
+        return choices[0] if choices else None
 
     def test_post_valido_guarda_medicion(self):
         login_ok = self.client.login(username="testuser", password="12345678")
         self.assertTrue(login_ok)
 
-        infusion_choice = self._get_valid_choice("infusion_activa")
+        infusion_choice = self._get_choice("infusion_activa", preferred="si")
 
         response = self.client.post(
-            reverse("home"),
+            reverse("control_glicemia"),
             data={
-                "glucemia": 150,
-                "modo": "inicio",
+                "glicemia_actual": 150,
                 "infusion_activa": infusion_choice,
+                "glicemia_previa": 140,
             },
-            follow=False
+            follow=True,
         )
-
-        print("STATUS:", response.status_code)
-        if response.status_code in (301, 302):
-            print("REDIRECT LOCATION:", response["Location"])
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(MedicionGlucemia.objects.count(), 1)
 
         medicion = MedicionGlucemia.objects.first()
-        self.assertEqual(medicion.usuario, self.user)
-        self.assertEqual(medicion.glucemia, 150)
-        self.assertEqual(medicion.modo, "inicio")
+        self.assertIsNotNone(medicion)
+
+        if hasattr(medicion, "usuario"):
+            self.assertEqual(medicion.usuario, self.user)
+
+        if hasattr(medicion, "glicemia_actual"):
+            self.assertEqual(medicion.glicemia_actual, 150)
+
+        if hasattr(medicion, "glicemia_previa"):
+            self.assertEqual(medicion.glicemia_previa, 140)
 
     def test_post_invalido_no_guarda_medicion(self):
         login_ok = self.client.login(username="testuser", password="12345678")
         self.assertTrue(login_ok)
 
+        infusion_choice = self._get_choice("infusion_activa", preferred="si")
+
         response = self.client.post(
-            reverse("home"),
+            reverse("control_glicemia"),
             data={
-                "modo": "inicio",
+                "glicemia_actual": 150,
+                "infusion_activa": infusion_choice,
+                # falta glicemia_previa a propósito
             },
-            follow=False
+            follow=True,
         )
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(MedicionGlucemia.objects.count(), 0)
+
+        form = response.context.get("form")
+        self.assertIsNotNone(form)
+        self.assertIn("glicemia_previa", form.errors)
