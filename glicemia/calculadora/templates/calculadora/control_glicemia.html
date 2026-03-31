@@ -65,12 +65,17 @@
         <!-- GLICEMIA PREVIA -->
         <div
           id="previa_container"
-          class="field-group {% if not form.glicemia_previa.value and form.data.infusion_activa != 'si' and form.glicemia_actual.value|default:'' < '180' %}hidden{% endif %}"
+          class="field-group {% if not form.glicemia_previa.value and form.data.infusion_activa != 'True' %}hidden{% endif %}"
         >
           <label for="{{ form.glicemia_previa.id_for_label }}">
             {{ form.glicemia_previa.label }}
-            <span class="muted">(opcional)</span>
+            {% if form.data.infusion_activa == 'True' %}
+              <span class="required-mark">(obligatoria)</span>
+            {% else %}
+              <span class="muted">(opcional)</span>
+            {% endif %}
           </label>
+
           {{ form.glicemia_previa }}
 
           {% if form.glicemia_previa.errors %}
@@ -84,10 +89,7 @@
 
         <!-- AJUSTE DE INSULINA -->
         {% if form.hubo_ajuste_insulina %}
-          <div
-            id="ajuste_container"
-            class="field-group {% if form.data.infusion_activa != 'si' %}hidden{% endif %}"
-          >
+          <div id="ajuste_container" class="field-group hidden">
             <label>{{ form.hubo_ajuste_insulina.label }}</label>
             {{ form.hubo_ajuste_insulina }}
 
@@ -100,6 +102,13 @@
             {% endif %}
           </div>
         {% endif %}
+
+        <!-- BOTON TERCERA MEDICION -->
+        <div id="tercera_btn_container" class="field-group hidden">
+          <button type="button" id="btn_tercera" class="btn btn-secondary">
+            Evaluar tercera medición
+          </button>
+        </div>
 
         <!-- TERCERA MEDICION -->
         {% if form.tercera_medicion %}
@@ -135,6 +144,9 @@
         <div class="actions">
           <button type="submit" class="btn-primary">Evaluar</button>
         </div>
+
+        <!-- TABLA DE ALGORITMOS -->
+        {% include "calculadora/tabla_algoritmos.html" %}
       </form>
     </section>
 

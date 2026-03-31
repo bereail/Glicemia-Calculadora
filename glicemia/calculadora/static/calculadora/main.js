@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // ===== ELEMENTOS =====
     const glucemiaActual = document.querySelector('input[name="glicemia_actual"]');
     const glucemiaPrevia = document.querySelector('input[name="glicemia_previa"]');
+    const terceraMedicion = document.querySelector('input[name="tercera_medicion"]');
 
     const infusionRadios = document.querySelectorAll('input[name="infusion_activa"]');
     const ajusteRadios = document.querySelectorAll('input[name="hubo_ajuste_insulina"]');
@@ -13,12 +14,16 @@ document.addEventListener("DOMContentLoaded", function () {
     const ajusteContainer = document.getElementById("ajuste_container");
     const terceraContainer = document.getElementById("tercera_container");
 
-    // Si falta algo clave, no romper el script
+    // NUEVO: botón para abrir tercera medición
+    const btnTercera = document.getElementById("btn_tercera");
+    const terceraBtnContainer = document.getElementById("tercera_btn_container");
+
+    // Si faltan elementos clave, no romper el script
     if (!glucemiaActual || !btnPrevia || !previaContainer) {
         return;
     }
 
-    // ===== FUNCIONES =====
+    // ===== FUNCIONES AUXILIARES =====
     function getInfusionActivaValue() {
         const selected = document.querySelector('input[name="infusion_activa"]:checked');
         return selected ? selected.value : "";
@@ -29,6 +34,37 @@ document.addEventListener("DOMContentLoaded", function () {
         return selected ? selected.value : "";
     }
 
+    function getActualValue() {
+        return parseInt(glucemiaActual.value, 10);
+    }
+
+    function getPreviaValue() {
+        return glucemiaPrevia ? parseInt(glucemiaPrevia.value, 10) : NaN;
+    }
+
+    function getTerceraValue() {
+        return terceraMedicion ? parseInt(terceraMedicion.value, 10) : NaN;
+    }
+
+    function limpiarRadios(radios) {
+        if (!radios) return;
+        radios.forEach((radio) => {
+            radio.checked = false;
+        });
+    }
+
+    function esHiperglucemiaPersistente() {
+        const infusion = getInfusionActivaValue();
+        const actual = getActualValue();
+        const previa = getPreviaValue();
+
+        return (
+            infusion === "True" &&
+            !isNaN(actual) && actual >= 180 &&
+            !isNaN(previa) && previa >= 180
+        );
+    }
+
     function mostrarPrevia() {
         previaContainer.classList.remove("hidden");
         btnPrevia.classList.add("hidden");
@@ -36,14 +72,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function ocultarPreviaSiVaciaYNoNecesaria() {
         const infusion = getInfusionActivaValue();
-        const actual = parseInt(glucemiaActual.value, 10);
+        const actual = getActualValue();
         const previaTieneValor = glucemiaPrevia && glucemiaPrevia.value.trim() !== "";
 
         // Si ya hay valor cargado, no ocultar
         if (previaTieneValor) return;
 
-        // Si hay infusión activa o glucemia alta, conviene dejarla visible
-        if (infusion === "si" || (!isNaN(actual) && actual >= 180)) return;
+        // Si hay infusión activa o glucemia alta, dejar visible
+        if (infusion === "True" || (!isNaN(actual) && actual >= 180)) return;
 
         previaContainer.classList.add("hidden");
         btnPrevia.classList.remove("hidden");
@@ -52,7 +88,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function actualizarHelperPrevia() {
         if (!helperPrevia) return;
 
-        const actual = parseInt(glucemiaActual.value, 10);
+        const actual = getActualValue();
         const infusion = getInfusionActivaValue();
 
         helperPrevia.textContent = "";
@@ -60,8 +96,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (isNaN(actual) || !infusion) return;
 
-        if (infusion === "si") {
-            helperPrevia.textContent = "Se recomienda ingresar glucemia previa para evaluar tendencia y ajuste.";
+        if (infusion === "True") {
+            helperPrevia.textContent = "La glucemia previa es obligatoria si hay infusión activa.";
             helperPrevia.classList.add("helper-warning");
             return;
         }
@@ -72,13 +108,13 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        if (actual > 70 && actual < 180 && infusion === "no") {
+        if (actual > 70 && actual < 180 && infusion === "False") {
             helperPrevia.textContent = "La glucemia previa es opcional en este caso.";
         }
     }
 
     function actualizarEstadoVisualActual() {
-        const valor = parseInt(glucemiaActual.value, 10);
+        const valor = getActualValue();
 
         glucemiaActual.classList.remove("input-ok", "input-alert", "input-danger");
 
@@ -93,30 +129,30 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    function actualizarVisibilidadSegunInfusion() {
-        const infusion = getInfusionActivaValue();
+    function ocultarBloqueTerceraCompleto() {
+        if (terceraBtnContainer) {
+            terceraBtnContainer.classList.add("hidden");
+        }
 
-        if (infusion === "si") {
-            mostrarPrevia();
+        if (terceraContainer) {
+            terceraContainer.classList.add("hidden");
+        }
 
-            if (ajusteContainer) {
-                ajusteContainer.classList.remove("hidden");
-            }
-        } else {
-            if (ajusteContainer) {
-                ajusteContainer.classList.add("hidden");
-            }
-
-            if (terceraContainer) {
-                terceraContainer.classList.add("hidden");
-            }
-
-            ocultarPreviaSiVaciaYNoNecesaria();
+        if (terceraMedicion) {
+            terceraMedicion.value = "";
         }
     }
 
+    function ocultarAjusteCompleto() {
+        if (ajusteContainer) {
+            ajusteContainer.classList.add("hidden");
+        }
+
+        limpiarRadios(ajusteRadios);
+    }
+
     function actualizarVisibilidadSegunActual() {
-        const actual = parseInt(glucemiaActual.value, 10);
+        const actual = getActualValue();
 
         if (!isNaN(actual) && actual >= 180) {
             mostrarPrevia();
@@ -125,16 +161,56 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    function actualizarTerceraMedicion() {
-        if (!terceraContainer) return;
-
+    function actualizarVisibilidadSegunInfusion() {
         const infusion = getInfusionActivaValue();
-        const ajuste = getAjusteValue();
 
-        if (infusion === "si" && ajuste === "no") {
-            terceraContainer.classList.remove("hidden");
+        if (infusion === "True") {
+            mostrarPrevia();
         } else {
+            ocultarAjusteCompleto();
+            ocultarBloqueTerceraCompleto();
+            ocultarPreviaSiVaciaYNoNecesaria();
+        }
+    }
+
+    function actualizarFlujoPersistente() {
+        const persistente = esHiperglucemiaPersistente();
+
+        // Estado base: todo oculto
+        ocultarAjusteCompleto();
+
+        if (terceraBtnContainer) {
+            terceraBtnContainer.classList.add("hidden");
+        }
+
+        if (terceraContainer) {
             terceraContainer.classList.add("hidden");
+        }
+
+        // Si no cumple persistente, no mostrar nada extra
+        if (!persistente) {
+            if (terceraMedicion) {
+                terceraMedicion.value = "";
+            }
+            return;
+        }
+
+        // Si cumple persistente, mostrar solo el botón
+        if (terceraBtnContainer) {
+            terceraBtnContainer.classList.remove("hidden");
+        }
+
+        // Si ya hay tercera cargada, mostrar el campo
+        const tercera = getTerceraValue();
+        if (!isNaN(tercera)) {
+            if (terceraContainer) {
+                terceraContainer.classList.remove("hidden");
+            }
+
+            // SOLO si la tercera es >= 200, preguntar ajuste
+            if (tercera >= 200 && ajusteContainer) {
+                ajusteContainer.classList.remove("hidden");
+            }
         }
     }
 
@@ -143,7 +219,7 @@ document.addEventListener("DOMContentLoaded", function () {
         actualizarHelperPrevia();
         actualizarVisibilidadSegunInfusion();
         actualizarVisibilidadSegunActual();
-        actualizarTerceraMedicion();
+        actualizarFlujoPersistente();
     }
 
     // ===== EVENTOS =====
@@ -151,26 +227,86 @@ document.addEventListener("DOMContentLoaded", function () {
         mostrarPrevia();
     });
 
+    if (btnTercera) {
+        btnTercera.addEventListener("click", function () {
+            if (terceraContainer) {
+                terceraContainer.classList.remove("hidden");
+            }
+        });
+    }
+
     glucemiaActual.addEventListener("input", function () {
         actualizarEstadoVisualActual();
         actualizarHelperPrevia();
         actualizarVisibilidadSegunActual();
+        actualizarFlujoPersistente();
     });
+
+    if (glucemiaPrevia) {
+        glucemiaPrevia.addEventListener("input", function () {
+            actualizarFlujoPersistente();
+        });
+    }
+
+    if (terceraMedicion) {
+        terceraMedicion.addEventListener("input", function () {
+            const tercera = getTerceraValue();
+
+            if (ajusteContainer) {
+                if (!isNaN(tercera) && tercera >= 200) {
+                    ajusteContainer.classList.remove("hidden");
+                } else {
+                    ocultarAjusteCompleto();
+                }
+            }
+        });
+    }
 
     infusionRadios.forEach((radio) => {
         radio.addEventListener("change", function () {
             actualizarHelperPrevia();
             actualizarVisibilidadSegunInfusion();
-            actualizarTerceraMedicion();
+            actualizarFlujoPersistente();
         });
     });
 
     ajusteRadios.forEach((radio) => {
         radio.addEventListener("change", function () {
-            actualizarTerceraMedicion();
+            // Por ahora no hace falta lógica extra acá,
+            // pero lo dejamos listo por si después querés agregar validaciones.
         });
     });
 
     // ===== INICIO =====
     inicializarVista();
+});
+
+
+const btnTabla = document.getElementById("btn-tabla-algoritmos");
+const modalTabla = document.getElementById("modal-tabla");
+const btnCerrar = document.getElementById("btn-cerrar-tabla");
+const backdrop = document.getElementById("cerrar-modal-tabla");
+
+function abrirModal() {
+    modalTabla.classList.remove("hidden");
+}
+
+function cerrarModal() {
+    modalTabla.classList.add("hidden");
+}
+
+if (btnTabla) {
+    btnTabla.addEventListener("click", abrirModal);
+}
+
+if (btnCerrar) {
+    btnCerrar.addEventListener("click", cerrarModal);
+}
+
+if (backdrop) {
+    backdrop.addEventListener("click", cerrarModal);
+}
+
+document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") cerrarModal();
 });

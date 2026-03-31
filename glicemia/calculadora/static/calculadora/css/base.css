@@ -38,3 +38,9 @@
 .hidden {
     display: none;
 }
+
+.required-mark {
+    color: #b42318;
+    font-weight: 600;
+    margin-left: 4px;
+}

@@ -651,3 +651,23 @@ input[type="number"]:focus,
     }
 }
 
+
+.hidden {
+  display: none !important;
+}
+
+.required-mark {
+  color: #b42318;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.error-list {
+  margin-top: 8px;
+}
+
+.error-item {
+  color: #b42318;
+  font-size: 0.92rem;
+  display: block;
+}
