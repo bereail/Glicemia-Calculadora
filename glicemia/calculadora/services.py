@@ -313,6 +313,8 @@ def evaluar_hipoglucemia(actual, previa=None, infusion_activa=False):
 def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
     """
     Evalúa valores entre 70 y 179 fuera del contexto de hipoglucemia.
+    Contempla una zona de advertencia entre 70 y 75 mg/dL por cercanía
+    a hipoglucemia.
     """
     actual = _a_decimal(actual)
     previa = _a_decimal(previa, permitir_none=True)
@@ -323,6 +325,7 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
 
     resultado = _resultado_base()
     resultado["mostrar_resultado"] = True
+    resultado["alerta_borde_hipo"] = False
     resultado = _aplicar_tendencia(resultado, actual, previa)
 
     # -----------------------------------------------------
@@ -330,9 +333,18 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
     # -----------------------------------------------------
     if not infusion_activa:
         if previa is None:
-            if Decimal("70") <= actual <= Decimal("140"):
-                resultado["estado"] = "en_rango"
-                resultado["subestado"] = "Glicemia entre 70 y 140 mg/dL"
+            if Decimal("70") <= actual <= Decimal("75"):
+                resultado["estado"] = "En Rango"
+                resultado["subestado"] = "Glicemia en objetivo, pero cercana a hipoglucemia (< 70 mg/dL)"
+                resultado["mensaje"] = "Glicemia dentro de rango, aunque muy próxima a hipoglucemia."
+                resultado["conducta"] = "Continuar monitoreo con vigilancia estrecha."
+                resultado["proximo_control"] = "Según monitoreo habitual o antes si hay síntomas"
+                resultado["alerta_borde_hipo"] = True
+                return resultado
+
+            if Decimal("76") <= actual <= Decimal("140"):
+                resultado["estado"] = "En Rango"
+                resultado["subestado"] = "Glicemia entre 76 y 140 mg/dL"
                 resultado["mensaje"] = "Glicemia dentro de rango normal."
                 resultado["conducta"] = "Continuar monitoreo."
                 resultado["proximo_control"] = "Según monitoreo habitual"
@@ -349,8 +361,37 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
 
         # Con previa
         if previa is not None:
+            if Decimal("70") <= actual <= Decimal("75"):
+                if actual < previa:
+                    resultado["estado"] = "En Rango"
+                    resultado["subestado"] = "Glicemia en objetivo, cercana a hipoglucemia y en descenso"
+                    resultado["mensaje"] = "Valor en rango, pero muy próximo a hipoglucemia y con tendencia descendente."
+                    resultado["conducta"] = "Vigilar estrechamente la evolución y recontrolar antes si hay síntomas."
+                    resultado["requiere_recontrol"] = True
+                    resultado["proximo_control"] = "Recontrol según evolución clínica"
+                    resultado["alerta_borde_hipo"] = True
+                    return resultado
+
+                if actual > previa:
+                    resultado["estado"] = "En Rango"
+                    resultado["subestado"] = "Glicemia en objetivo, cercana a hipoglucemia"
+                    resultado["mensaje"] = "Valor en rango, cercano a hipoglucemia, aunque con tendencia ascendente."
+                    resultado["conducta"] = "Continuar monitoreo y vigilar evolución."
+                    resultado["requiere_recontrol"] = True
+                    resultado["proximo_control"] = "Recontrol según evolución clínica"
+                    resultado["alerta_borde_hipo"] = True
+                    return resultado
+
+                resultado["estado"] = "En Rango"
+                resultado["subestado"] = "Glicemia estable en objetivo, pero cercana a hipoglucemia"
+                resultado["mensaje"] = "Valor en rango, aunque muy próximo a hipoglucemia."
+                resultado["conducta"] = "Continuar monitoreo con vigilancia estrecha."
+                resultado["proximo_control"] = "Según monitoreo habitual o antes si hay síntomas"
+                resultado["alerta_borde_hipo"] = True
+                return resultado
+
             if actual > previa:
-                resultado["estado"] = "ascenso_en_rango"
+                resultado["estado"] = "Ascenso en rango"
                 resultado["subestado"] = "Glicemia 70-179 en ascenso"
                 resultado["mensaje"] = "Valor en rango, pero con ascenso glucémico."
                 resultado["conducta"] = "Control evolutivo para evaluar si continúa en ascenso."
@@ -359,7 +400,7 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
                 return resultado
 
             if actual < previa:
-                resultado["estado"] = "descenso_en_rango"
+                resultado["estado"] = "Descenso en rango"
                 resultado["subestado"] = "Glicemia 70-179 en descenso"
                 resultado["mensaje"] = "Valor en rango, pero con descenso glucémico."
                 resultado["conducta"] = "Vigilar evolución para evitar hipoglucemia si continúa bajando."
@@ -367,7 +408,7 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
                 resultado["proximo_control"] = "Recontrol según evolución clínica"
                 return resultado
 
-            resultado["estado"] = "estable_en_rango"
+            resultado["estado"] = "Estable en rango"
             resultado["subestado"] = "Glicemia estable entre 70 y 179 mg/dL"
             resultado["mensaje"] = "Glicemia estable dentro del rango."
             resultado["conducta"] = "Continuar monitoreo."
@@ -379,14 +420,14 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
     # -----------------------------------------------------
     if infusion_activa:
         if previa is None:
-            resultado["estado"] = "datos_insuficientes"
+            resultado["estado"] = "Datos insuficientes"
             resultado["subestado"] = "Falta glicemia previa"
             resultado["mensaje"] = "Con infusión activa se requiere glicemia previa para valorar tendencia."
             resultado["conducta"] = "Ingresar glicemia previa."
             return resultado
 
         if actual < OBJETIVO_MIN_INFUSION:
-            resultado["estado"] = "debajo_objetivo_infusion"
+            resultado["estado"] = "Debajo objetivo infusion"
             resultado["subestado"] = "Actual < 140 con infusión activa"
             resultado["mensaje"] = "Por debajo del objetivo para paciente con infusión."
             resultado["conducta"] = "Evaluar descenso y considerar ajuste de insulina por riesgo de hipoglucemia."
@@ -396,7 +437,7 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
 
         if OBJETIVO_MIN_INFUSION <= actual < UMBRAL_HIPER:
             if actual < previa:
-                resultado["estado"] = "objetivo_con_descenso"
+                resultado["estado"] = "Objetivo con descenso"
                 resultado["subestado"] = "Dentro del objetivo, pero en descenso"
                 resultado["mensaje"] = "Dentro del rango objetivo para paciente insulinizado, con tendencia descendente."
                 resultado["conducta"] = "Vigilar riesgo de hipoglucemia y reevaluar infusión."
@@ -405,7 +446,7 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
                 return resultado
 
             if actual > previa:
-                resultado["estado"] = "objetivo_con_ascenso"
+                resultado["estado"] = "Objetivo con ascenso"
                 resultado["subestado"] = "Dentro del objetivo, pero en ascenso"
                 resultado["mensaje"] = "Dentro del rango objetivo, aunque con tendencia ascendente."
                 resultado["conducta"] = "Mantener monitoreo y evaluar tendencia."
@@ -413,7 +454,7 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
                 resultado["proximo_control"] = "Control según protocolo"
                 return resultado
 
-            resultado["estado"] = "objetivo_infusion"
+            resultado["estado"] = "Objetivo infusion"
             resultado["subestado"] = "Dentro del objetivo con infusión activa"
             resultado["mensaje"] = "Dentro del rango objetivo para paciente insulinizado."
             resultado["conducta"] = "Mantener conducta actual y continuar monitoreo."
@@ -455,7 +496,7 @@ def evaluar_hiperglucemia(
     # -----------------------------------------------------
     if not infusion_activa:
         if previa is None:
-            resultado["estado"] = "hiperglucemia_aislada"
+            resultado["estado"] = "Hiperglucemia Aislada"
             resultado["subestado"] = "Actual >= 180 sin previa"
             resultado["mensaje"] = "Hiperglucemia aislada."
             resultado["conducta"] = "Solicitar nueva medición para confirmar persistencia."
@@ -466,16 +507,16 @@ def evaluar_hiperglucemia(
         if previa >= UMBRAL_HIPER:
             dosis = calcular_bolo_y_tasa_inicial(actual)
 
-            resultado["estado"] = "hiperglucemia_sostenida"
+            resultado["estado"] = "Hiperglucemia Sostenida"
             resultado["subestado"] = "Dos controles consecutivos >= 180 mg/dL"
             resultado["mensaje"] = "Hiperglucemia sostenida."
-            resultado["conducta"] = "Evaluar protocolo de insulinización endovenosa."
+            resultado["conducta"] = "Iniciar protocolo de insulinización endovenosa."
             resultado["bolo_inicial"] = f"{dosis} UI"
             resultado["tasa_inicial"] = f"{dosis} UI/h"
             resultado["proximo_control"] = calcular_proximo_control(actual)
             return resultado
 
-        resultado["estado"] = "hiperglucemia_en_ascenso"
+        resultado["estado"] = "Hiperglucemia en ascenso"
         resultado["subestado"] = "Actual >= 180 con previa menor a 180"
         resultado["mensaje"] = "Hiperglucemia detectada en ascenso."
         resultado["conducta"] = "Requiere nueva medición para evaluar persistencia."
@@ -489,65 +530,71 @@ def evaluar_hiperglucemia(
     if infusion_activa:
         resultado["tasa_algoritmo"] = obtener_tasa_algoritmo_inicio(actual)
 
+        # 180-200 sigue estando dentro del objetivo según protocolo
         if actual <= UMBRAL_ALERTA_ALTA:
             if previa is not None and previa < OBJETIVO_MIN_INFUSION:
-                resultado["estado"] = "ascenso_fuera_objetivo"
+                resultado["estado"] = "Ascenso a objetivo"
                 resultado["subestado"] = "Actual 180-200 con previa < 140"
-                resultado["mensaje"] = "Ascenso glucémico fuera del objetivo."
-                resultado["conducta"] = (
-                    "Requiere control más frecuente. Valorar ajuste si persiste o continúa en ascenso."
-                )
+                resultado["mensaje"] = "Glicemia dentro del objetivo para paciente con infusión, en ascenso desde un valor por debajo del objetivo."
+                resultado["conducta"] = "Mantener monitoreo y reevaluar tendencia."
                 resultado["requiere_recontrol"] = True
                 resultado["proximo_control"] = calcular_proximo_control(actual)
                 return resultado
 
-            resultado["estado"] = "fuera_objetivo_alto"
+            resultado["estado"] = "En Objetivo"
             resultado["subestado"] = "Actual 180-200 con infusión activa"
-            resultado["mensaje"] = "Fuera del objetivo alto para paciente con infusión."
-            resultado["conducta"] = "Monitorizar tendencia y reevaluar ajuste."
+            resultado["mensaje"] = "Glicemia dentro del rango objetivo para paciente con infusión."
+            resultado["conducta"] = "Mantener conducta actual y continuar monitoreo."
             resultado["requiere_recontrol"] = True
             resultado["proximo_control"] = calcular_proximo_control(actual)
             return resultado
 
         # Actual > 200
         if actual > UMBRAL_ALERTA_ALTA:
-            if previa is not None and previa >= UMBRAL_HIPER:
-                resultado["estado"] = "hiperglucemia_persistente"
-                resultado["subestado"] = "Al menos 2 controles consecutivos >= 180 mg/dL con infusión activa"
-                resultado["mensaje"] = "Hiperglucemia persistente."
+            if previa is not None and previa > UMBRAL_ALERTA_ALTA:
+                resultado["estado"] = "Hiperglucemia Persistente"
+                resultado["subestado"] = "Al menos 2 controles consecutivos > 200 mg/dL con infusión activa"
+                resultado["mensaje"] = "Hiperglucemia persistente fuera del rango objetivo."
                 resultado["conducta"] = "Evaluar tercera medición para confirmar persistencia o refractariedad."
                 resultado["requiere_recontrol"] = True
                 resultado["proximo_control"] = "Obtener tercera medición"
 
-                # Si ya existe tercera medición
                 if tercera_medicion is not None:
                     if tercera_medicion > UMBRAL_ALERTA_ALTA:
                         if hubo_ajuste_insulina:
-                            resultado["estado"] = "hiperglucemia_refractaria"
+                            resultado["estado"] = "Hiperglucemia Refractaria"
                             resultado["subestado"] = "Persiste > 200 pese a ajuste de insulina"
                             resultado["mensaje"] = "Hiperglucemia refractaria."
                             resultado["conducta"] = "Persistencia pese a ajuste. Reevaluar estrategia terapéutica."
                             resultado["proximo_control"] = "Control estrecho según protocolo"
                             return resultado
 
-                        resultado["estado"] = "hiperglucemia_persistente_confirmada"
+                        resultado["estado"] = "Hiperglucemia Persistente Confirmada"
                         resultado["subestado"] = "Tercera medición > 200 mg/dL"
-                        resultado["mensaje"] = "Persistencia confirmada."
+                        resultado["mensaje"] = "Persistencia confirmada fuera del rango objetivo."
                         resultado["conducta"] = "Realizar ajuste de insulina y continuar control estrecho."
                         resultado["proximo_control"] = "Control estrecho post-ajuste"
                         return resultado
 
-                    resultado["estado"] = "hiperglucemia_en_mejoria"
+                    resultado["estado"] = "Hiperglucemia en mejoría"
                     resultado["subestado"] = "Tercera medición <= 200 mg/dL"
-                    resultado["mensaje"] = "Persistencia no confirmada o en mejoría."
+                    resultado["mensaje"] = "Salida del estado de hiperglucemia persistente o evolución favorable."
                     resultado["conducta"] = "Continuar monitoreo y reevaluar evolución."
                     resultado["proximo_control"] = calcular_proximo_control(tercera_medicion)
                     return resultado
 
                 return resultado
 
+            resultado["estado"] = "Hiperglucemia Marcada"
+            resultado["subestado"] = "Actual > 200 con infusión activa"
+            resultado["mensaje"] = "Hiperglucemia fuera del rango objetivo."
+            resultado["conducta"] = "Requiere recontrol y evaluación de tendencia."
+            resultado["requiere_recontrol"] = True
+            resultado["proximo_control"] = calcular_proximo_control(actual)
+            return resultado
+
             # actual > 200 pero no cumple persistente todavía
-            resultado["estado"] = "hiperglucemia_marcada"
+            resultado["estado"] = "Hiperglucemia Marcada"
             resultado["subestado"] = "Actual > 200 con infusión activa"
             resultado["mensaje"] = "Hiperglucemia marcada."
             resultado["conducta"] = "Requiere recontrol y evaluación de tendencia."
@@ -616,7 +663,7 @@ def resolver_glucemia(
 
     # Fallback
     resultado = _resultado_base()
-    resultado["estado"] = "sin_clasificacion"
+    resultado["estado"] = "Sin Clasificacion"
     resultado["subestado"] = "No se pudo clasificar el caso"
     resultado["mensaje"] = "Revisar datos ingresados."
     resultado["conducta"] = "Validar entradas y lógica del flujo."

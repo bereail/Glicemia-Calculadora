@@ -2,6 +2,7 @@
    CONTROL GLICEMIA - CSS FINAL PRO
    ========================================================= */
 
+
 :root {
     --bg-1: #06111f;
     --bg-2: #0a1b31;
@@ -156,7 +157,7 @@ body {
     border-radius: 14px;
     background: rgba(255, 194, 74, 0.12);
     color: #ffe5a8;
-    font-size: 0.95rem;
+    font-size: 0.80rem;
     line-height: 1.45;
 }
 
@@ -670,4 +671,100 @@ input[type="number"]:focus,
   color: #b42318;
   font-size: 0.92rem;
   display: block;
+}
+
+.btn-glucemia-previa {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  margin-top: 10px;
+  border: 1.5px solid #3b82f6;
+  border-radius: 14px;
+  background: rgba(18, 52, 95, 0.95);
+  color: #eaf4ff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 0 0 rgba(59, 130, 246, 0);
+}
+
+.btn-glucemia-previa:hover {
+  background: rgba(25, 65, 118, 1);
+  border-color: #60a5fa;
+  transform: translateY(-1px);
+  box-shadow: 0 0 14px rgba(59, 130, 246, 0.25);
+}
+
+.btn-glucemia-previa:active {
+  transform: scale(0.98);
+}
+
+.btn-glucemia-previa:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
+}
+
+.btn-glucemia-previa__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #3b82f6;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+
+
+.field-label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.glicemia-radio-group {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.glicemia-radio-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 120px;
+  padding: 12px 16px;
+  border: 1px solid rgba(58, 141, 222, 0.35);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.glicemia-radio-card:hover {
+  border-color: #2f80ed;
+  background: rgba(47, 128, 237, 0.08);
+}
+
+.glicemia-radio-card input[type="radio"] {
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: #2f80ed;
+  flex-shrink: 0;
+}
+
+.glicemia-radio-card span {
+  line-height: 1;
 }

@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="{% static 'calculadora/css/styles.css' %}?v=21">
   <link rel="stylesheet" href="{% static 'calculadora/css/base.css' %}?v=21">
   <link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=21">
+  <link rel="stylesheet" href="{% static 'calculadora/css/resultado.css' %}?v=1">
 
   {% block extra_css %}{% endblock %}
 </head>
@@ -21,10 +22,11 @@
         Ver historial
       </a>
 
-      <div class="topbar__brand">
-        <div class="brand">Control Glicemia - Infusión de Insulina</div>
-        <div class="muted">Calculadora de apoyo clínico</div>
-      </div>
+      <div class="brand-link">
+  <a href="{% url 'control_glicemia' %}" class="brand-link">
+    <div class="brand">Control Glicemia - Infusión de Insulina</div>
+  </a>
+</div>
 
       {% if user.is_authenticated %}
         <div class="topbar__user muted">

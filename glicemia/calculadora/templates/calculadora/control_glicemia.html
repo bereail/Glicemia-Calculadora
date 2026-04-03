@@ -11,7 +11,7 @@
         <p class="eyebrow">Protocolo UCI</p>
         <h1>Control de glicemia</h1>
         <div class="alerta-protocolo">
-          Cargá la glucemia actual y completá los datos necesarios para evaluar hipo, rango objetivo o hiperglucemia.
+          Aplicable solo a pacientes UCI con Terapia Nutricional Médica, sin Cetoacidosis Diabética ni estado Hiperosmolar no Cetósico
         </div>
       </div>
     </section>
@@ -41,24 +41,34 @@
         </div>
 
         <!-- INFUSION ACTIVA -->
-        <div class="field-group">
-          <label>{{ form.infusion_activa.label }}</label>
-          {{ form.infusion_activa }}
-          {% if form.infusion_activa.errors %}
-            <div class="error-list">
-              {% for error in form.infusion_activa.errors %}
-                <span class="error-item">{{ error }}</span>
-              {% endfor %}
-            </div>
-          {% endif %}
-        </div>
+<div class="field-group">
+  <label class="field-label">{{ form.infusion_activa.label }}</label>
+
+  <div class="glicemia-radio-group">
+    {% for radio in form.infusion_activa %}
+      <label class="glicemia-radio-card" for="{{ radio.id_for_label }}">
+        {{ radio.tag }}
+        <span>{{ radio.choice_label }}</span>
+      </label>
+    {% endfor %}
+  </div>
+
+  {% if form.infusion_activa.errors %}
+    <div class="error-list">
+      {% for error in form.infusion_activa.errors %}
+        <span class="error-item">{{ error }}</span>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
 
         <!-- HELPER + BOTON PREVIA -->
         <div class="field-group field-group--optional">
           <p id="helper_previa" class="field-helper"></p>
 
-          <button type="button" id="btn_previa" class="btn btn-secondary">
-            + Agregar glucemia previa
+          <button type="button" class="btn-glucemia-previa" id="btn_previa">
+            <span class="btn-glucemia-previa__icon">+</span>
+            <span>Agregar glicemia previa</span>
           </button>
         </div>
 
@@ -69,11 +79,13 @@
         >
           <label for="{{ form.glicemia_previa.id_for_label }}">
             {{ form.glicemia_previa.label }}
-            {% if form.data.infusion_activa == 'True' %}
-              <span class="required-mark">(obligatoria)</span>
-            {% else %}
-              <span class="muted">(opcional)</span>
-            {% endif %}
+            <span id="label_previa_hint" class="{% if form.data.infusion_activa == 'True' %}required-mark{% else %}muted{% endif %}">
+              {% if form.data.infusion_activa == 'True' %}
+                (obligatoria)
+              {% else %}
+                (opcional)
+              {% endif %}
+            </span>
           </label>
 
           {{ form.glicemia_previa }}
@@ -105,10 +117,11 @@
 
         <!-- BOTON TERCERA MEDICION -->
         <div id="tercera_btn_container" class="field-group hidden">
-          <button type="button" id="btn_tercera" class="btn btn-secondary">
-            Evaluar tercera medición
-          </button>
-        </div>
+  <button type="button" id="btn_tercera" class="glicemia-btn-tercera">
+    <span class="glicemia-btn-tercera__icon">➕</span>
+    Evaluar tercera medición
+  </button>
+</div>
 
         <!-- TERCERA MEDICION -->
         {% if form.tercera_medicion %}
@@ -146,17 +159,17 @@
         </div>
 
         <!-- TABLA DE ALGORITMOS -->
-        {% include "calculadora/tabla_algoritmos.html" %}
+        {% include "calculadora/partials/tabla_algoritmos.html" %}
       </form>
     </section>
 
     {% if resultado %}
       {% if "hipogluc" in resultado.estado %}
-        {% include "calculadora/resultado_hipo.html" %}
+        {% include "calculadora/partials/resultado_hipo.html" %}
       {% elif "rango" in resultado.estado or "objetivo" in resultado.estado or resultado.clase == "en_rango" %}
-        {% include "calculadora/resultado_rango.html" %}
+        {% include "calculadora/partials/resultado_rango.html" %}
       {% elif "hipergluc" in resultado.estado or "fuera_objetivo" in resultado.estado or "ascenso_fuera_objetivo" in resultado.estado %}
-        {% include "calculadora/resultado_hiper.html" %}
+        {% include "calculadora/partials/resultado_hiper.html" %}
       {% else %}
         <section class="panel panel-result estado-neutro">
           <div class="result-top">

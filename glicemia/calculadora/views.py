@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils import timezone
-
+from django.core.paginator import Paginator
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
 
@@ -338,7 +338,9 @@ def historial(request):
     en_rango = mediciones_qs.filter(clase="en_rango").count()
     hiperglucemias = mediciones_qs.filter(clase="hiperglucemia").count()
 
-    mediciones = mediciones_qs[:50]
+    paginator = Paginator(mediciones_qs, 10)  # 10 registros por página
+    page_number = request.GET.get("page")
+    mediciones = paginator.get_page(page_number)
 
     usuarios = (
         MedicionGlucemia.objects.values_list("usuario__username", flat=True)
@@ -377,7 +379,6 @@ def historial(request):
             "hiperglucemias": hiperglucemias,
         },
     )
-
 
 # =========================================================
 # EXPORTAR EXCEL

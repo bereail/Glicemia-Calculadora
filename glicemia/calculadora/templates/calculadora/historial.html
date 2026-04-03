@@ -133,6 +133,26 @@
       </tbody>
     </table>
   </div>
+
+  {% if mediciones.paginator.num_pages > 1 %}
+    <div class="pagination">
+      {% if mediciones.has_previous %}
+        <a href="?page={{ mediciones.previous_page_number }}{% if usuario_seleccionado %}&usuario={{ usuario_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if clase_seleccionada %}&clase={{ clase_seleccionada }}{% endif %}{% if periodo_seleccionado %}&periodo={{ periodo_seleccionado }}{% endif %}" class="btn">
+          ← Anterior
+        </a>
+      {% endif %}
+
+      <span class="page-info">
+        Página {{ mediciones.number }} de {{ mediciones.paginator.num_pages }}
+      </span>
+
+      {% if mediciones.has_next %}
+        <a href="?page={{ mediciones.next_page_number }}{% if usuario_seleccionado %}&usuario={{ usuario_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if clase_seleccionada %}&clase={{ clase_seleccionada }}{% endif %}{% if periodo_seleccionado %}&periodo={{ periodo_seleccionado }}{% endif %}" class="btn">
+          Siguiente →
+        </a>
+      {% endif %}
+    </div>
+  {% endif %}
 </div>
 
 {% endblock %}

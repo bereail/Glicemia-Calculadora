@@ -23,12 +23,15 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
+
     // ===== FUNCIONES AUXILIARES =====
     function getInfusionActivaValue() {
         const selected = document.querySelector('input[name="infusion_activa"]:checked');
         return selected ? selected.value : "";
     }
 
+    btnTercera.innerText = "Tercera medición activa";
+    
     function getAjusteValue() {
         const selected = document.querySelector('input[name="hubo_ajuste_insulina"]:checked');
         return selected ? selected.value : "";
