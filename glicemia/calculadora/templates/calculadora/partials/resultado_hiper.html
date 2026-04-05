@@ -1,74 +1,74 @@
-<div class="card border-warning shadow-sm mb-4">
-    <div class="card-header bg-warning">
-        <h2 class="h5 mb-0">Hiperglucemia</h2>
+<section class="panel panel-result resultado-screen {% if resultado.estado == 'hiperglucemia_aislada' or resultado.clase == 'hiperglucemia_aislada' %}resultado-screen--hiper-aislada{% else %}resultado-screen--hiper{% endif %}">
+
+  <div class="result-top">
+    <span class="result-chip">Resultado</span>
+  </div>
+
+  <h2 class="result-title">
+    {% if resultado.estado == 'hiperglucemia_aislada' or resultado.clase == 'hiperglucemia_aislada' %}
+      Hiperglucemia aislada
+    {% else %}
+      Hiperglucemia
+    {% endif %}
+  </h2>
+
+  <div class="estado-box {% if resultado.estado == 'hiperglucemia_aislada' or resultado.clase == 'hiperglucemia_aislada' %}estado-box--hiper-aislada{% else %}estado-box--hiper{% endif %}">
+    <div class="estado-box__label">Estado</div>
+    <div class="estado-box__value">
+      {{ resultado.estado|cut:"_"|title }}
     </div>
+  </div>
 
-    <div class="card-body">
-        <p><strong>Estado:</strong> {{ resultado.estado }}</p>
+  {% if resultado.subestado %}
+    <p class="result-subtitle">{{ resultado.subestado }}</p>
+  {% endif %}
 
-        {% if resultado.subestado %}
-            <p><strong>Subestado:</strong> {{ resultado.subestado }}</p>
-        {% endif %}
+  {% if resultado.tendencia %}
+    <div class="result-info">
+      <strong>Tendencia:</strong>
+      {{ resultado.tendencia }}
+      {% if resultado.flecha_tendencia %} {{ resultado.flecha_tendencia }}{% endif %}
+      {% if resultado.delta %} (Δ {{ resultado.delta }}){% endif %}
+    </div>
+  {% endif %}
 
-        {% if resultado.mensaje %}
-            <p><strong>Mensaje:</strong> {{ resultado.mensaje }}</p>
-        {% endif %}
+  {% if resultado.conducta %}
+    <div class="result-card {% if resultado.estado == 'hiperglucemia_aislada' or resultado.clase == 'hiperglucemia_aislada' %}result-card--hiper-aislada{% else %}result-card--hiper{% endif %}">
+      <h3>Conducta</h3>
+      <p>{{ resultado.conducta }}</p>
+    </div>
+  {% endif %}
 
-        {% if resultado.tendencia %}
-            <div class="alert alert-light border">
-                <strong>Tendencia:</strong>
-                {{ resultado.tendencia }}
-                {% if resultado.flecha_tendencia %}{{ resultado.flecha_tendencia }}{% endif %}
-                {% if resultado.delta %}(Δ {{ resultado.delta }}){% endif %}
-            </div>
-        {% endif %}
-
-        {% if resultado.conducta %}
-            <div class="alert alert-warning">
-                <strong>Conducta:</strong> {{ resultado.conducta }}
-            </div>
-        {% endif %}
-
-        <div class="row g-3">
-            {% if resultado.bolo_inicial %}
-            <div class="col-md-4">
-                <div class="border rounded p-3 h-100">
-                    <strong>Bolo inicial</strong><br>
-                    {{ resultado.bolo_inicial }}
-                </div>
-            </div>
-            {% endif %}
-
-            {% if resultado.tasa_inicial %}
-            <div class="col-md-4">
-                <div class="border rounded p-3 h-100">
-                    <strong>Tasa inicial</strong><br>
-                    {{ resultado.tasa_inicial }}
-                </div>
-            </div>
-            {% endif %}
-
-            {% if resultado.tasa_algoritmo %}
-            <div class="col-md-4">
-                <div class="border rounded p-3 h-100">
-                    <strong>Tasa algoritmo</strong><br>
-                    {{ resultado.tasa_algoritmo }}
-                </div>
-            </div>
-            {% endif %}
+  {% if resultado.bolo_inicial or resultado.tasa_inicial or resultado.tasa_algoritmo %}
+    <div class="result-grid">
+      {% if resultado.bolo_inicial %}
+        <div class="result-card result-card--mini">
+          <h3>Bolo inicial</h3>
+          <p>{{ resultado.bolo_inicial }}</p>
         </div>
+      {% endif %}
 
-        {% if resultado.requiere_recontrol %}
-            <div class="alert alert-danger mt-3 mb-0">
-                <strong>Requiere recontrol.</strong>
-                {% if resultado.proximo_control %}
-                    {{ resultado.proximo_control }}
-                {% endif %}
-            </div>
-        {% elif resultado.proximo_control %}
-            <p class="mt-3 mb-0">
-                <strong>Próximo control:</strong> {{ resultado.proximo_control }}
-            </p>
-        {% endif %}
+      {% if resultado.tasa_inicial %}
+        <div class="result-card result-card--mini">
+          <h3>Tasa inicial</h3>
+          <p>{{ resultado.tasa_inicial }}</p>
+        </div>
+      {% endif %}
+
+      {% if resultado.tasa_algoritmo %}
+        <div class="result-card result-card--mini">
+          <h3>Tasa algoritmo</h3>
+          <p>{{ resultado.tasa_algoritmo }}</p>
+        </div>
+      {% endif %}
     </div>
-</div>
+  {% endif %}
+
+  {% if resultado.proximo_control %}
+    <div class="resultado-prioridad {% if resultado.estado == 'hiperglucemia_aislada' or resultado.clase == 'hiperglucemia_aislada' %}resultado-prioridad--hiper-aislada{% else %}resultado-prioridad--hiper{% endif %}">
+      <h3 class="section-title">Próximo control</h3>
+      <div class="proximo-control">{{ resultado.proximo_control }}</div>
+    </div>
+  {% endif %}
+
+</section>

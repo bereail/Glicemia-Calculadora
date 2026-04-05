@@ -41,26 +41,26 @@
         </div>
 
         <!-- INFUSION ACTIVA -->
-<div class="field-group">
-  <label class="field-label">{{ form.infusion_activa.label }}</label>
+        <div class="field-group">
+          <label class="field-label">{{ form.infusion_activa.label }}</label>
 
-  <div class="glicemia-radio-group">
-    {% for radio in form.infusion_activa %}
-      <label class="glicemia-radio-card" for="{{ radio.id_for_label }}">
-        {{ radio.tag }}
-        <span>{{ radio.choice_label }}</span>
-      </label>
-    {% endfor %}
-  </div>
+          <div class="glicemia-radio-group">
+            {% for radio in form.infusion_activa %}
+              <label class="glicemia-radio-card" for="{{ radio.id_for_label }}">
+                {{ radio.tag }}
+                <span>{{ radio.choice_label }}</span>
+              </label>
+            {% endfor %}
+          </div>
 
-  {% if form.infusion_activa.errors %}
-    <div class="error-list">
-      {% for error in form.infusion_activa.errors %}
-        <span class="error-item">{{ error }}</span>
-      {% endfor %}
-    </div>
-  {% endif %}
-</div>
+          {% if form.infusion_activa.errors %}
+            <div class="error-list">
+              {% for error in form.infusion_activa.errors %}
+                <span class="error-item">{{ error }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
 
         <!-- HELPER + BOTON PREVIA -->
         <div class="field-group field-group--optional">
@@ -117,11 +117,11 @@
 
         <!-- BOTON TERCERA MEDICION -->
         <div id="tercera_btn_container" class="field-group hidden">
-  <button type="button" id="btn_tercera" class="glicemia-btn-tercera">
-    <span class="glicemia-btn-tercera__icon">➕</span>
-    Evaluar tercera medición
-  </button>
-</div>
+          <button type="button" id="btn_tercera" class="glicemia-btn-tercera">
+            <span class="glicemia-btn-tercera__icon">➕</span>
+            Evaluar tercera medición
+          </button>
+        </div>
 
         <!-- TERCERA MEDICION -->
         {% if form.tercera_medicion %}
@@ -166,10 +166,13 @@
     {% if resultado %}
       {% if "hipogluc" in resultado.estado %}
         {% include "calculadora/partials/resultado_hipo.html" %}
+
       {% elif "rango" in resultado.estado or "objetivo" in resultado.estado or resultado.clase == "en_rango" %}
         {% include "calculadora/partials/resultado_rango.html" %}
+
       {% elif "hipergluc" in resultado.estado or "fuera_objetivo" in resultado.estado or "ascenso_fuera_objetivo" in resultado.estado %}
         {% include "calculadora/partials/resultado_hiper.html" %}
+
       {% else %}
         <section class="panel panel-result estado-neutro">
           <div class="result-top">
@@ -188,19 +191,13 @@
           {% endif %}
 
           <div class="result-grid">
-            {% if resultado.mensaje %}
-              <div class="result-card">
-                <h3>Mensaje</h3>
-                <p>{{ resultado.mensaje }}</p>
-              </div>
-            {% endif %}
-
             {% if resultado.conducta %}
               <div class="result-card result-card--highlight">
                 <h3>Conducta</h3>
                 <p>{{ resultado.conducta }}</p>
               </div>
             {% endif %}
+
           </div>
 
           {% if resultado.proximo_control %}

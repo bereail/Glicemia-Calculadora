@@ -1,11 +1,9 @@
-<section class="panel panel-result estado-hipo">
+<section class="panel panel-result resultado-screen resultado-screen--hipo">
+
   <div class="result-top">
     <span class="result-chip">Resultado</span>
   </div>
-
-  <h2 class="result-title">Evaluación</h2>
-
-  <div class="estado-box">
+  <div class="estado-box estado-box--hipo">
     <div class="estado-box__label">Estado</div>
     <div class="estado-box__value">
       {{ resultado.estado|cut:"_"|title }}
@@ -16,46 +14,36 @@
     <p class="result-subtitle">{{ resultado.subestado }}</p>
   {% endif %}
 
-  <div class="result-grid">
-    {% if resultado.mensaje %}
-      <div class="result-card">
-        <h3>Mensaje</h3>
-        <p>{{ resultado.mensaje }}</p>
-      </div>
-    {% endif %}
-
-    {% if resultado.conducta %}
-      <div class="result-card result-card--highlight">
-        <h3>Conducta</h3>
-        <p>{{ resultado.conducta }}</p>
-      </div>
-    {% endif %}
-  </div>
-
-  <div class="result-list">
-    {% if resultado.suspender_insulina %}
-      <div class="result-list__item">
-        <strong>Suspender insulina:</strong> {{ resultado.suspender_insulina }}
-      </div>
-    {% endif %}
-
-    {% if resultado.administrar_dextrosa %}
-      <div class="result-list__item">
-        <strong>Administrar dextrosa:</strong> {{ resultado.administrar_dextrosa }}
-      </div>
-    {% endif %}
-
-    {% if resultado.reiniciar_insulina %}
-      <div class="result-list__item">
-        <strong>Reiniciar insulina:</strong> {{ resultado.reiniciar_insulina }}
-      </div>
-    {% endif %}
-  </div>
+  {% if resultado.conducta %}
+    <div class="result-card result-card--hipo">
+      <h3>Conducta</h3>
+      <p>{{ resultado.conducta }}</p>
+    </div>
+  {% endif %}
 
   {% if resultado.proximo_control %}
-    <div class="resultado-prioridad">
+    <div class="resultado-prioridad resultado-prioridad--hipo">
       <h3 class="section-title">Próximo control</h3>
       <div class="proximo-control">{{ resultado.proximo_control }}</div>
     </div>
   {% endif %}
+
+  {% if resultado.suspender_insulina or resultado.administrar_dextrosa or resultado.reiniciar_insulina %}
+    <div class="result-actions">
+      <h3>Acciones</h3>
+
+      {% if resultado.suspender_insulina %}
+        <div class="action-item">✔ Suspender insulina</div>
+      {% endif %}
+
+      {% if resultado.administrar_dextrosa %}
+        <div class="action-item">✔ Administrar dextrosa</div>
+      {% endif %}
+
+      {% if resultado.reiniciar_insulina %}
+        <div class="action-item">✔ Reiniciar insulina</div>
+      {% endif %}
+    </div>
+  {% endif %}
+
 </section>
