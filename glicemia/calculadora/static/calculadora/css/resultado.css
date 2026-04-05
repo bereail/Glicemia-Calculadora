@@ -1,4 +1,7 @@
-/* BASE */
+/* =========================================================
+   BASE GENERAL RESULTADOS
+========================================================= */
+
 .panel.panel-result.resultado-screen {
   margin-top: 28px;
   padding: 28px 28px 30px;
@@ -9,24 +12,6 @@
     0 18px 40px rgba(0, 0, 0, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
   color: #f3f7ff;
-}
-
-/* ALERTA GLOBAL HIPER */
-.panel.panel-result.resultado-screen.resultado-screen--hiper {
-  border: 2px solid rgba(255, 181, 71, 0.95);
-  box-shadow:
-    0 0 0 1px rgba(255, 181, 71, 0.12),
-    0 18px 40px rgba(0, 0, 0, 0.28),
-    inset 4px 0 0 rgba(255, 181, 71, 0.95);
-}
-
-/* HIPERGLUCEMIA AISLADA = AMARILLO */
-.panel.panel-result.resultado-screen.resultado-screen--hiper-aislada {
-  border: 2px solid rgba(255, 214, 102, 0.92);
-  box-shadow:
-    0 0 0 1px rgba(255, 214, 102, 0.12),
-    0 18px 40px rgba(0, 0, 0, 0.28),
-    inset 4px 0 0 rgba(255, 214, 102, 0.92);
 }
 
 /* CHIP */
@@ -60,7 +45,7 @@
   color: #f8fbff;
 }
 
-/* ESTADO */
+/* ESTADO BASE */
 .panel.panel-result.resultado-screen .estado-box {
   padding: 20px 22px;
   border-radius: 22px;
@@ -68,16 +53,6 @@
   border: 1px solid rgba(255, 255, 255, 0.07);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
   margin-bottom: 16px;
-}
-
-.panel.panel-result.resultado-screen .estado-box--hiper {
-  border: 1px solid rgba(255, 201, 107, 0.36);
-  box-shadow: inset 4px 0 0 #ffc96b;
-}
-
-.panel.panel-result.resultado-screen .estado-box--hiper-aislada {
-  border: 1px solid rgba(255, 214, 102, 0.35);
-  box-shadow: inset 4px 0 0 #ffd666;
 }
 
 .panel.panel-result.resultado-screen .estado-box__label {
@@ -115,7 +90,32 @@
   line-height: 1.5;
 }
 
-/* CARDS */
+/* WARNING */
+.panel.panel-result.resultado-screen .result-warning {
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255, 196, 0, 0.12);
+  border: 1px solid rgba(255, 196, 0, 0.28);
+  color: #ffe9a6;
+  font-weight: 700;
+}
+
+/* GRID */
+.panel.panel-result.resultado-screen .result-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 16px 0 18px;
+}
+
+/* cuando haya solo 1 o 2 cards no queda mal igual */
+.panel.panel-result.resultado-screen.resultado-screen--rango .result-grid,
+.panel.panel-result.resultado-screen.resultado-screen--hipo .result-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* CARDS BASE */
 .panel.panel-result.resultado-screen .result-card {
   padding: 22px;
   border-radius: 22px;
@@ -125,6 +125,10 @@
     0 10px 24px rgba(0, 0, 0, 0.16),
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
   margin-bottom: 18px;
+}
+
+.panel.panel-result.resultado-screen .result-card--mini {
+  margin-bottom: 0;
 }
 
 .panel.panel-result.resultado-screen .result-card h3 {
@@ -141,35 +145,23 @@
   color: #f4f8ff;
 }
 
-.panel.panel-result.resultado-screen .result-card--hiper {
-  background: linear-gradient(180deg, rgba(255, 201, 107, 0.12) 0%, rgba(255, 201, 107, 0.05) 100%);
-  border: 1px solid rgba(255, 201, 107, 0.30);
-  box-shadow:
-    inset 4px 0 0 #ffc96b,
-    0 10px 24px rgba(0, 0, 0, 0.16);
-}
-
-.panel.panel-result.resultado-screen .result-card--hiper-aislada {
-  background: linear-gradient(180deg, rgba(255, 214, 102, 0.12) 0%, rgba(255, 214, 102, 0.05) 100%);
-  border: 1px solid rgba(255, 214, 102, 0.28);
-  box-shadow:
-    inset 4px 0 0 #ffd666,
-    0 10px 24px rgba(0, 0, 0, 0.16);
-}
-
-/* GRID HIPER */
-.panel.panel-result.resultado-screen .result-grid {
+/* LISTA */
+.panel.panel-result.resultado-screen .result-list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  margin: 16px 0 18px;
+  gap: 12px;
+  margin: 8px 0 18px;
 }
 
-.panel.panel-result.resultado-screen .result-card--mini {
-  margin-bottom: 0;
+.panel.panel-result.resultado-screen .result-list__item {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #eaf2fd;
+  line-height: 1.5;
 }
 
-/* PROXIMO CONTROL */
+/* BLOQUE PRIORIDAD */
 .panel.panel-result.resultado-screen .resultado-prioridad {
   margin-top: 20px;
   padding: 24px 22px;
@@ -179,21 +171,10 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-.panel.panel-result.resultado-screen .resultado-prioridad--hiper {
-  background: linear-gradient(90deg, rgba(255, 224, 150, 0.12) 0%, rgba(255, 255, 255, 0.04) 100%);
-  border: 1px solid rgba(255, 216, 128, 0.22);
-}
-
-.panel.panel-result.resultado-screen .resultado-prioridad--hiper-aislada {
-  background: linear-gradient(90deg, rgba(255, 236, 179, 0.12) 0%, rgba(255, 255, 255, 0.04) 100%);
-  border: 1px solid rgba(255, 214, 102, 0.25);
-}
-
 .panel.panel-result.resultado-screen .section-title {
   margin: 0 0 12px;
   font-size: 1rem;
   font-weight: 900;
-  color: #ffe6a3;
 }
 
 .panel.panel-result.resultado-screen .proximo-control {
@@ -203,20 +184,191 @@
   color: #ffffff;
 }
 
-/* MOBILE */
+/* ACCIONES */
+.panel.panel-result.resultado-screen .result-actions {
+  margin-top: 18px;
+  padding: 22px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.panel.panel-result.resultado-screen .result-actions h3 {
+  margin: 0 0 14px;
+  font-size: 1rem;
+  font-weight: 900;
+  color: #f2f6ff;
+}
+
+.panel.panel-result.resultado-screen .action-item {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  color: #f4f8ff;
+  font-weight: 700;
+}
+
+.panel.panel-result.resultado-screen .action-item + .action-item {
+  margin-top: 10px;
+}
+
+/* =========================================================
+   HIPERGLUCEMIA AISLADA = AMARILLO
+========================================================= */
+
+.panel.panel-result.resultado-screen.resultado-screen--hiper-aislada {
+  border: 2px solid rgba(255, 214, 102, 0.96);
+  box-shadow:
+    0 0 0 1px rgba(255, 214, 102, 0.14),
+    0 18px 40px rgba(0, 0, 0, 0.28),
+    inset 4px 0 0 rgba(255, 214, 102, 0.96);
+}
+
+.panel.panel-result.resultado-screen.resultado-screen--hiper-aislada .estado-box.estado-box--hiper-aislada {
+  border: 1px solid rgba(255, 214, 102, 0.38);
+  box-shadow: inset 4px 0 0 #ffd666;
+}
+
+.panel.panel-result.resultado-screen.resultado-screen--hiper-aislada .result-card.result-card--hiper-aislada {
+  background: linear-gradient(180deg, rgba(255, 214, 102, 0.14) 0%, rgba(255, 214, 102, 0.05) 100%);
+  border: 1px solid rgba(255, 214, 102, 0.28);
+  box-shadow:
+    inset 4px 0 0 #ffd666,
+    0 10px 24px rgba(0, 0, 0, 0.16);
+}
+
+.panel.panel-result.resultado-screen.resultado-screen--hiper-aislada .resultado-prioridad.resultado-prioridad--hiper-aislada {
+  background: linear-gradient(90deg, rgba(255, 236, 179, 0.14) 0%, rgba(255, 255, 255, 0.04) 100%);
+  border: 1px solid rgba(255, 214, 102, 0.26);
+}
+
+.panel.panel-result.resultado-screen.resultado-screen--hiper-aislada .section-title {
+  color: #ffe6a3;
+}
+
+/* =========================================================
+   CRITICOS = ROJO
+   (hipoglucemia + hiperglucemia sostenida/persistente/refractaria)
+========================================================= */
+
+.panel.panel-result.resultado-screen.resultado-screen--critico,
+.panel.panel-result.resultado-screen.resultado-screen--hipo {
+  border: 2px solid rgba(255, 99, 99, 0.96);
+  box-shadow:
+    0 0 0 1px rgba(255, 99, 99, 0.14),
+    0 18px 40px rgba(0, 0, 0, 0.28),
+    inset 4px 0 0 rgba(255, 99, 99, 0.96);
+}
+
+/* estado rojo hiper critico */
+.panel.panel-result.resultado-screen.resultado-screen--critico .estado-box.estado-box--critico {
+  border: 1px solid rgba(255, 120, 120, 0.36);
+  box-shadow: inset 4px 0 0 #ff6b6b;
+}
+
+/* estado rojo hipo */
+.panel.panel-result.resultado-screen.resultado-screen--hipo .estado-box.estado-box--hipo {
+  border: 1px solid rgba(255, 120, 120, 0.36);
+  box-shadow: inset 4px 0 0 #ff6b6b;
+}
+
+.panel.panel-result.resultado-screen.resultado-screen--critico .result-card.result-card--critico,
+.panel.panel-result.resultado-screen.resultado-screen--hipo .result-card.result-card--hipo {
+  background: linear-gradient(180deg, rgba(255, 107, 107, 0.14) 0%, rgba(255, 107, 107, 0.05) 100%);
+  border: 1px solid rgba(255, 107, 107, 0.30);
+  box-shadow:
+    inset 4px 0 0 #ff6b6b,
+    0 10px 24px rgba(0, 0, 0, 0.16);
+}
+
+.panel.panel-result.resultado-screen.resultado-screen--critico .resultado-prioridad.resultado-prioridad--critico,
+.panel.panel-result.resultado-screen.resultado-screen--hipo .resultado-prioridad.resultado-prioridad--hipo {
+  background: linear-gradient(90deg, rgba(255, 107, 107, 0.14) 0%, rgba(255, 255, 255, 0.04) 100%);
+  border: 1px solid rgba(255, 107, 107, 0.26);
+}
+
+.panel.panel-result.resultado-screen.resultado-screen--critico .section-title,
+.panel.panel-result.resultado-screen.resultado-screen--hipo .section-title {
+  color: #ffb3b3;
+}
+
+/* acciones hipo en rojo */
+.panel.panel-result.resultado-screen.resultado-screen--hipo .result-actions {
+  border: 1px solid rgba(255, 107, 107, 0.28);
+  box-shadow:
+    inset 4px 0 0 #ff6b6b,
+    0 10px 24px rgba(0, 0, 0, 0.16);
+}
+
+/* =========================================================
+   EN RANGO / OBJETIVO = VERDE
+========================================================= */
+
+.panel.panel-result.resultado-screen.resultado-screen--rango {
+  border: 2px solid rgba(72, 201, 120, 0.96);
+  box-shadow:
+    0 0 0 1px rgba(72, 201, 120, 0.14),
+    0 18px 40px rgba(0, 0, 0, 0.28),
+    inset 4px 0 0 rgba(72, 201, 120, 0.96);
+}
+
+.panel.panel-result.resultado-screen.resultado-screen--rango .estado-box.estado-box--rango {
+  border: 1px solid rgba(72, 201, 120, 0.36);
+  box-shadow: inset 4px 0 0 #48c978;
+}
+
+.panel.panel-result.resultado-screen.resultado-screen--rango .result-card.result-card--rango {
+  background: linear-gradient(180deg, rgba(72, 201, 120, 0.14) 0%, rgba(72, 201, 120, 0.05) 100%);
+  border: 1px solid rgba(72, 201, 120, 0.30);
+  box-shadow:
+    inset 4px 0 0 #48c978,
+    0 10px 24px rgba(0, 0, 0, 0.16);
+}
+
+.panel.panel-result.resultado-screen.resultado-screen--rango .resultado-prioridad.resultado-prioridad--rango {
+  background: linear-gradient(90deg, rgba(72, 201, 120, 0.14) 0%, rgba(255, 255, 255, 0.04) 100%);
+  border: 1px solid rgba(72, 201, 120, 0.26);
+}
+
+.panel.panel-result.resultado-screen.resultado-screen--rango .section-title {
+  color: #9ef0b5;
+}
+
+.panel.panel-result.resultado-screen.resultado-screen--rango .result-list__item {
+  border: 1px solid rgba(72, 201, 120, 0.22);
+  background: linear-gradient(180deg, rgba(72, 201, 120, 0.10) 0%, rgba(72, 201, 120, 0.04) 100%);
+}
+
+.panel.panel-result.resultado-screen.resultado-screen--rango .result-warning {
+  background: rgba(255, 196, 0, 0.12);
+  border: 1px solid rgba(255, 196, 0, 0.30);
+  color: #ffe8a3;
+}
+
+/* =========================================================
+   AJUSTES MOBILE
+========================================================= */
+
 @media (max-width: 768px) {
   .panel.panel-result.resultado-screen {
     padding: 22px 18px 24px;
     border-radius: 24px;
   }
 
-  .panel.panel-result.resultado-screen .result-grid {
+  .panel.panel-result.resultado-screen .result-grid,
+  .panel.panel-result.resultado-screen.resultado-screen--rango .result-grid,
+  .panel.panel-result.resultado-screen.resultado-screen--hipo .result-grid {
     grid-template-columns: 1fr;
   }
 
   .panel.panel-result.resultado-screen .estado-box,
   .panel.panel-result.resultado-screen .result-card,
-  .panel.panel-result.resultado-screen .resultado-prioridad {
+  .panel.panel-result.resultado-screen .resultado-prioridad,
+  .panel.panel-result.resultado-screen .result-actions {
     border-radius: 18px;
   }
 

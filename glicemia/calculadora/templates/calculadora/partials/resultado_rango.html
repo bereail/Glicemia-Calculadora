@@ -1,4 +1,4 @@
-<section class="panel panel-result estado-rango">
+<section class="panel panel-result resultado-screen resultado-screen--rango">
 
   <div class="result-top">
     <span class="result-chip">Resultado</span>
@@ -6,10 +6,10 @@
 
   <h2 class="result-title">Evaluación</h2>
 
-  <div class="estado-box">
+  <div class="estado-box estado-box--rango">
     <div class="estado-box__label">Estado</div>
     <div class="estado-box__value">
-      {{ resultado.estado|cut:"_"|title }}
+      {{ resultado.estado|default:"En rango" }}
     </div>
   </div>
 
@@ -27,39 +27,41 @@
 
   <div class="result-grid">
     {% if resultado.mensaje %}
-      <div class="result-card">
+      <div class="result-card result-card--rango">
         <h3>Mensaje</h3>
         <p>{{ resultado.mensaje }}</p>
       </div>
     {% endif %}
 
     {% if resultado.conducta %}
-      <div class="result-card result-card--highlight">
+      <div class="result-card result-card--rango">
         <h3>Conducta</h3>
         <p>{{ resultado.conducta }}</p>
       </div>
     {% endif %}
   </div>
 
-  <div class="result-list">
-    {% if resultado.tendencia %}
-      <div class="result-list__item">
-        <strong>Tendencia:</strong>
-        {{ resultado.tendencia }}
-        {% if resultado.flecha_tendencia %}{{ resultado.flecha_tendencia }}{% endif %}
-        {% if resultado.delta %}(Δ {{ resultado.delta }}){% endif %}
-      </div>
-    {% endif %}
+  {% if resultado.tendencia or resultado.tasa_algoritmo %}
+    <div class="result-list">
+      {% if resultado.tendencia %}
+        <div class="result-list__item">
+          <strong>Tendencia:</strong>
+          {{ resultado.tendencia }}
+          {% if resultado.flecha_tendencia %} {{ resultado.flecha_tendencia }}{% endif %}
+          {% if resultado.delta %} (Δ {{ resultado.delta }}){% endif %}
+        </div>
+      {% endif %}
 
-    {% if resultado.tasa_algoritmo %}
-      <div class="result-list__item">
-        <strong>Tasa algoritmo:</strong> {{ resultado.tasa_algoritmo }}
-      </div>
-    {% endif %}
-  </div>
+      {% if resultado.tasa_algoritmo %}
+        <div class="result-list__item">
+          <strong>Tasa algoritmo:</strong> {{ resultado.tasa_algoritmo }}
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
 
   {% if resultado.requiere_recontrol %}
-    <div class="resultado-prioridad">
+    <div class="resultado-prioridad resultado-prioridad--rango">
       <h3 class="section-title">Requiere recontrol</h3>
       <div class="proximo-control">
         {% if resultado.proximo_control %}
@@ -70,7 +72,7 @@
       </div>
     </div>
   {% elif resultado.proximo_control %}
-    <div class="resultado-prioridad">
+    <div class="resultado-prioridad resultado-prioridad--rango">
       <h3 class="section-title">Próximo control</h3>
       <div class="proximo-control">
         {{ resultado.proximo_control }}

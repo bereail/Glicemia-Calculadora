@@ -15,16 +15,11 @@ UMBRAL_HIPER = Decimal("180")
 UMBRAL_ALERTA_ALTA = Decimal("200")
 UMBRAL_MUY_ALTA = Decimal("300")
 UMBRAL_SEVERA = Decimal("400")
-
-
 # =========================================================
 # HELPERS
 # =========================================================
 
 def _a_decimal(valor, permitir_none=False):
-    """
-    Convierte un valor a Decimal de forma segura.
-    """
     if valor in (None, ""):
         if permitir_none:
             return None
@@ -39,22 +34,14 @@ def _a_decimal(valor, permitir_none=False):
 
 
 def _a_bool(valor):
-    """
-    Convierte distintas representaciones a booleano.
-    """
     if isinstance(valor, bool):
         return valor
-
     if valor is None:
         return False
-
     return str(valor).strip().lower() in ("true", "1", "si", "sí", "s", "yes")
 
 
 def _resultado_base():
-    """
-    Estructura estándar de respuesta.
-    """
     return {
         "estado": None,
         "subestado": None,
@@ -76,10 +63,107 @@ def _resultado_base():
         "bolo_inicial": None,
         "tasa_inicial": None,
         "tasa_algoritmo": None,
+        "monitoreo_glucemico": None,
 
         "mostrar_resultado": False,
     }
 
+
+# =========================================================
+# DOSIS / ALGORITMOS / MONITOREO
+# =========================================================
+
+def calcular_bolo_y_tasa_inicial(glucemia):
+    """
+    Protocolo inicial:
+    glucemia / 100 = bolo inicial y tasa inicial sugerida.
+    Ej: 400 -> 4.0 UI
+    """
+    glucemia = _a_decimal(glucemia)
+    return (glucemia / Decimal("100")).quantize(
+        Decimal("0.1"),
+        rounding=ROUND_HALF_UP
+    )
+
+
+def obtener_tasa_algoritmo_inicio(glucemia):
+    """
+    Algoritmo de tasa sugerida para inicio / reinicio.
+    """
+    glucemia = _a_decimal(glucemia)
+
+    if glucemia < Decimal("120"):
+        return "Suspender"
+    if glucemia <= Decimal("149"):
+        return "0,5 UI/h"
+    if glucemia <= Decimal("179"):
+        return "1 UI/h"
+    if glucemia <= Decimal("209"):
+        return "1,5 UI/h"
+    if glucemia <= Decimal("239"):
+        return "2 UI/h"
+    if glucemia <= Decimal("269"):
+        return "2,5 UI/h"
+    if glucemia <= Decimal("299"):
+        return "3 UI/h"
+    if glucemia <= Decimal("329"):
+        return "3,5 UI/h"
+    if glucemia <= Decimal("359"):
+        return "4 UI/h"
+    return "5 UI/h"
+
+
+def calcular_proximo_control(glucemia, horas_desde_inicio=None, estable=False):
+    glucemia = _a_decimal(glucemia)
+    estable = _a_bool(estable)
+
+    if horas_desde_inicio is not None:
+        horas_desde_inicio = _a_decimal(horas_desde_inicio, permitir_none=True)
+
+    if glucemia > Decimal("400"):
+        return "Próximo control en 1 hora"
+
+    if Decimal("300") <= glucemia <= Decimal("400"):
+        return "Próximo control en 2 horas"
+
+    if Decimal("200") <= glucemia < Decimal("300"):
+        if horas_desde_inicio is not None and horas_desde_inicio > Decimal("24") and estable:
+            return "Próximo control en 6 horas"
+        return "Próximo control en 4 horas"
+
+    if Decimal("140") <= glucemia < Decimal("200"):
+        if horas_desde_inicio is not None and horas_desde_inicio > Decimal("24") and estable:
+            return "Próximo control en 6 horas"
+        return "Próximo control en 4 horas"
+
+    if Decimal("70") <= glucemia < Decimal("140"):
+        return "Próximo control según conducta clínica"
+
+    return "Control inmediato / tratar hipoglucemia según protocolo"
+
+
+def armar_resultado_insulinizacion(glucemia, infusion_activa=False):
+    glucemia = _a_decimal(glucemia)
+    infusion_activa = _a_bool(infusion_activa)
+
+    resultado = _resultado_base()
+    resultado["mostrar_resultado"] = True
+
+    dosis = calcular_bolo_y_tasa_inicial(glucemia)
+
+    resultado["estado"] = "Hiperglucemia Sostenida"
+    resultado["subestado"] = "Dos controles consecutivos >= 180 mg/dL"
+    resultado["mensaje"] = "Hiperglucemia sostenida."
+    resultado["conducta"] = "Iniciar protocolo de insulinización endovenosa."
+
+    resultado["bolo_inicial"] = f"{dosis} UI"
+    resultado["tasa_inicial"] = f"{dosis} UI/h"
+    resultado["tasa_algoritmo"] = obtener_tasa_algoritmo_inicio(glucemia)
+
+    resultado["proximo_control"] = calcular_proximo_control(glucemia)
+    resultado["monitoreo_glucemico"] = "Se sugiere monitoreo glucémico frecuente."
+
+    return resultado
 
 # =========================================================
 # TENDENCIA
@@ -162,81 +246,6 @@ def _aplicar_tendencia(resultado, actual, previa):
     resultado["delta"] = tendencia["delta"]
     return resultado
 
-
-# =========================================================
-# DOSIS / ALGORITMOS / MONITOREO
-# =========================================================
-
-def calcular_bolo_y_tasa_inicial(glucemia):
-    """
-    Protocolo inicial:
-    glucemia / 100 = bolo inicial y tasa inicial sugerida.
-    Ej: 400 -> 4.0 UI
-    """
-    glucemia = _a_decimal(glucemia)
-    return (glucemia / Decimal("100")).quantize(
-        Decimal("0.1"),
-        rounding=ROUND_HALF_UP
-    )
-
-
-def obtener_tasa_algoritmo_inicio(glucemia):
-    """
-    Algoritmo de tasa sugerida para inicio / reinicio.
-    """
-    glucemia = _a_decimal(glucemia)
-
-    if glucemia < Decimal("120"):
-        return "Suspender"
-    if glucemia <= Decimal("149"):
-        return "0,5 UI/h"
-    if glucemia <= Decimal("179"):
-        return "1 UI/h"
-    if glucemia <= Decimal("209"):
-        return "1,5 UI/h"
-    if glucemia <= Decimal("239"):
-        return "2 UI/h"
-    if glucemia <= Decimal("269"):
-        return "2,5 UI/h"
-    if glucemia <= Decimal("299"):
-        return "3 UI/h"
-    if glucemia <= Decimal("329"):
-        return "3,5 UI/h"
-    if glucemia <= Decimal("359"):
-        return "4 UI/h"
-    return "5 UI/h"
-
-
-def calcular_proximo_control(glucemia, horas_desde_inicio=None, estable=False):
-    """
-    Sugerencia general de próximo control.
-    """
-    glucemia = _a_decimal(glucemia)
-    estable = _a_bool(estable)
-
-    if horas_desde_inicio is not None:
-        horas_desde_inicio = _a_decimal(horas_desde_inicio, permitir_none=True)
-
-    if glucemia > Decimal("400"):
-        return "Próximo control en 1 hora"
-
-    if Decimal("300") <= glucemia <= Decimal("400"):
-        return "Próximo control en 2 horas"
-
-    if Decimal("200") <= glucemia < Decimal("300"):
-        if horas_desde_inicio is not None and horas_desde_inicio > Decimal("24") and estable:
-            return "Próximo control en 6 horas"
-        return "Próximo control en 4 horas"
-
-    if Decimal("140") <= glucemia < Decimal("200"):
-        if horas_desde_inicio is not None and horas_desde_inicio > Decimal("24") and estable:
-            return "Próximo control en 6 horas"
-        return "Próximo control en 4 horas"
-
-    if Decimal("70") <= glucemia < Decimal("140"):
-        return "Próximo control según conducta clínica"
-
-    return "Control inmediato / tratar hipoglucemia según protocolo"
 
 
 # =========================================================
@@ -491,9 +500,9 @@ def evaluar_hiperglucemia(
     resultado["mostrar_resultado"] = True
     resultado = _aplicar_tendencia(resultado, actual, previa)
 
-    # -----------------------------------------------------
-    # SIN INFUSIÓN ACTIVA
-    # -----------------------------------------------------
+# -----------------------------------------------------
+# SIN INFUSIÓN ACTIVA
+# -----------------------------------------------------
     if not infusion_activa:
         if previa is None:
             resultado["estado"] = "Hiperglucemia Aislada"
@@ -505,16 +514,7 @@ def evaluar_hiperglucemia(
             return resultado
 
         if previa >= UMBRAL_HIPER:
-            dosis = calcular_bolo_y_tasa_inicial(actual)
-
-            resultado["estado"] = "Hiperglucemia Sostenida"
-            resultado["subestado"] = "Dos controles consecutivos >= 180 mg/dL"
-            resultado["mensaje"] = "Hiperglucemia sostenida."
-            resultado["conducta"] = "Iniciar protocolo de insulinización endovenosa."
-            resultado["bolo_inicial"] = f"{dosis} UI"
-            resultado["tasa_inicial"] = f"{dosis} UI/h"
-            resultado["proximo_control"] = calcular_proximo_control(actual)
-            return resultado
+            return armar_resultado_insulinizacion(actual, infusion_activa=False)
 
         resultado["estado"] = "Hiperglucemia en ascenso"
         resultado["subestado"] = "Actual >= 180 con previa menor a 180"

@@ -1,21 +1,25 @@
-<section class="panel panel-result resultado-screen {% if resultado.estado == 'hiperglucemia_aislada' or resultado.clase == 'hiperglucemia_aislada' %}resultado-screen--hiper-aislada{% else %}resultado-screen--hiper{% endif %}">
+<section class="panel panel-result resultado-screen
+  {% if 'aislada' in resultado.estado|lower %}
+    resultado-screen--hiper-aislada
+  {% else %}
+    resultado-screen--critico
+  {% endif %}">
 
   <div class="result-top">
     <span class="result-chip">Resultado</span>
   </div>
 
-  <h2 class="result-title">
-    {% if resultado.estado == 'hiperglucemia_aislada' or resultado.clase == 'hiperglucemia_aislada' %}
-      Hiperglucemia aislada
-    {% else %}
-      Hiperglucemia
-    {% endif %}
-  </h2>
+  <h2 class="result-title">Evaluación</h2>
 
-  <div class="estado-box {% if resultado.estado == 'hiperglucemia_aislada' or resultado.clase == 'hiperglucemia_aislada' %}estado-box--hiper-aislada{% else %}estado-box--hiper{% endif %}">
+  <div class="estado-box
+    {% if 'aislada' in resultado.estado|lower %}
+      estado-box--hiper-aislada
+    {% else %}
+      estado-box--critico
+    {% endif %}">
     <div class="estado-box__label">Estado</div>
     <div class="estado-box__value">
-      {{ resultado.estado|cut:"_"|title }}
+      {{ resultado.estado|default:"Sin clasificación" }}
     </div>
   </div>
 
@@ -32,42 +36,49 @@
     </div>
   {% endif %}
 
-  {% if resultado.conducta %}
-    <div class="result-card {% if resultado.estado == 'hiperglucemia_aislada' or resultado.clase == 'hiperglucemia_aislada' %}result-card--hiper-aislada{% else %}result-card--hiper{% endif %}">
-      <h3>Conducta</h3>
-      <p>{{ resultado.conducta }}</p>
-    </div>
-  {% endif %}
-
   {% if resultado.bolo_inicial or resultado.tasa_inicial or resultado.tasa_algoritmo %}
     <div class="result-grid">
       {% if resultado.bolo_inicial %}
-        <div class="result-card result-card--mini">
+        <div class="result-card result-card--mini {% if 'aislada' in resultado.estado|lower %}result-card--hiper-aislada{% else %}result-card--critico{% endif %}">
           <h3>Bolo inicial</h3>
           <p>{{ resultado.bolo_inicial }}</p>
         </div>
       {% endif %}
 
       {% if resultado.tasa_inicial %}
-        <div class="result-card result-card--mini">
-          <h3>Tasa inicial</h3>
+        <div class="result-card result-card--mini {% if 'aislada' in resultado.estado|lower %}result-card--hiper-aislada{% else %}result-card--critico{% endif %}">
+          <h3>Tasa inicial / infusión</h3>
           <p>{{ resultado.tasa_inicial }}</p>
         </div>
       {% endif %}
 
       {% if resultado.tasa_algoritmo %}
-        <div class="result-card result-card--mini">
-          <h3>Tasa algoritmo</h3>
+        <div class="result-card result-card--mini {% if 'aislada' in resultado.estado|lower %}result-card--hiper-aislada{% else %}result-card--critico{% endif %}">
+          <h3>Continuar: seguir algoritmo 1</h3>
           <p>{{ resultado.tasa_algoritmo }}</p>
         </div>
       {% endif %}
     </div>
   {% endif %}
 
+  {% if resultado.conducta %}
+    <div class="result-card {% if 'aislada' in resultado.estado|lower %}result-card--hiper-aislada{% else %}result-card--critico{% endif %}">
+      <h3>Conducta</h3>
+      <p>{{ resultado.conducta }}</p>
+    </div>
+  {% endif %}
+
   {% if resultado.proximo_control %}
-    <div class="resultado-prioridad {% if resultado.estado == 'hiperglucemia_aislada' or resultado.clase == 'hiperglucemia_aislada' %}resultado-prioridad--hiper-aislada{% else %}resultado-prioridad--hiper{% endif %}">
+    <div class="resultado-prioridad {% if 'aislada' in resultado.estado|lower %}resultado-prioridad--hiper-aislada{% else %}resultado-prioridad--critico{% endif %}">
       <h3 class="section-title">Próximo control</h3>
       <div class="proximo-control">{{ resultado.proximo_control }}</div>
+    </div>
+  {% endif %}
+
+  {% if resultado.monitoreo_glucemico %}
+    <div class="result-card {% if 'aislada' in resultado.estado|lower %}result-card--hiper-aislada{% else %}result-card--critico{% endif %}">
+      <h3>Monitoreo glucémico</h3>
+      <p>{{ resultado.monitoreo_glucemico }}</p>
     </div>
   {% endif %}
 
