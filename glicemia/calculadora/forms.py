@@ -7,6 +7,15 @@ SI_NO_CHOICES = [
 ]
 
 
+from django import forms
+
+
+SI_NO_CHOICES = [
+    ("si", "Sí"),
+    ("no", "No"),
+]
+
+
 class GlucemiaForm(forms.Form):
     glicemia_actual = forms.DecimalField(
         label="Glicemia actual",
@@ -25,7 +34,8 @@ class GlucemiaForm(forms.Form):
     infusion_activa = forms.TypedChoiceField(
         label="¿Infusión activa?",
         required=False,
-        coerce=lambda x: None if x in (None, "", "None") else str(x).lower() in ("true", "1", "si", "sí"),
+        empty_value=None,
+        coerce=lambda x: str(x).lower() in ("true", "1", "si", "sí"),
         choices=(
             ("True", "Sí"),
             ("False", "No"),
@@ -49,7 +59,8 @@ class GlucemiaForm(forms.Form):
     hubo_ajuste_insulina = forms.TypedChoiceField(
         label="¿Hubo ajuste de insulina?",
         required=False,
-        coerce=lambda x: None if x in (None, "", "None") else str(x).lower() in ("true", "1", "si", "sí"),
+        empty_value=None,
+        coerce=lambda x: str(x).lower() in ("true", "1", "si", "sí"),
         choices=(
             ("", "Seleccionar"),
             ("True", "Sí"),
@@ -97,25 +108,33 @@ class GlucemiaForm(forms.Form):
         if actual is None:
             return cleaned_data
 
+        # < 70: hipoglucemia, no pedir nada más
         if actual < 70:
             return cleaned_data
 
+        # >= 70: obligatorio indicar si tiene infusión activa
         if infusion_activa is None:
-            self.add_error("infusion_activa", "Este campo es obligatorio.")
+            self.add_error(
+                "infusion_activa",
+                "Debés indicar si el paciente tiene infusión activa."
+            )
             return cleaned_data
 
+        # Si tiene infusión activa, la previa es obligatoria
         if infusion_activa is True and previa is None:
             self.add_error(
                 "glicemia_previa",
                 "La glicemia previa es obligatoria si hay infusión activa."
             )
 
+        # Si hay tercera medición, primero debe haber previa
         if tercera_medicion is not None and previa is None:
             self.add_error(
                 "glicemia_previa",
                 "Para usar tercera medición, primero necesitás una glicemia previa."
             )
 
+        # Ajuste solo si hay infusión activa
         if hubo_ajuste_insulina is True and infusion_activa is not True:
             self.add_error(
                 "hubo_ajuste_insulina",
