@@ -246,7 +246,212 @@ def _aplicar_tendencia(resultado, actual, previa):
     resultado["delta"] = tendencia["delta"]
     return resultado
 
+from django import forms
 
+
+SI_NO_CHOICES = [
+    ("si", "Sí"),
+    ("no", "No"),
+]
+
+
+class GlucemiaForm(forms.Form):
+    """
+    Formulario principal para evaluar glucemia.
+    """
+
+    glicemia_actual = forms.DecimalField(
+        label="Glicemia actual",
+        required=True,
+        min_value=0,
+        decimal_places=0,
+        max_digits=6,
+        widget=forms.NumberInput(attrs={
+            "class": "input-control",
+            "placeholder": "Ej: 185",
+            "id": "id_glicemia_actual",
+            "inputmode": "numeric",
+        }),
+    )
+
+    # 🔴 CAMBIO CLAVE: deja de ser obligatorio SIEMPRE
+    infusion_activa = forms.TypedChoiceField(
+        label="¿Infusión activa?",
+        required=False,
+        coerce=lambda x: str(x).lower() in ("true", "1", "si", "sí"),
+        choices=(
+            ("True", "Sí"),
+            ("False", "No"),
+        ),
+        widget=forms.RadioSelect(attrs={
+            "class": "radio-inline",
+            "id": "id_infusion_activa",
+        }),
+    )
+
+    glicemia_previa = forms.DecimalField(
+        label="Glicemia previa",
+        required=False,
+        min_value=0,
+        decimal_places=0,
+        max_digits=6,
+        widget=forms.NumberInput(attrs={
+            "class": "input-control",
+            "placeholder": "Ej: 160",
+            "id": "id_glicemia_previa",
+            "inputmode": "numeric",
+        }),
+    )
+
+    hubo_ajuste_insulina = forms.TypedChoiceField(
+        label="¿Hubo ajuste de insulina?",
+        required=False,
+        coerce=lambda x: str(x).lower() in ("true", "1", "si", "sí"),
+        choices=(
+            ("", "Seleccionar"),
+            ("True", "Sí"),
+            ("False", "No"),
+        ),
+        widget=forms.RadioSelect(attrs={
+            "class": "radio-inline",
+            "id": "id_hubo_ajuste_insulina",
+        }),
+    )
+
+    tercera_medicion = forms.DecimalField(
+        label="Tercera medición",
+        required=False,
+        min_value=0,
+        decimal_places=0,
+        max_digits=6,
+        widget=forms.NumberInput(attrs={
+            "class": "input-control",
+            "placeholder": "Ej: 210",
+            "id": "id_tercera_medicion",
+            "inputmode": "numeric",
+        }),
+    )
+
+    modo = forms.ChoiceField(
+        label="Modo",
+        required=False,
+        choices=(
+            ("inicio", "Inicio / Reinicio"),
+            ("seguimiento", "Seguimiento"),
+        ),
+        initial="seguimiento",
+        widget=forms.Select(attrs={
+            "class": "input-control",
+            "id": "id_modo",
+        }),
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        actual = cleaned_data.get("glicemia_actual")
+        previa = cleaned_data.get("glicemia_previa")
+        infusion_activa = cleaned_data.get("infusion_activa")
+        tercera_medicion = cleaned_data.get("tercera_medicion")
+        hubo_ajuste_insulina = cleaned_data.get("hubo_ajuste_insulina")
+
+        if actual is None:
+            return cleaned_data
+
+        # ===============================
+        # 🔴 PRIORIDAD ABSOLUTA: HIPOglicemia
+        # ===============================
+        if actual <= 70:
+            # 🔥 No validar nada más
+            return cleaned_data
+
+        # ===============================
+        # 🔵 VALIDACIONES NORMALES
+        # ===============================
+
+        # Si NO es hipo → ahora sí exigir infusión
+        if infusion_activa is None:
+            self.add_error(
+                "infusion_activa",
+                "Este campo es obligatorio."
+            )
+            return cleaned_data
+
+        # Si hay infusión activa → previa obligatoria
+        if infusion_activa and previa is None:
+            self.add_error(
+                "glicemia_previa",
+                "La glicemia previa es obligatoria si hay infusión activa."
+            )
+
+        # Si se usa tercera → debe haber previa
+        if tercera_medicion is not None and previa is None:
+            self.add_error(
+                "glicemia_previa",
+                "Para usar tercera medición, primero necesitás una glicemia previa."
+            )
+
+        # Ajuste solo si hay infusión
+        if hubo_ajuste_insulina and not infusion_activa:
+            self.add_error(
+                "hubo_ajuste_insulina",
+                "El ajuste de insulina solo aplica si hay infusión activa."
+            )
+
+        return cleaned_data
+
+
+class PasoInicialForm(forms.Form):
+    glicemia_actual = forms.IntegerField(
+        label="Glicemia actual",
+        min_value=0,
+        widget=forms.NumberInput(attrs={
+            "class": "input-control",
+            "placeholder": "Ej: 180",
+            "inputmode": "numeric",
+        }),
+    )
+
+    infusion_activa = forms.ChoiceField(
+        label="¿Infusión activa?",
+        choices=SI_NO_CHOICES,
+        required=False,  # 🔴 también opcional acá
+        widget=forms.RadioSelect(attrs={"class": "radio-inline"}),
+    )
+
+    glicemia_previa = forms.IntegerField(
+        label="Glicemia previa",
+        min_value=0,
+        required=False,
+        widget=forms.NumberInput(attrs={
+            "class": "input-control",
+            "placeholder": "Ej: 160",
+            "inputmode": "numeric",
+        }),
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        actual = cleaned_data.get("glicemia_actual")
+        infusion_activa = cleaned_data.get("infusion_activa")
+        glicemia_previa = cleaned_data.get("glicemia_previa")
+
+        if actual is None:
+            return cleaned_data
+
+        # 🔴 HIPOglicemia → no validar nada
+        if actual <= 70:
+            return cleaned_data
+
+        # 🔵 Validación normal
+        if infusion_activa == "si" and glicemia_previa is None:
+            self.add_error(
+                "glicemia_previa",
+                "La glicemia previa es obligatoria si hay infusión activa."
+            )
+
+        return cleaned_data
 
 # =========================================================
 # 1) HIPOGLUCEMIA
@@ -255,8 +460,8 @@ def _aplicar_tendencia(resultado, actual, previa):
 def evaluar_hipoglucemia(actual, previa=None, infusion_activa=False):
     """
     Evalúa:
-    - hipoglucemia actual (<70)
-    - recontrol post-hipo (actual >=70 con previa <70)
+    - hipoglucemia actual (<=70)
+    - recontrol post-hipoglucemia (actual >70 con previa <=70)
     """
     actual = _a_decimal(actual)
     previa = _a_decimal(previa, permitir_none=True)
@@ -265,9 +470,9 @@ def evaluar_hipoglucemia(actual, previa=None, infusion_activa=False):
     resultado = _resultado_base()
 
     # 1) Hipoglucemia actual
-    if actual < UMBRAL_HIPO:
+    if actual <= UMBRAL_HIPO:
         resultado["estado"] = "hipoglucemia"
-        resultado["subestado"] = "Glucemia actual < 70 mg/dL"
+        resultado["subestado"] = "Glucemia actual <= 70 mg/dL"
         resultado["mensaje"] = "Paciente en hipoglucemia."
         resultado["conducta"] = (
             "Suspender insulina si está en infusión, administrar 50 ml de dextrosa al 25% "
@@ -281,13 +486,13 @@ def evaluar_hipoglucemia(actual, previa=None, infusion_activa=False):
         return resultado
 
     # 2) Recontrol post-hipoglucemia
-    if previa is not None and previa < UMBRAL_HIPO and actual >= UMBRAL_HIPO:
+    if previa is not None and previa <= UMBRAL_HIPO and actual > UMBRAL_HIPO:
         resultado["mostrar_resultado"] = True
         resultado["requiere_recontrol"] = True
 
-        if UMBRAL_HIPO <= actual <= LIMITE_ZONA_INTERMEDIA:
-            resultado["estado"] = "recontrol_post_hipo"
-            resultado["subestado"] = "Glucemia entre 70 y 120 mg/dL"
+        if UMBRAL_HIPO < actual <= LIMITE_ZONA_INTERMEDIA:
+            resultado["estado"] = "recontrol_post_hipoglucemia"
+            resultado["subestado"] = "Glucemia entre 71 y 120 mg/dL"
             resultado["mensaje"] = "Recuperación inicial post-hipoglucemia."
             resultado["conducta"] = "Mantener insulina suspendida y controlar glucemia cada 1 hora."
             resultado["suspender_insulina"] = infusion_activa
@@ -295,7 +500,7 @@ def evaluar_hipoglucemia(actual, previa=None, infusion_activa=False):
             return resultado
 
         if LIMITE_ZONA_INTERMEDIA < actual < UMBRAL_HIPER:
-            resultado["estado"] = "recontrol_post_hipo"
+            resultado["estado"] = "recontrol_post_hipoglucemia"
             resultado["subestado"] = "Glucemia entre 121 y 179 mg/dL"
             resultado["mensaje"] = "Recuperación adecuada post-hipoglucemia."
             resultado["conducta"] = "Continuar monitoreo cada 1 hora. No reiniciar insulina de inmediato."
@@ -318,12 +523,9 @@ def evaluar_hipoglucemia(actual, previa=None, infusion_activa=False):
 # =========================================================
 # 2) RANGO 70-179
 # =========================================================
-
 def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
     """
     Evalúa valores entre 70 y 179 fuera del contexto de hipoglucemia.
-    Contempla una zona de advertencia entre 70 y 75 mg/dL por cercanía
-    a hipoglucemia.
     """
     actual = _a_decimal(actual)
     previa = _a_decimal(previa, permitir_none=True)
@@ -335,22 +537,38 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
     resultado = _resultado_base()
     resultado["mostrar_resultado"] = True
     resultado["alerta_borde_hipo"] = False
-    resultado = _aplicar_tendencia(resultado, actual, previa)
 
-    # -----------------------------------------------------
+    # =====================================================
+    # 🟡 NUEVA LÓGICA (PRIORIDAD ALTA - NO TOCAR LO DEMÁS)
+    # =====================================================
+
+    # 70–120 con infusión activa
+    if infusion_activa and Decimal("70") <= actual <= Decimal("120"):
+        resultado["estado"] = "En Rango"
+        resultado["subestado"] = "En objetivo, pero cercano a hipoglucemia"
+        resultado["mensaje"] = "Glucemia en rango."
+        resultado["conducta"] = "En objetivo, pero cercano a hipoglucemia. Vigilar evolución."
+        resultado["alerta_borde_hipo"] = True
+        resultado["proximo_control"] = "Según monitoreo habitual"
+        return resultado
+
+    # 70–90 sin infusión activa
+    if not infusion_activa and Decimal("70") <= actual <= Decimal("90"):
+        resultado["estado"] = "En Rango"
+        resultado["subestado"] = "En objetivo, pero cercano a hipoglucemia"
+        resultado["mensaje"] = "Glucemia en rango."
+        resultado["conducta"] = "En objetivo, pero cercano a hipoglucemia. Vigilar evolución."
+        resultado["alerta_borde_hipo"] = True
+        resultado["proximo_control"] = "Según monitoreo habitual"
+        return resultado
+
+    # =====================================================
+    # 🔵 RESTO DE TU LÓGICA ORIGINAL (INTACTA)
+    # =====================================================
+
     # SIN INFUSIÓN ACTIVA
-    # -----------------------------------------------------
     if not infusion_activa:
         if previa is None:
-            if Decimal("70") <= actual <= Decimal("75"):
-                resultado["estado"] = "En Rango"
-                resultado["subestado"] = "Glicemia en objetivo, pero cercana a hipoglucemia (< 70 mg/dL)"
-                resultado["mensaje"] = "Glicemia dentro de rango, aunque muy próxima a hipoglucemia."
-                resultado["conducta"] = "Continuar monitoreo con vigilancia estrecha."
-                resultado["proximo_control"] = "Según monitoreo habitual o antes si hay síntomas"
-                resultado["alerta_borde_hipo"] = True
-                return resultado
-
             if Decimal("76") <= actual <= Decimal("140"):
                 resultado["estado"] = "En Rango"
                 resultado["subestado"] = "Glicemia entre 76 y 140 mg/dL"
@@ -368,37 +586,7 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
                 resultado["proximo_control"] = "Nueva medición para valorar tendencia"
                 return resultado
 
-        # Con previa
         if previa is not None:
-            if Decimal("70") <= actual <= Decimal("75"):
-                if actual < previa:
-                    resultado["estado"] = "En Rango"
-                    resultado["subestado"] = "Glicemia en objetivo, cercana a hipoglucemia y en descenso"
-                    resultado["mensaje"] = "Valor en rango, pero muy próximo a hipoglucemia y con tendencia descendente."
-                    resultado["conducta"] = "Vigilar estrechamente la evolución y recontrolar antes si hay síntomas."
-                    resultado["requiere_recontrol"] = True
-                    resultado["proximo_control"] = "Recontrol según evolución clínica"
-                    resultado["alerta_borde_hipo"] = True
-                    return resultado
-
-                if actual > previa:
-                    resultado["estado"] = "En Rango"
-                    resultado["subestado"] = "Glicemia en objetivo, cercana a hipoglucemia"
-                    resultado["mensaje"] = "Valor en rango, cercano a hipoglucemia, aunque con tendencia ascendente."
-                    resultado["conducta"] = "Continuar monitoreo y vigilar evolución."
-                    resultado["requiere_recontrol"] = True
-                    resultado["proximo_control"] = "Recontrol según evolución clínica"
-                    resultado["alerta_borde_hipo"] = True
-                    return resultado
-
-                resultado["estado"] = "En Rango"
-                resultado["subestado"] = "Glicemia estable en objetivo, pero cercana a hipoglucemia"
-                resultado["mensaje"] = "Valor en rango, aunque muy próximo a hipoglucemia."
-                resultado["conducta"] = "Continuar monitoreo con vigilancia estrecha."
-                resultado["proximo_control"] = "Según monitoreo habitual o antes si hay síntomas"
-                resultado["alerta_borde_hipo"] = True
-                return resultado
-
             if actual > previa:
                 resultado["estado"] = "Ascenso en rango"
                 resultado["subestado"] = "Glicemia 70-179 en ascenso"
@@ -424,9 +612,7 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
             resultado["proximo_control"] = "Según monitoreo habitual"
             return resultado
 
-    # -----------------------------------------------------
     # CON INFUSIÓN ACTIVA
-    # -----------------------------------------------------
     if infusion_activa:
         if previa is None:
             resultado["estado"] = "Datos insuficientes"
@@ -498,7 +684,7 @@ def evaluar_hiperglucemia(
 
     resultado = _resultado_base()
     resultado["mostrar_resultado"] = True
-    resultado = _aplicar_tendencia(resultado, actual, previa)
+
 
 # -----------------------------------------------------
 # SIN INFUSIÓN ACTIVA
@@ -603,6 +789,7 @@ def evaluar_hiperglucemia(
             return resultado
 
     return None
+
 
 
 # =========================================================

@@ -26,9 +26,10 @@ class GlucemiaForm(forms.Form):
         }),
     )
 
+    # 🔴 CAMBIO CLAVE: deja de ser obligatorio SIEMPRE
     infusion_activa = forms.TypedChoiceField(
         label="¿Infusión activa?",
-        required=True,
+        required=False,
         coerce=lambda x: str(x).lower() in ("true", "1", "si", "sí"),
         choices=(
             ("True", "Sí"),
@@ -109,21 +110,40 @@ class GlucemiaForm(forms.Form):
         if actual is None:
             return cleaned_data
 
-        # Si hay infusión activa, la previa debe existir
+        # ===============================
+        # 🔴 PRIORIDAD ABSOLUTA: HIPOglicemia
+        # ===============================
+        if actual <= 70:
+            # 🔥 No validar nada más
+            return cleaned_data
+
+        # ===============================
+        # 🔵 VALIDACIONES NORMALES
+        # ===============================
+
+        # Si NO es hipo → ahora sí exigir infusión
+        if infusion_activa is None:
+            self.add_error(
+                "infusion_activa",
+                "Este campo es obligatorio."
+            )
+            return cleaned_data
+
+        # Si hay infusión activa → previa obligatoria
         if infusion_activa and previa is None:
             self.add_error(
                 "glicemia_previa",
                 "La glicemia previa es obligatoria si hay infusión activa."
             )
 
-        # Si se carga tercera medición, tiene sentido que exista previa
+        # Si se usa tercera → debe haber previa
         if tercera_medicion is not None and previa is None:
             self.add_error(
                 "glicemia_previa",
                 "Para usar tercera medición, primero necesitás una glicemia previa."
             )
 
-        # Si hubo ajuste, tiene más sentido dentro de un contexto con infusión activa
+        # Ajuste solo si hay infusión
         if hubo_ajuste_insulina and not infusion_activa:
             self.add_error(
                 "hubo_ajuste_insulina",
@@ -131,7 +151,8 @@ class GlucemiaForm(forms.Form):
             )
 
         return cleaned_data
-    
+
+
 class PasoInicialForm(forms.Form):
     glicemia_actual = forms.IntegerField(
         label="Glicemia actual",
@@ -146,6 +167,7 @@ class PasoInicialForm(forms.Form):
     infusion_activa = forms.ChoiceField(
         label="¿Infusión activa?",
         choices=SI_NO_CHOICES,
+        required=False,  # 🔴 también opcional acá
         widget=forms.RadioSelect(attrs={"class": "radio-inline"}),
     )
 
@@ -162,9 +184,19 @@ class PasoInicialForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
+
+        actual = cleaned_data.get("glicemia_actual")
         infusion_activa = cleaned_data.get("infusion_activa")
         glicemia_previa = cleaned_data.get("glicemia_previa")
 
+        if actual is None:
+            return cleaned_data
+
+        # 🔴 HIPOglicemia → no validar nada
+        if actual <= 70:
+            return cleaned_data
+
+        # 🔵 Validación normal
         if infusion_activa == "si" and glicemia_previa is None:
             self.add_error(
                 "glicemia_previa",
