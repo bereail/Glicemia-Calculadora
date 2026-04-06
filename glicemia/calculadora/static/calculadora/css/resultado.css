@@ -2,6 +2,18 @@
    BASE GENERAL RESULTADOS
 ========================================================= */
 
+
+.field-helper--warning {
+  margin-top: 8px;
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 196, 77, 0.45);
+  background: rgba(255, 196, 77, 0.08);
+  color: #ffd978;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
 .panel.panel-result.resultado-screen {
   margin-top: 28px;
   padding: 28px 28px 30px;
@@ -375,4 +387,132 @@
   .panel.panel-result.resultado-screen .result-title {
     margin-bottom: 16px;
   }
+}
+
+.conducta-extra {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.18);
+  color: #f7d774;
+  font-weight: 500;
+}
+
+.result-grid--single {
+  display: block;
+}
+
+.result-card--conducta-full {
+  width: 100%;
+  max-width: 100%;
+  padding: 22px 24px;
+  border-radius: 20px;
+}
+
+.result-card--conducta-full h3 {
+  margin: 0 0 14px 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.conducta-main {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.conducta-alerta-interna {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(255, 196, 77, 0.08);
+  border: 1px solid rgba(255, 196, 77, 0.35);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.6;
+  color: #ffe08a;
+  font-size: 0.96rem;
+}
+
+.conducta-alerta-icon {
+  flex-shrink: 0;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.result-warning {
+  margin-top: 16px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+.result-subtitle {
+  margin-top: 14px;
+  margin-bottom: 10px;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.resultado-prioridad--rango {
+  margin-top: 22px;
+}
+
+.result-grid--single {
+  display: block;
+}
+
+.result-card--conducta-full {
+  width: 100%;
+  max-width: 100%;
+  padding: 22px 24px;
+  border-radius: 20px;
+}
+
+.result-subtitle--recordatorio {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.98rem;
+  line-height: 1.5;
+  margin-top: 14px;
+  margin-bottom: 14px;
+}
+
+.conducta-alerta-interna {
+  margin-top: 6px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(255, 196, 77, 0.08);
+  border: 1px solid rgba(255, 196, 77, 0.35);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.6;
+  color: #ffe08a;
+  font-size: 0.96rem;
+}
+
+.conducta-alerta-icon {
+  flex-shrink: 0;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.field-helper--warning {
+  margin-top: 8px;
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 196, 77, 0.45);
+  background: rgba(255, 196, 77, 0.08);
+  color: #ffd978;
+  line-height: 1.5;
+  font-size: 0.95rem;
 }

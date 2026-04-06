@@ -20,6 +20,7 @@ from .models import MedicionGlucemia
 from .services import resolver_glucemia
 
 
+
 # =========================================================
 # PERMISOS
 # =========================================================

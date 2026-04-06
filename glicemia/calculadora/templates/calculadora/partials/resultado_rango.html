@@ -4,12 +4,12 @@
     <span class="result-chip">Resultado</span>
   </div>
 
-  <h2 class="result-title">Evaluación</h2>
+  <h2 class="result-title">En rango</h2>
 
   <div class="estado-box estado-box--rango">
     <div class="estado-box__label">Estado</div>
     <div class="estado-box__value">
-      {{ resultado.estado|default:"En rango" }}
+      {{ resultado.estado }}
     </div>
   </div>
 
@@ -26,12 +26,6 @@
   {% endif %}
 
   <div class="result-grid">
-    {% if resultado.mensaje %}
-      <div class="result-card result-card--rango">
-        <h3>Mensaje</h3>
-        <p>{{ resultado.mensaje }}</p>
-      </div>
-    {% endif %}
 
     {% if resultado.conducta %}
       <div class="result-card result-card--rango">
@@ -39,45 +33,14 @@
         <p>{{ resultado.conducta }}</p>
       </div>
     {% endif %}
+
+    {% if resultado.proximo_control %}
+      <div class="result-card">
+        <h3>Próximo control</h3>
+        <p>{{ resultado.proximo_control }}</p>
+      </div>
+    {% endif %}
+
   </div>
-
-  {% if resultado.tendencia or resultado.tasa_algoritmo %}
-    <div class="result-list">
-      {% if resultado.tendencia %}
-        <div class="result-list__item">
-          <strong>Tendencia:</strong>
-          {{ resultado.tendencia }}
-          {% if resultado.flecha_tendencia %} {{ resultado.flecha_tendencia }}{% endif %}
-          {% if resultado.delta %} (Δ {{ resultado.delta }}){% endif %}
-        </div>
-      {% endif %}
-
-      {% if resultado.tasa_algoritmo %}
-        <div class="result-list__item">
-          <strong>Tasa algoritmo:</strong> {{ resultado.tasa_algoritmo }}
-        </div>
-      {% endif %}
-    </div>
-  {% endif %}
-
-  {% if resultado.requiere_recontrol %}
-    <div class="resultado-prioridad resultado-prioridad--rango">
-      <h3 class="section-title">Requiere recontrol</h3>
-      <div class="proximo-control">
-        {% if resultado.proximo_control %}
-          {{ resultado.proximo_control }}
-        {% else %}
-          Control según evolución clínica
-        {% endif %}
-      </div>
-    </div>
-  {% elif resultado.proximo_control %}
-    <div class="resultado-prioridad resultado-prioridad--rango">
-      <h3 class="section-title">Próximo control</h3>
-      <div class="proximo-control">
-        {{ resultado.proximo_control }}
-      </div>
-    </div>
-  {% endif %}
 
 </section>

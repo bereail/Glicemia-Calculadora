@@ -4,54 +4,49 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <title>{% block title %}Control Glicemia{% endblock %}</title>
 
-  <link rel="stylesheet" href="{% static 'calculadora/css/styles.css' %}?v=21">
-  <link rel="stylesheet" href="{% static 'calculadora/css/base.css' %}?v=21">
-  <link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=21">
-  <link rel="stylesheet" href="{% static 'calculadora/css/resultado.css' %}?v=1">
+  <!-- CSS -->
+  <link rel="stylesheet" href="{% static 'calculadora/css/styles.css' %}">
+  <link rel="stylesheet" href="{% static 'calculadora/css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}">
+  <link rel="stylesheet" href="{% static 'calculadora/css/resultado.css' %}">
 
   {% block extra_css %}{% endblock %}
 </head>
+
 <body>
 
+  <!-- HEADER SIMPLE -->
   <header class="topbar">
     <div class="container topbar__inner">
+      <h1 class="logo">Glicemia</h1>
 
-      <a href="{% url 'historial' %}" class="btn">
-        Ver historial
-      </a>
-
-      <div class="brand-link">
-  <a href="{% url 'control_glicemia' %}" class="brand-link">
-    <div class="brand">Control Glicemia - Infusión de Insulina</div>
-  </a>
-</div>
-
-      {% if user.is_authenticated %}
-        <div class="topbar__user muted">
-          Usuario: <strong>{{ user.username }}</strong>
-        </div>
-
-        <form method="post" action="{% url 'logout' %}" class="topbar__logout">
-          {% csrf_token %}
-          <button type="submit" class="btn">Cerrar sesión</button>
-        </form>
-      {% endif %}
+      <nav>
+        <a href="{% url 'control_glicemia' %}" class="btn">Inicio</a>
+        <a href="{% url 'historial' %}" class="btn">Historial</a>
+      </nav>
     </div>
   </header>
 
-  <main class="container">
-    {% block content %}{% endblock %}
+  <!-- CONTENIDO -->
+  <main>
+    {% block content %}
+    {% endblock %}
   </main>
 
-  <footer class="footer container muted">
-    Herramienta de apoyo para uso interno. No reemplaza el criterio médico ni la historia clínica.
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <p>© {{ now|date:"Y" }} - Calculadora de Glicemia</p>
+    </div>
   </footer>
 
-  <script src="{% static 'calculadora/js/hipoglucemia.js' %}"></script>
-  <script src="{% static 'calculadora/js/hiperglucemia.js' %}"></script>
-  <script src="{% static 'calculadora/js/main.js' %}"></script>
+  <!-- JS -->
+ <script src="{% static 'calculadora/js/main.js' %}?v=20260406"></script>
+
   {% block extra_js %}{% endblock %}
+
 </body>
 </html>

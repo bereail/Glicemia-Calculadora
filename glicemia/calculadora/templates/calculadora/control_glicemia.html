@@ -22,15 +22,27 @@
         <p>Completá los campos para obtener una orientación clínica inicial.</p>
       </div>
 
-      <form method="post" novalidate>
+      <form method="post" novalidate id="form-glicemia">
         {% csrf_token %}
 
         <!-- GLICEMIA ACTUAL -->
         <div class="field-group">
-          <label for="{{ form.glicemia_actual.id_for_label }}">
+          <label for="id_glicemia_actual">
             {{ form.glicemia_actual.label }}
           </label>
-          {{ form.glicemia_actual }}
+
+          <input
+            type="number"
+            name="glicemia_actual"
+            id="id_glicemia_actual"
+            class="input-control"
+            placeholder="Ej: 185"
+            inputmode="numeric"
+            min="0"
+            step="1"
+            value="{{ form.glicemia_actual.value|default_if_none:'' }}"
+          >
+
           {% if form.glicemia_actual.errors %}
             <div class="error-list">
               {% for error in form.glicemia_actual.errors %}
@@ -40,111 +52,154 @@
           {% endif %}
         </div>
 
-        <!-- INFUSION ACTIVA -->
-        <div class="field-group">
-          <label class="field-label">{{ form.infusion_activa.label }}</label>
+        <!-- AVISO HIPO -->
+        <div id="hipo_helper_box" class="field-helper field-helper--warning hidden">
+          Si la glicemia actual es menor a 70 mg/dL, se prioriza manejo de hipoglucemia.
+          No se requiere infusión activa ni glicemia previa para esta clasificación inicial.
+        </div>
 
-          <div class="glicemia-radio-group">
-            {% for radio in form.infusion_activa %}
-              <label class="glicemia-radio-card" for="{{ radio.id_for_label }}">
-                {{ radio.tag }}
-                <span>{{ radio.choice_label }}</span>
-              </label>
-            {% endfor %}
-          </div>
+        <!-- BLOQUE CONTEXTUAL -->
+        <div id="bloque_contexto" class="hidden">
 
-          {% if form.infusion_activa.errors %}
-            <div class="error-list">
-              {% for error in form.infusion_activa.errors %}
-                <span class="error-item">{{ error }}</span>
+          <!-- INFUSION ACTIVA -->
+          <div class="field-group">
+            <label class="field-label">{{ form.infusion_activa.label }}</label>
+
+            <div class="glicemia-radio-group" id="infusion-radio-group">
+              {% for value, label in form.fields.infusion_activa.choices %}
+                <label class="glicemia-radio-card">
+                  <input
+                    type="radio"
+                    name="infusion_activa"
+                    value="{{ value }}"
+                    {% if form.infusion_activa.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}
+                  >
+                  <span>{{ label }}</span>
+                </label>
               {% endfor %}
             </div>
-          {% endif %}
-        </div>
 
-        <!-- HELPER + BOTON PREVIA -->
-        <div class="field-group field-group--optional">
-          <p id="helper_previa" class="field-helper"></p>
-
-          <button type="button" class="btn-glucemia-previa" id="btn_previa">
-            <span class="btn-glucemia-previa__icon">+</span>
-            <span>Agregar glicemia previa</span>
-          </button>
-        </div>
-
-        <!-- GLICEMIA PREVIA -->
-        <div
-          id="previa_container"
-          class="field-group {% if not form.glicemia_previa.value and form.data.infusion_activa != 'True' %}hidden{% endif %}"
-        >
-          <label for="{{ form.glicemia_previa.id_for_label }}">
-            {{ form.glicemia_previa.label }}
-            <span id="label_previa_hint" class="{% if form.data.infusion_activa == 'True' %}required-mark{% else %}muted{% endif %}">
-              {% if form.data.infusion_activa == 'True' %}
-                (obligatoria)
-              {% else %}
-                (opcional)
-              {% endif %}
-            </span>
-          </label>
-
-          {{ form.glicemia_previa }}
-
-          {% if form.glicemia_previa.errors %}
-            <div class="error-list">
-              {% for error in form.glicemia_previa.errors %}
-                <span class="error-item">{{ error }}</span>
-              {% endfor %}
-            </div>
-          {% endif %}
-        </div>
-
-        <!-- AJUSTE DE INSULINA -->
-        {% if form.hubo_ajuste_insulina %}
-          <div id="ajuste_container" class="field-group hidden">
-            <label>{{ form.hubo_ajuste_insulina.label }}</label>
-            {{ form.hubo_ajuste_insulina }}
-
-            {% if form.hubo_ajuste_insulina.errors %}
+            {% if form.infusion_activa.errors %}
               <div class="error-list">
-                {% for error in form.hubo_ajuste_insulina.errors %}
+                {% for error in form.infusion_activa.errors %}
                   <span class="error-item">{{ error }}</span>
                 {% endfor %}
               </div>
             {% endif %}
           </div>
-        {% endif %}
 
-        <!-- BOTON TERCERA MEDICION -->
-        <div id="tercera_btn_container" class="field-group hidden">
-          <button type="button" id="btn_tercera" class="glicemia-btn-tercera">
-            <span class="glicemia-btn-tercera__icon">➕</span>
-            Evaluar tercera medición
-          </button>
-        </div>
+          <!-- HELPER + BOTON PREVIA -->
+          <div id="btn_previa_container" class="field-group field-group--optional hidden">
+            <p id="helper_previa" class="field-helper"></p>
 
-        <!-- TERCERA MEDICION -->
-        {% if form.tercera_medicion %}
-          <div
-            id="tercera_container"
-            class="field-group {% if not form.tercera_medicion.value %}hidden{% endif %}"
-          >
-            <label for="{{ form.tercera_medicion.id_for_label }}">
-              {{ form.tercera_medicion.label }}
+            <button
+              type="button"
+              class="btn-glucemia-previa"
+              id="btn_previa"
+              aria-expanded="false"
+            >
+              <span class="btn-glucemia-previa__icon" id="btn_previa_icon">+</span>
+              <span id="btn_previa_text">Agregar glicemia previa</span>
+            </button>
+          </div>
+
+          <!-- GLICEMIA PREVIA -->
+          <div id="previa_container" class="field-group hidden">
+            <label for="id_glicemia_previa">
+              {{ form.glicemia_previa.label }}
+              <span id="label_previa_hint" class="muted">(opcional)</span>
             </label>
-            {{ form.tercera_medicion }}
 
-            {% if form.tercera_medicion.errors %}
+            <input
+              type="number"
+              name="glicemia_previa"
+              id="id_glicemia_previa"
+              class="input-control"
+              placeholder="Ej: 160"
+              inputmode="numeric"
+              min="0"
+              step="1"
+              value="{{ form.glicemia_previa.value|default_if_none:'' }}"
+            >
+
+            {% if form.glicemia_previa.errors %}
               <div class="error-list">
-                {% for error in form.tercera_medicion.errors %}
+                {% for error in form.glicemia_previa.errors %}
                   <span class="error-item">{{ error }}</span>
                 {% endfor %}
               </div>
             {% endif %}
           </div>
-        {% endif %}
 
-        <!-- ERRORES GENERALES -->
+          <!-- AJUSTE DE INSULINA -->
+          {% if form.hubo_ajuste_insulina %}
+            <div id="ajuste_container" class="field-group hidden">
+              <label>{{ form.hubo_ajuste_insulina.label }}</label>
+
+              <div class="glicemia-radio-group">
+                {% for value, label in form.fields.hubo_ajuste_insulina.choices %}
+                  {% if value %}
+                    <label class="glicemia-radio-card">
+                      <input
+                        type="radio"
+                        name="hubo_ajuste_insulina"
+                        value="{{ value }}"
+                        {% if form.hubo_ajuste_insulina.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}
+                      >
+                      <span>{{ label }}</span>
+                    </label>
+                  {% endif %}
+                {% endfor %}
+              </div>
+
+              {% if form.hubo_ajuste_insulina.errors %}
+                <div class="error-list">
+                  {% for error in form.hubo_ajuste_insulina.errors %}
+                    <span class="error-item">{{ error }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+
+          <!-- BOTON TERCERA MEDICION -->
+          <div id="tercera_btn_container" class="field-group hidden">
+            <button type="button" id="btn_tercera" class="glicemia-btn-tercera">
+              <span class="glicemia-btn-tercera__icon">➕</span>
+              Evaluar tercera medición
+            </button>
+          </div>
+
+          <!-- TERCERA MEDICION -->
+          {% if form.tercera_medicion %}
+            <div id="tercera_container" class="field-group hidden">
+              <label for="id_tercera_medicion">
+                {{ form.tercera_medicion.label }}
+              </label>
+
+              <input
+                type="number"
+                name="tercera_medicion"
+                id="id_tercera_medicion"
+                class="input-control"
+                placeholder="Ej: 210"
+                inputmode="numeric"
+                min="0"
+                step="1"
+                value="{{ form.tercera_medicion.value|default_if_none:'' }}"
+              >
+
+              {% if form.tercera_medicion.errors %}
+                <div class="error-list">
+                  {% for error in form.tercera_medicion.errors %}
+                    <span class="error-item">{{ error }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
+
         {% if form.non_field_errors %}
           <div class="error-list">
             {% for error in form.non_field_errors %}
@@ -153,62 +208,219 @@
           </div>
         {% endif %}
 
-        <!-- ACCIONES -->
         <div class="actions">
           <button type="submit" class="btn-primary">Evaluar</button>
         </div>
 
-        <!-- TABLA DE ALGORITMOS -->
-        {% include "calculadora/partials/tabla_algoritmos.html" %}
+
       </form>
     </section>
 
     {% if resultado %}
-  {% if "hipogluc" in resultado.estado|lower %}
-    {% include "calculadora/partials/resultado_hipo.html" %}
+      {% if "hipogluc" in resultado.estado|lower %}
+        {% include "calculadora/partials/resultado_hipo.html" %}
 
-  {% elif "rango" in resultado.estado|lower or "objetivo" in resultado.estado|lower or resultado.clase == "en_rango" %}
-    {% include "calculadora/partials/resultado_rango.html" %}
+      {% elif "rango" in resultado.estado|lower or "objetivo" in resultado.estado|lower or resultado.clase == "en_rango" %}
+        {% include "calculadora/partials/resultado_rango.html" %}
 
-  {% elif "hipergluc" in resultado.estado|lower or "fuera_objetivo" in resultado.estado|lower or "ascenso_fuera_objetivo" in resultado.estado|lower %}
-    {% include "calculadora/partials/resultado_hiper.html" %}
+      {% elif "hipergluc" in resultado.estado|lower or "fuera_objetivo" in resultado.estado|lower or "ascenso_fuera_objetivo" in resultado.estado|lower %}
+        {% include "calculadora/partials/resultado_hiper.html" %}
 
-  {% else %}
-    <section class="panel panel-result estado-neutro">
-      <div class="result-top">
-        <span class="result-chip">Resultado</span>
-      </div>
-
-      <h2 class="result-title">Evaluación</h2>
-
-      <div class="estado-box">
-        <div class="estado-box__label">Estado</div>
-        <div class="estado-box__value">{{ resultado.estado }}</div>
-      </div>
-
-      {% if resultado.subestado %}
-        <p class="result-subtitle">{{ resultado.subestado }}</p>
-      {% endif %}
-
-      <div class="result-grid">
-        {% if resultado.conducta %}
-          <div class="result-card result-card--highlight">
-            <h3>Conducta</h3>
-            <p>{{ resultado.conducta }}</p>
+      {% else %}
+        <section class="panel panel-result estado-neutro">
+          <div class="result-top">
+            <span class="result-chip">Resultado</span>
           </div>
-        {% endif %}
-      </div>
 
-      {% if resultado.proximo_control %}
-        <div class="resultado-prioridad">
-          <h3 class="section-title">Próximo control</h3>
-          <div class="proximo-control">{{ resultado.proximo_control }}</div>
-        </div>
+          <h2 class="result-title">Evaluación</h2>
+
+          <div class="estado-box">
+            <div class="estado-box__label">Estado</div>
+            <div class="estado-box__value">{{ resultado.estado }}</div>
+          </div>
+
+          {% if resultado.subestado %}
+            <p class="result-subtitle">{{ resultado.subestado }}</p>
+          {% endif %}
+
+          <div class="result-grid">
+            {% if resultado.conducta %}
+              <div class="result-card result-card--highlight">
+                <h3>Conducta</h3>
+                <p>{{ resultado.conducta }}</p>
+              </div>
+            {% endif %}
+          </div>
+
+          {% if resultado.proximo_control %}
+            <div class="resultado-prioridad">
+              <h3 class="section-title">Próximo control</h3>
+              <div class="proximo-control">{{ resultado.proximo_control }}</div>
+            </div>
+          {% endif %}
+        </section>
       {% endif %}
-    </section>
-  {% endif %}
-{% endif %}
+    {% endif %}
 
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("SCRIPT INLINE CONTROL GLICEMIA OK");
+
+  const glicemiaActualInput = document.getElementById("id_glicemia_actual");
+  const bloqueContexto = document.getElementById("bloque_contexto");
+  const hipoHelperBox = document.getElementById("hipo_helper_box");
+
+  const btnPreviaContainer = document.getElementById("btn_previa_container");
+  const btnPrevia = document.getElementById("btn_previa");
+  const btnPreviaText = document.getElementById("btn_previa_text");
+  const btnPreviaIcon = document.getElementById("btn_previa_icon");
+
+  const previaContainer = document.getElementById("previa_container");
+  const helperPrevia = document.getElementById("helper_previa");
+  const labelPreviaHint = document.getElementById("label_previa_hint");
+  const glicemiaPreviaInput = document.getElementById("id_glicemia_previa");
+
+  const infusionRadios = document.querySelectorAll('input[name="infusion_activa"]');
+
+  function mostrar(el) {
+    if (el) el.classList.remove("hidden");
+  }
+
+  function ocultar(el) {
+    if (el) el.classList.add("hidden");
+  }
+
+  function getGlicemiaActual() {
+    if (!glicemiaActualInput) return null;
+    const raw = glicemiaActualInput.value.trim();
+    if (raw === "") return null;
+    const value = parseFloat(raw);
+    return Number.isNaN(value) ? null : value;
+  }
+
+  function getInfusionValue() {
+    const checked = document.querySelector('input[name="infusion_activa"]:checked');
+    return checked ? checked.value : null;
+  }
+
+  function infusionActiva() {
+    return getInfusionValue() === "True";
+  }
+
+  function mostrarPrevia() {
+    if (!previaContainer) return;
+    mostrar(previaContainer);
+
+    if (btnPrevia) btnPrevia.setAttribute("aria-expanded", "true");
+    if (btnPreviaText) btnPreviaText.textContent = "Quitar glicemia previa";
+    if (btnPreviaIcon) btnPreviaIcon.textContent = "−";
+  }
+
+  function ocultarPrevia(limpiar = true) {
+    if (!previaContainer) return;
+    ocultar(previaContainer);
+
+    if (btnPrevia) btnPrevia.setAttribute("aria-expanded", "false");
+    if (btnPreviaText) btnPreviaText.textContent = "Agregar glicemia previa";
+    if (btnPreviaIcon) btnPreviaIcon.textContent = "+";
+
+    if (limpiar && glicemiaPreviaInput) {
+      glicemiaPreviaInput.value = "";
+    }
+  }
+
+  function actualizarTextoPrevia() {
+    if (!helperPrevia || !labelPreviaHint) return;
+
+    if (infusionActiva()) {
+      helperPrevia.textContent = "Con infusión activa, la glicemia previa es obligatoria para evaluar tendencia.";
+      labelPreviaHint.textContent = "(obligatoria)";
+      labelPreviaHint.classList.add("required-mark");
+      labelPreviaHint.classList.remove("muted");
+    } else {
+      helperPrevia.textContent = "Podés agregar una glicemia previa para evaluar tendencia.";
+      labelPreviaHint.textContent = "(opcional)";
+      labelPreviaHint.classList.remove("required-mark");
+      labelPreviaHint.classList.add("muted");
+    }
+  }
+
+  function limpiarInfusion() {
+    infusionRadios.forEach((radio) => {
+      radio.checked = false;
+    });
+  }
+
+  function actualizarFlujo() {
+    const actual = getGlicemiaActual();
+
+    if (actual === null) {
+      ocultar(hipoHelperBox);
+      ocultar(bloqueContexto);
+      ocultar(btnPreviaContainer);
+      ocultarPrevia(true);
+      limpiarInfusion();
+      return;
+    }
+
+    if (actual < 70) {
+      mostrar(hipoHelperBox);
+      ocultar(bloqueContexto);
+      ocultar(btnPreviaContainer);
+      ocultarPrevia(true);
+      limpiarInfusion();
+      return;
+    }
+
+    ocultar(hipoHelperBox);
+    mostrar(bloqueContexto);
+
+    const infusionValue = getInfusionValue();
+    actualizarTextoPrevia();
+
+    if (!infusionValue) {
+      ocultar(btnPreviaContainer);
+      ocultarPrevia(true);
+      return;
+    }
+
+    if (infusionActiva()) {
+      ocultar(btnPreviaContainer);
+      mostrarPrevia();
+      return;
+    }
+
+    mostrar(btnPreviaContainer);
+    ocultarPrevia(true);
+  }
+
+  if (glicemiaActualInput) {
+    glicemiaActualInput.addEventListener("input", actualizarFlujo);
+  }
+
+  infusionRadios.forEach((radio) => {
+    radio.addEventListener("change", actualizarFlujo);
+  });
+
+  if (btnPrevia) {
+    btnPrevia.addEventListener("click", function () {
+      if (infusionActiva()) return;
+
+      const estaOculto = previaContainer.classList.contains("hidden");
+      if (estaOculto) {
+        mostrarPrevia();
+      } else {
+        ocultarPrevia(true);
+      }
+    });
+  }
+
+  actualizarFlujo();
+});
+</script>
 {% endblock %}
