@@ -1,3 +1,4 @@
+
 {% extends "calculadora/base.html" %}
 
 {% block title %}Control de glicemia{% endblock %}
@@ -211,8 +212,6 @@
         <div class="actions">
           <button type="submit" class="btn-primary">Evaluar</button>
         </div>
-
-
       </form>
     </section>
 
@@ -253,9 +252,18 @@
           </div>
 
           {% if resultado.proximo_control %}
-            <div class="resultado-prioridad">
+            <div class="resultado-prioridad resultado-prioridad--control">
               <h3 class="section-title">Próximo control</h3>
-              <div class="proximo-control">{{ resultado.proximo_control }}</div>
+
+              <div class="proximo-control-wrap">
+                <div class="proximo-control-main">
+                  {{ resultado.proximo_control }}
+                </div>
+
+                <div class="proximo-control-side">
+                  {{ resultado.comentario_control|default:"En pacientes insulinizados el monitoreo capilar puede ser inapropiado. Evaluar muestra venosa." }}
+                </div>
+              </div>
             </div>
           {% endif %}
         </section>
@@ -268,6 +276,8 @@
 
 {% block extra_js %}
 <script>
+
+
 document.addEventListener("DOMContentLoaded", function () {
   console.log("SCRIPT INLINE CONTROL GLICEMIA OK");
 

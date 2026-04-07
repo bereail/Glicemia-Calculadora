@@ -1,0 +1,92 @@
+.resultado-screen--hipo .resultado-hipo-control-block {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.resultado-screen--hipo .resultado-hipo-control-card {
+  background: linear-gradient(180deg, rgba(124, 28, 44, 0.95) 0%, rgba(98, 20, 35, 0.92) 100%);
+  border: 1px solid rgba(255, 120, 120, 0.22);
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.resultado-screen--hipo .resultado-hipo-control-title {
+  margin: 0 0 10px 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #ffd3d3;
+}
+
+.resultado-screen--hipo .resultado-hipo-control-value {
+  font-size: 1.08rem;
+  font-weight: 800;
+  line-height: 1.35;
+  color: #fff8f8;
+}
+
+.resultado-screen--hipo .resultado-hipo-control-alert {
+  display: grid;
+  grid-template-columns: 38px 1fr;
+  gap: 12px;
+  align-items: start;
+  background: linear-gradient(180deg, rgba(255, 210, 90, 0.16) 0%, rgba(255, 166, 0, 0.12) 100%);
+  border: 1px solid rgba(255, 196, 0, 0.28);
+  border-left: 5px solid #f59e0b;
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+
+.resultado-screen--hipo .resultado-hipo-control-alert__icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(245, 158, 11, 0.18);
+  color: #ffd166;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.resultado-screen--hipo .resultado-hipo-control-alert__content {
+  min-width: 0;
+}
+
+.resultado-screen--hipo .resultado-hipo-control-alert__title {
+  margin: 0 0 6px 0;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #ffe29a;
+}
+
+.resultado-screen--hipo .resultado-hipo-control-alert__text {
+  margin: 0;
+  font-size: 0.93rem;
+  line-height: 1.5;
+  color: #fff1cc;
+}
+
+@media (max-width: 768px) {
+  .resultado-screen--hipo .resultado-hipo-control-card,
+  .resultado-screen--hipo .resultado-hipo-control-alert {
+    padding: 14px 15px;
+  }
+
+  .resultado-screen--hipo .resultado-hipo-control-value {
+    font-size: 1rem;
+  }
+
+  .resultado-screen--hipo .resultado-hipo-control-alert {
+    grid-template-columns: 32px 1fr;
+    gap: 10px;
+  }
+
+  .resultado-screen--hipo .resultado-hipo-control-alert__icon {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+}

@@ -26,21 +26,37 @@
   {% endif %}
 
   <div class="result-grid">
-
     {% if resultado.conducta %}
       <div class="result-card result-card--rango">
         <h3>Conducta</h3>
         <p>{{ resultado.conducta }}</p>
       </div>
     {% endif %}
-
-    {% if resultado.proximo_control %}
-      <div class="result-card">
-        <h3>Próximo control</h3>
-        <p>{{ resultado.proximo_control }}</p>
-      </div>
-    {% endif %}
-
   </div>
+
+  {% if resultado.proximo_control %}
+    <div class="resultado-rango-control-block">
+
+      <div class="resultado-rango-control-card">
+        <h3 class="resultado-rango-control-title">Próximo control</h3>
+        <div class="resultado-rango-control-value">
+          {{ resultado.proximo_control }}
+        </div>
+      </div>
+
+      <div class="resultado-rango-control-alert">
+        <div class="resultado-rango-control-alert__icon">⚠</div>
+        <div class="resultado-rango-control-alert__content">
+          <div class="resultado-rango-control-alert__title">
+            Advertencia clínica
+          </div>
+          <div class="resultado-rango-control-alert__text">
+            {{ resultado.comentario_control|default:"En pacientes insulinizados el monitoreo capilar puede ser inapropiado. Evaluar muestra venosa." }}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  {% endif %}
 
 </section>

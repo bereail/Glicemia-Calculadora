@@ -1,34 +1,36 @@
-<section class="panel panel-result resultado-screen
+<section class="glicemia-resultado-hiper-panel
   {% if 'aislada' in resultado.estado|lower %}
-    resultado-screen--hiper-aislada
+    glicemia-resultado-hiper-panel--aislada
   {% else %}
-    resultado-screen--critico
+    glicemia-resultado-hiper-panel--critico
   {% endif %}">
 
-  <div class="result-top">
-    <span class="result-chip">Resultado</span>
+  <div class="glicemia-resultado-hiper-top">
+    <span class="glicemia-resultado-hiper-chip">Resultado</span>
   </div>
 
-  <h2 class="result-title">Evaluación</h2>
+  <h2 class="glicemia-resultado-hiper-title">Evaluación</h2>
 
-  <div class="estado-box
+  <div class="glicemia-resultado-hiper-estado-box
     {% if 'aislada' in resultado.estado|lower %}
-      estado-box--hiper-aislada
+      glicemia-resultado-hiper-estado-box--aislada
     {% else %}
-      estado-box--critico
+      glicemia-resultado-hiper-estado-box--critico
     {% endif %}">
-    <div class="estado-box__label">Estado</div>
-    <div class="estado-box__value">
+    <div class="glicemia-resultado-hiper-estado-label">Estado</div>
+    <div class="glicemia-resultado-hiper-estado-value">
       {{ resultado.estado|default:"Sin clasificación" }}
     </div>
   </div>
 
   {% if resultado.subestado %}
-    <p class="result-subtitle">{{ resultado.subestado }}</p>
+    <p class="glicemia-resultado-hiper-subtitle">
+      {{ resultado.subestado }}
+    </p>
   {% endif %}
 
   {% if resultado.tendencia %}
-    <div class="result-info">
+    <div class="glicemia-resultado-hiper-info">
       <strong>Tendencia:</strong>
       {{ resultado.tendencia }}
       {% if resultado.flecha_tendencia %} {{ resultado.flecha_tendencia }}{% endif %}
@@ -36,49 +38,104 @@
     </div>
   {% endif %}
 
-  {% if resultado.bolo_inicial or resultado.tasa_inicial or resultado.tasa_algoritmo %}
-    <div class="result-grid">
+  {% if resultado.bolo_inicial or resultado.tasa_inicial %}
+    <div class="glicemia-resultado-hiper-grid">
+
       {% if resultado.bolo_inicial %}
-        <div class="result-card result-card--mini {% if 'aislada' in resultado.estado|lower %}result-card--hiper-aislada{% else %}result-card--critico{% endif %}">
-          <h3>Bolo inicial</h3>
-          <p>{{ resultado.bolo_inicial }}</p>
+        <div class="glicemia-resultado-hiper-card glicemia-resultado-hiper-card--mini
+          {% if 'aislada' in resultado.estado|lower %}
+            glicemia-resultado-hiper-card--aislada
+          {% else %}
+            glicemia-resultado-hiper-card--critico
+          {% endif %}">
+          <h3 class="glicemia-resultado-hiper-card-title">Bolo inicial</h3>
+          <p class="glicemia-resultado-hiper-card-text">{{ resultado.bolo_inicial }}</p>
         </div>
       {% endif %}
 
       {% if resultado.tasa_inicial %}
-        <div class="result-card result-card--mini {% if 'aislada' in resultado.estado|lower %}result-card--hiper-aislada{% else %}result-card--critico{% endif %}">
-          <h3>Tasa inicial / infusión</h3>
-          <p>{{ resultado.tasa_inicial }}</p>
+        <div class="glicemia-resultado-hiper-card glicemia-resultado-hiper-card--mini
+          {% if 'aislada' in resultado.estado|lower %}
+            glicemia-resultado-hiper-card--aislada
+          {% else %}
+            glicemia-resultado-hiper-card--critico
+          {% endif %}">
+          <h3 class="glicemia-resultado-hiper-card-title">Tasa inicial / infusión</h3>
+          <p class="glicemia-resultado-hiper-card-text">{{ resultado.tasa_inicial }}</p>
         </div>
       {% endif %}
 
-      {% if resultado.tasa_algoritmo %}
-        <div class="result-card result-card--mini {% if 'aislada' in resultado.estado|lower %}result-card--hiper-aislada{% else %}result-card--critico{% endif %}">
-          <h3>Continuar: seguir algoritmo 1</h3>
-          <p>{{ resultado.tasa_algoritmo }}</p>
-        </div>
-      {% endif %}
     </div>
   {% endif %}
 
-  {% if resultado.conducta %}
-    <div class="result-card {% if 'aislada' in resultado.estado|lower %}result-card--hiper-aislada{% else %}result-card--critico{% endif %}">
-      <h3>Conducta</h3>
-      <p>{{ resultado.conducta }}</p>
+  {% if resultado.conducta or resultado.tasa_algoritmo %}
+    <div class="glicemia-resultado-hiper-card glicemia-resultado-hiper-card--conducta
+      {% if 'aislada' in resultado.estado|lower %}
+        glicemia-resultado-hiper-card--aislada
+      {% else %}
+        glicemia-resultado-hiper-card--critico
+      {% endif %}">
+      
+      <h3 class="glicemia-resultado-hiper-card-title">Conducta</h3>
+      <p class="glicemia-resultado-hiper-card-text glicemia-resultado-hiper-card-text--principal">
+        Iniciar protocolo de insulinización
+      </p>
+
+      <h3 class="glicemia-resultado-hiper-card-title glicemia-resultado-hiper-card-title--secondary">
+        Continuar
+      </h3>
+      <p class="glicemia-resultado-hiper-card-text">
+        Seguir algoritmo 1
+      </p>
     </div>
   {% endif %}
 
   {% if resultado.proximo_control %}
-    <div class="resultado-prioridad {% if 'aislada' in resultado.estado|lower %}resultado-prioridad--hiper-aislada{% else %}resultado-prioridad--critico{% endif %}">
-      <h3 class="section-title">Próximo control</h3>
-      <div class="proximo-control">{{ resultado.proximo_control }}</div>
+    <div class="glicemia-resultado-hiper-control-block">
+
+      <div class="glicemia-resultado-hiper-control-card
+        {% if 'aislada' in resultado.estado|lower %}
+          glicemia-resultado-hiper-control-card--aislada
+        {% else %}
+          glicemia-resultado-hiper-control-card--critico
+        {% endif %}">
+        <h3 class="glicemia-resultado-hiper-control-title">Próximo control</h3>
+        <div class="glicemia-resultado-hiper-control-value">
+          {{ resultado.proximo_control }}
+        </div>
+      </div>
+
+      <div class="glicemia-resultado-hiper-control-alert
+        {% if 'aislada' in resultado.estado|lower %}
+          glicemia-resultado-hiper-control-alert--aislada
+        {% else %}
+          glicemia-resultado-hiper-control-alert--critico
+        {% endif %}">
+        <div class="glicemia-resultado-hiper-control-alert__icon">⚠</div>
+        <div class="glicemia-resultado-hiper-control-alert__content">
+          <div class="glicemia-resultado-hiper-control-alert__title">
+            Advertencia clínica
+          </div>
+          <div class="glicemia-resultado-hiper-control-alert__text">
+            {{ resultado.comentario_control|default:"En pacientes insulinizados el monitoreo capilar puede ser inapropiado. Evaluar muestra venosa." }}
+          </div>
+        </div>
+      </div>
+
     </div>
   {% endif %}
 
   {% if resultado.monitoreo_glucemico %}
-    <div class="result-card {% if 'aislada' in resultado.estado|lower %}result-card--hiper-aislada{% else %}result-card--critico{% endif %}">
-      <h3>Monitoreo glucémico</h3>
-      <p>{{ resultado.monitoreo_glucemico }}</p>
+    <div class="glicemia-resultado-hiper-card glicemia-resultado-hiper-card--monitoreo
+      {% if 'aislada' in resultado.estado|lower %}
+        glicemia-resultado-hiper-card--aislada
+      {% else %}
+        glicemia-resultado-hiper-card--critico
+      {% endif %}">
+      <h3 class="glicemia-resultado-hiper-card-title">Monitoreo glucémico</h3>
+      <p class="glicemia-resultado-hiper-card-text">
+        {{ resultado.monitoreo_glucemico }}
+      </p>
     </div>
   {% endif %}
 

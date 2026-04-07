@@ -54,6 +54,7 @@ def _resultado_base():
 
         "requiere_recontrol": False,
         "proximo_control": None,
+        "comentario_control": None,
 
         "suspender_insulina": False,
         "administrar_dextrosa": False,
@@ -67,7 +68,6 @@ def _resultado_base():
 
         "mostrar_resultado": False,
     }
-
 
 # =========================================================
 # DOSIS / ALGORITMOS / MONITOREO
@@ -113,6 +113,8 @@ def obtener_tasa_algoritmo_inicio(glucemia):
     return "5 UI/h"
 
 
+from decimal import Decimal
+
 def calcular_proximo_control(glucemia, horas_desde_inicio=None, estable=False):
     glucemia = _a_decimal(glucemia)
     estable = _a_bool(estable)
@@ -120,28 +122,79 @@ def calcular_proximo_control(glucemia, horas_desde_inicio=None, estable=False):
     if horas_desde_inicio is not None:
         horas_desde_inicio = _a_decimal(horas_desde_inicio, permitir_none=True)
 
-    if glucemia > Decimal("400"):
-        return "Próximo control en 1 hora"
+    comentario_fijo = (
+        "En pacientes insulinizados el monitoreo capilar puede ser inapropiado. "
+        "Evaluar muestra venosa."
+    )
 
-    if Decimal("300") <= glucemia <= Decimal("400"):
-        return "Próximo control en 2 horas"
+    # >= 400 -> cada 1 hora hasta objetivo
+    if glucemia >= Decimal("400"):
+        return {
+            "proximo_control": "Monitoreo capilar una vez por hora",
+            "comentario_control": (
+                "Hasta alcanzar objetivo >140 <200. "
+                + comentario_fijo
+            )
+        }
 
+    # 300 a <400 -> cada 2 horas
+    if Decimal("300") <= glucemia < Decimal("400"):
+        return {
+            "proximo_control": "Monitoreo capilar cada 2 horas",
+            "comentario_control": comentario_fijo
+        }
+
+    # 200 a <300 -> cada 4 hs, o 6 hs si pasaron más de 24 h y está estable
     if Decimal("200") <= glucemia < Decimal("300"):
         if horas_desde_inicio is not None and horas_desde_inicio > Decimal("24") and estable:
-            return "Próximo control en 6 horas"
-        return "Próximo control en 4 horas"
+            return {
+                "proximo_control": "Monitoreo capilar cada 6 horas",
+                "comentario_control": (
+                    "Las primeras 24 h cada 4 hs; luego cada 6 hs si permanece estable. "
+                    + comentario_fijo
+                )
+            }
+        return {
+            "proximo_control": "Monitoreo capilar cada 4 horas",
+            "comentario_control": (
+                "Las primeras 24 h cada 4 hs; luego cada 6 hs si permanece estable. "
+                + comentario_fijo
+            )
+        }
 
+    # 140 a <200 -> objetivo
     if Decimal("140") <= glucemia < Decimal("200"):
         if horas_desde_inicio is not None and horas_desde_inicio > Decimal("24") and estable:
-            return "Próximo control en 6 horas"
-        return "Próximo control en 4 horas"
+            return {
+                "proximo_control": "Monitoreo capilar cada 6 horas",
+                "comentario_control": (
+                    "Las primeras 24 h cada 4 hs; luego cada 6 hs si permanece estable. "
+                    + comentario_fijo
+                )
+            }
+        return {
+            "proximo_control": "Monitoreo capilar cada 4 horas",
+            "comentario_control": (
+                "Las primeras 24 h cada 4 hs; luego cada 6 hs si permanece estable. "
+                + comentario_fijo
+            )
+        }
 
+    # 70 a <140
     if Decimal("70") <= glucemia < Decimal("140"):
-        return "Próximo control según conducta clínica"
+        return {
+            "proximo_control": "Próximo control según conducta clínica",
+            "comentario_control": comentario_fijo
+        }
 
-    return "Control inmediato / tratar hipoglucemia según protocolo"
-
-
+    # <70
+    return {
+        "proximo_control": "Control inmediato",
+        "comentario_control": (
+            "Tratar hipoglucemia según protocolo. "
+            + comentario_fijo
+        )
+    }
 def armar_resultado_insulinizacion(glucemia, infusion_activa=False):
     glucemia = _a_decimal(glucemia)
     infusion_activa = _a_bool(infusion_activa)
@@ -150,6 +203,7 @@ def armar_resultado_insulinizacion(glucemia, infusion_activa=False):
     resultado["mostrar_resultado"] = True
 
     dosis = calcular_bolo_y_tasa_inicial(glucemia)
+    control_info = calcular_proximo_control(glucemia)
 
     resultado["estado"] = "Hiperglucemia Sostenida"
     resultado["subestado"] = "Dos controles consecutivos >= 180 mg/dL"
@@ -160,7 +214,9 @@ def armar_resultado_insulinizacion(glucemia, infusion_activa=False):
     resultado["tasa_inicial"] = f"{dosis} UI/h"
     resultado["tasa_algoritmo"] = obtener_tasa_algoritmo_inicio(glucemia)
 
-    resultado["proximo_control"] = calcular_proximo_control(glucemia)
+    resultado["proximo_control"] = control_info["proximo_control"]
+    resultado["comentario_control"] = control_info["comentario_control"]
+
     resultado["monitoreo_glucemico"] = "Se sugiere monitoreo glucémico frecuente."
 
     return resultado
@@ -668,6 +724,10 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
 # 3) HIPERGLUCEMIA >=180
 # =========================================================
 
+
+    # -----------------------------------------------------
+    # CON INFUSIÓN ACTIVA
+    # -----------------------------------------------------
 def evaluar_hiperglucemia(
     actual,
     previa=None,
@@ -690,10 +750,18 @@ def evaluar_hiperglucemia(
     resultado = _resultado_base()
     resultado["mostrar_resultado"] = True
 
+    def _asignar_control(valor_glucemia):
+        """
+        Helper para no repetir lógica y asegurar que siempre
+        se carguen proximo_control + comentario_control.
+        """
+        control_info = calcular_proximo_control(valor_glucemia)
+        resultado["proximo_control"] = control_info["proximo_control"]
+        resultado["comentario_control"] = control_info["comentario_control"]
 
-# -----------------------------------------------------
-# SIN INFUSIÓN ACTIVA
-# -----------------------------------------------------
+    # -----------------------------------------------------
+    # SIN INFUSIÓN ACTIVA
+    # -----------------------------------------------------
     if not infusion_activa:
         if previa is None:
             resultado["estado"] = "Hiperglucemia Aislada"
@@ -702,6 +770,9 @@ def evaluar_hiperglucemia(
             resultado["conducta"] = "Solicitar nueva medición para confirmar persistencia."
             resultado["requiere_recontrol"] = True
             resultado["proximo_control"] = "Nueva medición para confirmar persistencia"
+            resultado["comentario_control"] = (
+                "Solicitar un nuevo control para definir si se trata de un episodio aislado o persistente."
+            )
             return resultado
 
         if previa >= UMBRAL_HIPER:
@@ -713,6 +784,9 @@ def evaluar_hiperglucemia(
         resultado["conducta"] = "Requiere nueva medición para evaluar persistencia."
         resultado["requiere_recontrol"] = True
         resultado["proximo_control"] = "Nueva medición para confirmar persistencia"
+        resultado["comentario_control"] = (
+            "La tendencia ascendente requiere confirmar si progresa a hiperglucemia sostenida."
+        )
         return resultado
 
     # -----------------------------------------------------
@@ -726,10 +800,13 @@ def evaluar_hiperglucemia(
             if previa is not None and previa < OBJETIVO_MIN_INFUSION:
                 resultado["estado"] = "Ascenso a objetivo"
                 resultado["subestado"] = "Actual 180-200 con previa < 140"
-                resultado["mensaje"] = "Glicemia dentro del objetivo para paciente con infusión, en ascenso desde un valor por debajo del objetivo."
+                resultado["mensaje"] = (
+                    "Glicemia dentro del objetivo para paciente con infusión, "
+                    "en ascenso desde un valor por debajo del objetivo."
+                )
                 resultado["conducta"] = "Mantener monitoreo y reevaluar tendencia."
                 resultado["requiere_recontrol"] = True
-                resultado["proximo_control"] = calcular_proximo_control(actual)
+                _asignar_control(actual)
                 return resultado
 
             resultado["estado"] = "En Objetivo"
@@ -737,18 +814,34 @@ def evaluar_hiperglucemia(
             resultado["mensaje"] = "Glicemia dentro del rango objetivo para paciente con infusión."
             resultado["conducta"] = "Mantener conducta actual y continuar monitoreo."
             resultado["requiere_recontrol"] = True
-            resultado["proximo_control"] = calcular_proximo_control(actual)
+            _asignar_control(actual)
             return resultado
 
         # Actual > 200
         if actual > UMBRAL_ALERTA_ALTA:
+            # PERSISTENTE: dos controles consecutivos > 200
             if previa is not None and previa > UMBRAL_ALERTA_ALTA:
                 resultado["estado"] = "Hiperglucemia Persistente"
                 resultado["subestado"] = "Al menos 2 controles consecutivos > 200 mg/dL con infusión activa"
                 resultado["mensaje"] = "Hiperglucemia persistente fuera del rango objetivo."
                 resultado["conducta"] = "Evaluar tercera medición para confirmar persistencia o refractariedad."
                 resultado["requiere_recontrol"] = True
-                resultado["proximo_control"] = "Obtener tercera medición"
+
+                # Acá va lo que vos querías: no 'obtener tercera medición'
+                # sino frecuencia de monitoreo según nivel glucémico actual.
+                if actual >= UMBRAL_SEVERA:
+                    resultado["proximo_control"] = "Monitoreo capilar una vez por hora"
+                    control_info = calcular_proximo_control(actual)
+                    resultado["proximo_control"] = control_info["proximo_control"]
+                    resultado["comentario_control"] = control_info["comentario_control"]
+                elif actual >= UMBRAL_MUY_ALTA:
+                    resultado["proximo_control"] = "Monitoreo capilar cada 2 horas"
+                    resultado["comentario_control"] = "Mantener control estrecho hasta descenso sostenido."
+                else:
+                    resultado["proximo_control"] = "Monitoreo capilar cada 4 horas"
+                    resultado["comentario_control"] = (
+                        "Las primeras 24 h cada 4 h; luego cada 6 h si permanece estable."
+                    )
 
                 if tercera_medicion is not None:
                     if tercera_medicion > UMBRAL_ALERTA_ALTA:
@@ -757,45 +850,61 @@ def evaluar_hiperglucemia(
                             resultado["subestado"] = "Persiste > 200 pese a ajuste de insulina"
                             resultado["mensaje"] = "Hiperglucemia refractaria."
                             resultado["conducta"] = "Persistencia pese a ajuste. Reevaluar estrategia terapéutica."
-                            resultado["proximo_control"] = "Control estrecho según protocolo"
+
+                            if tercera_medicion >= UMBRAL_SEVERA:
+                                resultado["proximo_control"] = "Monitoreo capilar una vez por hora"
+                                resultado["comentario_control"] = "Control estrecho según protocolo hasta alcanzar objetivo."
+                            elif tercera_medicion >= UMBRAL_MUY_ALTA:
+                                resultado["proximo_control"] = "Monitoreo capilar cada 2 horas"
+                                resultado["comentario_control"] = "Continuar control estrecho según protocolo."
+                            else:
+                                resultado["proximo_control"] = "Monitoreo capilar cada 4 horas"
+                                resultado["comentario_control"] = (
+                                    "Las primeras 24 h cada 4 h; luego cada 6 h si permanece estable."
+                                )
                             return resultado
 
                         resultado["estado"] = "Hiperglucemia Persistente Confirmada"
                         resultado["subestado"] = "Tercera medición > 200 mg/dL"
                         resultado["mensaje"] = "Persistencia confirmada fuera del rango objetivo."
                         resultado["conducta"] = "Realizar ajuste de insulina y continuar control estrecho."
-                        resultado["proximo_control"] = "Control estrecho post-ajuste"
+
+                        if tercera_medicion >= UMBRAL_SEVERA:
+                            resultado["proximo_control"] = "Monitoreo capilar una vez por hora"
+                            control_info = calcular_proximo_control(actual)
+                            resultado["proximo_control"] = control_info["proximo_control"]
+                            resultado["comentario_control"] = control_info["comentario_control"]
+                        elif tercera_medicion >= UMBRAL_MUY_ALTA:
+                            resultado["proximo_control"] = "Monitoreo capilar cada 2 horas"
+                            resultado["comentario_control"] = "Mantener control estrecho hasta descenso sostenido."
+                        else:
+                            resultado["proximo_control"] = "Monitoreo capilar cada 4 horas"
+                            resultado["comentario_control"] = (
+                                "Las primeras 24 h cada 4 h; luego cada 6 h si permanece estable."
+                            )
                         return resultado
 
                     resultado["estado"] = "Hiperglucemia en mejoría"
                     resultado["subestado"] = "Tercera medición <= 200 mg/dL"
-                    resultado["mensaje"] = "Salida del estado de hiperglucemia persistente o evolución favorable."
+                    resultado["mensaje"] = (
+                        "Salida del estado de hiperglucemia persistente o evolución favorable."
+                    )
                     resultado["conducta"] = "Continuar monitoreo y reevaluar evolución."
-                    resultado["proximo_control"] = calcular_proximo_control(tercera_medicion)
+                    _asignar_control(tercera_medicion)
                     return resultado
 
                 return resultado
 
+            # actual > 200 pero no cumple persistente todavía
             resultado["estado"] = "Hiperglucemia Marcada"
             resultado["subestado"] = "Actual > 200 con infusión activa"
             resultado["mensaje"] = "Hiperglucemia fuera del rango objetivo."
             resultado["conducta"] = "Requiere recontrol y evaluación de tendencia."
             resultado["requiere_recontrol"] = True
-            resultado["proximo_control"] = calcular_proximo_control(actual)
-            return resultado
-
-            # actual > 200 pero no cumple persistente todavía
-            resultado["estado"] = "Hiperglucemia Marcada"
-            resultado["subestado"] = "Actual > 200 con infusión activa"
-            resultado["mensaje"] = "Hiperglucemia marcada."
-            resultado["conducta"] = "Requiere recontrol y evaluación de tendencia."
-            resultado["requiere_recontrol"] = True
-            resultado["proximo_control"] = calcular_proximo_control(actual)
+            _asignar_control(actual)
             return resultado
 
     return None
-
-
 
 # =========================================================
 # ORQUESTADOR PRINCIPAL

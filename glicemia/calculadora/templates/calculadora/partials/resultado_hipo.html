@@ -3,6 +3,7 @@
   <div class="result-top">
     <span class="result-chip">Resultado</span>
   </div>
+
   <div class="estado-box estado-box--hipo">
     <div class="estado-box__label">Estado</div>
     <div class="estado-box__value">
@@ -22,9 +23,27 @@
   {% endif %}
 
   {% if resultado.proximo_control %}
-    <div class="resultado-prioridad resultado-prioridad--hipo">
-      <h3 class="section-title">Próximo control</h3>
-      <div class="proximo-control">{{ resultado.proximo_control }}</div>
+    <div class="resultado-hipo-control-block">
+
+      <div class="resultado-hipo-control-card">
+        <h3 class="resultado-hipo-control-title">Próximo control</h3>
+        <div class="resultado-hipo-control-value">
+          {{ resultado.proximo_control }}
+        </div>
+      </div>
+
+      <div class="resultado-hipo-control-alert">
+        <div class="resultado-hipo-control-alert__icon">⚠</div>
+        <div class="resultado-hipo-control-alert__content">
+          <div class="resultado-hipo-control-alert__title">
+            Advertencia clínica
+          </div>
+          <div class="resultado-hipo-control-alert__text">
+            {{ resultado.comentario_control|default:"En pacientes insulinizados el monitoreo capilar puede ser inapropiado. Evaluar muestra venosa." }}
+          </div>
+        </div>
+      </div>
+
     </div>
   {% endif %}
 
