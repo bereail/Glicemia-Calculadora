@@ -1,7 +1,7 @@
 from .helpers import _a_decimal, _a_bool, _resultado_base, _aplicar_tendencia
-from .logic_hipo import evaluar_hipoglucemia
-from .logic_rango import evaluar_rango_70_180
-from .logic_hiper import evaluar_hiperglucemia
+from .logic.logic_hipo import evaluar_hipoglucemia
+from .logic.logic_rango import evaluar_rango_70_180
+from .logic.logic_hiper import evaluar_hiperglucemia
 
 
 def resolver_glucemia(

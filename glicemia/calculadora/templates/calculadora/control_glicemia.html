@@ -93,11 +93,11 @@
           <div id="secuencia_mediciones" class="glicemia-secuencia hidden" aria-live="polite">
             <div class="glicemia-secuencia__title">Secuencia de evaluación</div>
             <div class="glicemia-secuencia__steps">
-              <span class="glicemia-secuencia__step glicemia-secuencia__step--muted" id="step-anterior">Anterior</span>
+              <span class="glicemia-secuencia__step glicemia-secuencia__step--muted" id="step-anterior">Anterior (1) </span>
               <span class="glicemia-secuencia__arrow">→</span>
-              <span class="glicemia-secuencia__step" id="step-previa">Previa</span>
+              <span class="glicemia-secuencia__step" id="step-previa">Previa (2) </span>
               <span class="glicemia-secuencia__arrow">→</span>
-              <span class="glicemia-secuencia__step glicemia-secuencia__step--active" id="step-actual">Actual</span>
+              <span class="glicemia-secuencia__step glicemia-secuencia__step--active" id="step-actual">Actual (3) </span>
             </div>
           </div>
 
@@ -131,21 +131,21 @@
             </div>
 
             <div id="anterior_container" class="field-group hidden">
-              <label for="id_glicemia_anterior">
-                Glicemia anterior
-                <span class="muted">(opcional)</span>
-              </label>
+              <label for="id_tercera_medicion">
+              Glicemia anterior
+              <span class="muted">(opcional)</span>
+            </label>
 
-              <input
-                type="number"
-                name="glicemia_anterior"
-                id="id_glicemia_anterior"
-                class="input-control"
-                placeholder="Ej: 230"
-                min="0"
-                step="1"
-                value="{{ form.glicemia_anterior.value|default_if_none:'' }}"
-              >
+            <input
+              type="number"
+              name="tercera_medicion"
+              id="id_tercera_medicion"
+              class="input-control"
+              placeholder="Ej: 230"
+              min="0"
+              step="1"
+              value="{{ form.tercera_medicion.value|default_if_none:'' }}"
+            >
             </div>
 
           </div>
@@ -165,22 +165,23 @@
       </form>
     </section>
 
-    {% if resultado %}
-      {% if "hipogluc" in resultado.estado|lower %}
-        {% include "calculadora/partials/resultado_hipo.html" %}
-      {% elif "rango" in resultado.estado|lower or "objetivo" in resultado.estado|lower or resultado.clase == "en_rango" %}
-        {% include "calculadora/partials/resultado_rango.html" %}
-      {% else %}
-        {% include "calculadora/partials/resultado_hiper.html" %}
-      {% endif %}
-    {% endif %}
-
+   {% if "hipogluc" in resultado.estado|lower %}
+  {% include "calculadora/partials/resultado_hipo.html" %}
+{% elif "hipergluc" in resultado.estado|lower or "fuera de objetivo" in resultado.estado|lower or "refractaria" in resultado.estado|lower or "persistente" in resultado.estado|lower %}
+  {% include "calculadora/partials/resultado_hiper.html" %}
+{% elif resultado.clase == "en_rango" or "en rango" in resultado.estado|lower or "objetivo con infusión" in resultado.estado|lower or "objetivo con ascenso" in resultado.estado|lower or "objetivo con descenso" in resultado.estado|lower %}
+  {% include "calculadora/partials/resultado_rango.html" %}
+{% else %}
+  {% include "calculadora/partials/resultado_hiper.html" %}
+{% endif %}
   </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+const form = document.getElementById("form-glicemia");
+
 const glicemiaInput = document.getElementById("id_glicemia_actual");
 const hipoBox = document.getElementById("hipo_helper_box");
 const bloqueContexto = document.getElementById("bloque_contexto");
@@ -208,11 +209,24 @@ function getInfusion() {
   return null;
 }
 
+function limpiarSeleccionInfusion() {
+  infusionRadios.forEach(radio => {
+    radio.checked = false;
+    radio.required = false;
+  });
+}
+
+function marcarInfusionComoObligatoria() {
+  infusionRadios.forEach(radio => {
+    radio.required = true;
+  });
+}
+
 function resetSecuencia() {
   secuencia.classList.add("hidden");
   stepAnterior.classList.add("glicemia-secuencia__step--muted");
-  stepPrevia.classList.remove("glicemia-secuencia__step--active");
   stepAnterior.classList.remove("glicemia-secuencia__step--active");
+  stepPrevia.classList.remove("glicemia-secuencia__step--active");
   stepActual.classList.add("glicemia-secuencia__step--active");
 }
 
@@ -256,23 +270,31 @@ function updateUI() {
   const actual = parseInt(glicemiaInput.value, 10);
   const infusion = getInfusion();
 
-  if (isNaN(actual)) return;
-
-  // 1) HIPO directa
-  if (actual <= 70) {
-    hipoBox.classList.remove("hidden");
+  if (isNaN(actual)) {
+    limpiarSeleccionInfusion();
     return;
   }
 
-  // 2) Recién desde >70 preguntar contexto
+  // <= 70: no pedir infusión
+  if (actual <= 70) {
+    hipoBox.classList.remove("hidden");
+    limpiarSeleccionInfusion();
+    return;
+  }
+
+  // > 70: mostrar contexto y exigir infusión
   bloqueContexto.classList.remove("hidden");
+  marcarInfusionComoObligatoria();
 
-  if (infusion === null) return;
+  // mientras no elija sí/no, no mostrar ninguna interpretación
+  if (infusion === null) {
+    helperPreviaContainer.classList.remove("hidden");
+    helperPrevia.innerText = "Primero indicá si el paciente tiene infusión activa.";
+    return;
+  }
 
-  // 3) CON INFUSIÓN ACTIVA
+  // CON INFUSIÓN ACTIVA
   if (infusion === true) {
-
-    // En objetivo con infusión
     if (actual >= 140 && actual <= 200) {
       mostrarSoloPrevia(
         "Con infusión activa, una glicemia entre 140 y 200 mg/dL se considera en objetivo. La glicemia previa es obligatoria para evaluar tendencia.",
@@ -281,7 +303,6 @@ function updateUI() {
       return;
     }
 
-    // >= 360 → solo previa
     if (actual >= 360) {
       mostrarSoloPrevia(
         "Ingrese la glicemia previa. Si la previa también es ≥ 360 mg/dL, corresponde hiperglucemia persistente.",
@@ -290,7 +311,6 @@ function updateUI() {
       return;
     }
 
-    // >= 200 y < 360 → previa obligatoria + anterior opcional
     if (actual >= 200 && actual < 360) {
       mostrarPreviaYAnterior(
         "La glicemia previa es obligatoria. Si también cuenta con una glicemia anterior, y las 3 mediciones son ≥ 200 mg/dL y < 360 mg/dL dentro del mismo escalón, corresponde hiperglucemia persistente.",
@@ -299,7 +319,6 @@ function updateUI() {
       return;
     }
 
-    // 71–139 con infusión
     mostrarSoloPrevia(
       "Ingrese la glicemia previa para evaluar tendencia y riesgo de descenso con infusión activa.",
       true
@@ -307,7 +326,7 @@ function updateUI() {
     return;
   }
 
-  // 4) SIN INFUSIÓN ACTIVA
+  // SIN INFUSIÓN ACTIVA
   if (infusion === false) {
     if (actual >= 180) {
       mostrarSoloPrevia(
@@ -323,6 +342,18 @@ function updateUI() {
     );
   }
 }
+
+form.addEventListener("submit", function (e) {
+  const actual = parseInt(glicemiaInput.value, 10);
+  const infusion = getInfusion();
+
+  if (!isNaN(actual) && actual > 70 && infusion === null) {
+    e.preventDefault();
+    bloqueContexto.classList.remove("hidden");
+    helperPreviaContainer.classList.remove("hidden");
+    helperPrevia.innerText = "Debés indicar si tiene infusión activa antes de evaluar.";
+  }
+});
 
 glicemiaInput.addEventListener("input", updateUI);
 infusionRadios.forEach(radio => radio.addEventListener("change", updateUI));

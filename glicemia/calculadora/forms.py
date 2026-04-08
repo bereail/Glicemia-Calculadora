@@ -1,5 +1,4 @@
 from django import forms
-from decimal import Decimal
 
 
 SI_NO_CHOICES = [
@@ -51,7 +50,7 @@ class GlucemiaForm(forms.Form):
         }),
     )
 
-    glicemia_anterior = forms.DecimalField(
+    tercera_medicion = forms.DecimalField(
         label="Glicemia anterior",
         required=False,
         min_value=0,
@@ -60,7 +59,7 @@ class GlucemiaForm(forms.Form):
         widget=forms.NumberInput(attrs={
             "class": "input-control",
             "placeholder": "Ej: 210",
-            "id": "id_glicemia_anterior",
+            "id": "id_tercera_medicion",
             "inputmode": "numeric",
         }),
     )
@@ -99,7 +98,7 @@ class GlucemiaForm(forms.Form):
 
         actual = cleaned_data.get("glicemia_actual")
         previa = cleaned_data.get("glicemia_previa")
-        glicemia_anterior = cleaned_data.get("glicemia_anterior")
+        tercera_medicion = cleaned_data.get("tercera_medicion")
         infusion_activa = cleaned_data.get("infusion_activa")
         hubo_ajuste_insulina = cleaned_data.get("hubo_ajuste_insulina")
 
@@ -112,14 +111,14 @@ class GlucemiaForm(forms.Form):
 
         # > 70: preguntar infusión sí o sí
         if infusion_activa is None:
-            self.add_error("infusion_activa", "Este campo es obligatorio.")
+            self.add_error("infusion_activa", "Debés indicar si tiene infusión activa.")
             return cleaned_data
 
-        # Si hay glicemia anterior, primero debe haber previa
-        if glicemia_anterior is not None and previa is None:
+        # Si hay tercera medición, primero debe haber previa
+        if tercera_medicion is not None and previa is None:
             self.add_error(
                 "glicemia_previa",
-                "Para usar glicemia anterior, primero necesitás una glicemia previa."
+                "Para usar la tercera medición, primero necesitás una glicemia previa."
             )
 
         # Ajuste solo aplica si hay infusión

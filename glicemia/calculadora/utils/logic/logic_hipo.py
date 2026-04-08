@@ -1,18 +1,24 @@
-from .constants import (
+from ..constants import (
     UMBRAL_HIPO,
     LIMITE_ZONA_INTERMEDIA,
     UMBRAL_HIPER,
 )
-from .helpers import _a_decimal, _a_bool, _resultado_base
+from ..helpers import _a_decimal, _a_bool, _resultado_base
 
 
 def evaluar_hipoglucemia(actual, previa=None, infusion_activa=False):
+    """
+    Evalúa:
+    - hipoglucemia actual (<=70)
+    - recontrol post-hipoglucemia (actual >70 con previa <=70)
+    """
     actual = _a_decimal(actual)
     previa = _a_decimal(previa, permitir_none=True)
     infusion_activa = _a_bool(infusion_activa)
 
     resultado = _resultado_base()
 
+    # 1) Hipoglucemia actual
     if actual <= UMBRAL_HIPO:
         resultado["estado"] = "hipoglucemia"
         resultado["subestado"] = "Glucemia actual <= 70 mg/dL"
@@ -28,6 +34,7 @@ def evaluar_hipoglucemia(actual, previa=None, infusion_activa=False):
         resultado["mostrar_resultado"] = True
         return resultado
 
+    # 2) Recontrol post-hipoglucemia
     if previa is not None and previa <= UMBRAL_HIPO and actual > UMBRAL_HIPO:
         resultado["mostrar_resultado"] = True
         resultado["requiere_recontrol"] = True

@@ -2,10 +2,11 @@ from datetime import timedelta
 from io import BytesIO
 
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils import timezone
-from django.core.paginator import Paginator
+
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
 
@@ -15,10 +16,9 @@ from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 
-from .forms import GlucemiaForm
+from .forms import GlucemiaForm, PasoInicialForm
 from .models import MedicionGlucemia
-from .services import resolver_glucemia
-
+from .services import evaluar_glucemia_service
 
 
 # =========================================================
@@ -59,10 +59,10 @@ def _normalizar_clase_desde_estado(estado):
     if "post_hipo" in estado or "post_hipogluc" in estado or "rebote_post_hipoglucemia" in estado:
         return "post_hipoglucemia"
 
-    if "rango" in estado or "objetivo" in estado or "estable_en_rango" in estado:
+    if "rango" in estado or "objetivo" in estado or "estable en rango" in estado or "estable_en_rango" in estado:
         return "en_rango"
 
-    if "hipergluc" in estado or "fuera_objetivo" in estado or "ascenso_fuera_objetivo" in estado:
+    if "hipergluc" in estado or "fuera de objetivo" in estado or "fuera_objetivo" in estado:
         return "hiperglucemia"
 
     return "sin_clasificacion"
@@ -108,13 +108,19 @@ def _guardar_medicion(request, cleaned_data, resultado):
         mensaje=_texto_seguro(resultado.get("mensaje")),
         conducta=_texto_seguro(resultado.get("conducta")),
         proximo_control=_texto_seguro(resultado.get("proximo_control")),
-        observacion=_texto_seguro(resultado.get("observacion")),
+        observacion=_texto_seguro(
+            resultado.get("observacion")
+            or resultado.get("comentario_control")
+            or resultado.get("conducta_extra")
+        ),
 
         tendencia=_texto_seguro(resultado.get("tendencia")),
         flecha_tendencia=_texto_seguro(resultado.get("flecha_tendencia")),
         delta=_texto_seguro(resultado.get("delta")),
 
-        algoritmo_usado=_texto_seguro(resultado.get("algoritmo_usado")),
+        algoritmo_usado=_texto_seguro(
+            resultado.get("algoritmo_usado") or resultado.get("algoritmo_sugerido")
+        ),
         velocidad_sugerida=_texto_seguro(resultado.get("velocidad_sugerida")),
         bolo_ui=_texto_seguro(resultado.get("bolo_inicial")),
         tasa_inicial_ui_h=_texto_seguro(resultado.get("tasa_inicial")),
@@ -190,18 +196,17 @@ def control_glicemia(request):
             previa = form.cleaned_data.get("glicemia_previa")
             infusion_activa = form.cleaned_data.get("infusion_activa")
             hubo_ajuste_insulina = form.cleaned_data.get("hubo_ajuste_insulina")
-            glicemia_anterior = form.cleaned_data.get("glicemia_anterior")
+            tercera_medicion = form.cleaned_data.get("tercera_medicion")
 
-            resultado = resolver_glucemia(
+            resultado = evaluar_glucemia_service(
                 actual=actual,
                 previa=previa,
                 infusion_activa=infusion_activa,
                 hubo_ajuste_insulina=hubo_ajuste_insulina,
-                tercera_medicion=glicemia_anterior,
+                tercera_medicion=tercera_medicion,
             )
 
             medicion_guardada = _guardar_medicion(request, form.cleaned_data, resultado)
-
     else:
         form = GlucemiaForm()
 
@@ -214,7 +219,6 @@ def control_glicemia(request):
             "medicion_guardada": medicion_guardada,
         },
     )
-
 
 # =========================================================
 # HOME / CALCULADORA GUIADA
@@ -239,13 +243,12 @@ def home(request):
             previa = form.cleaned_data.get("glicemia_previa")
             infusion_activa = form.cleaned_data.get("infusion_activa") == "si"
 
-            resultado = resolver_glucemia(
+            resultado = evaluar_glucemia_service(
                 actual=actual,
                 previa=previa,
                 infusion_activa=infusion_activa,
             )
 
-            # Adaptación mínima para guardar desde PasoInicialForm
             if request.user.is_authenticated:
                 cleaned_data_adaptado = {
                     "glicemia_actual": actual,
@@ -256,7 +259,6 @@ def home(request):
                     "modo": "seguimiento",
                 }
                 medicion_guardada = _guardar_medicion(request, cleaned_data_adaptado, resultado)
-
     else:
         form = PasoInicialForm()
 
@@ -289,7 +291,7 @@ def calculadora_guiada(request):
             previa = form.cleaned_data.get("glicemia_previa")
             infusion_activa = form.cleaned_data.get("infusion_activa") == "si"
 
-            resultado = resolver_glucemia(
+            resultado = evaluar_glucemia_service(
                 actual=actual,
                 previa=previa,
                 infusion_activa=infusion_activa,
@@ -305,7 +307,6 @@ def calculadora_guiada(request):
                     "modo": "seguimiento",
                 }
                 medicion_guardada = _guardar_medicion(request, cleaned_data_adaptado, resultado)
-
     else:
         form = PasoInicialForm()
 
@@ -335,7 +336,7 @@ def historial(request):
     en_rango = mediciones_qs.filter(clase="en_rango").count()
     hiperglucemias = mediciones_qs.filter(clase="hiperglucemia").count()
 
-    paginator = Paginator(mediciones_qs, 10)  # 10 registros por página
+    paginator = Paginator(mediciones_qs, 10)
     page_number = request.GET.get("page")
     mediciones = paginator.get_page(page_number)
 
@@ -376,6 +377,7 @@ def historial(request):
             "hiperglucemias": hiperglucemias,
         },
     )
+
 
 # =========================================================
 # EXPORTAR EXCEL

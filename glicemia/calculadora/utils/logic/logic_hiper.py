@@ -1,10 +1,10 @@
 from decimal import Decimal
 
-from .constants import (
+from ..constants import (
     UMBRAL_HIPER,
     UMBRAL_ALERTA_ALTA,
 )
-from .helpers import (
+from ..helpers import (
     _a_decimal,
     _a_bool,
     _resultado_base,
@@ -89,14 +89,14 @@ def estan_en_mismo_escalon(*valores):
 
 
 # =========================================================
-# REGLAS CLÍNICAS DE HIPER
+# REGLAS CLÍNICAS
 # =========================================================
 
 def es_hiperglucemia_persistente(actual, previa=None, anterior=None, infusion_activa=False):
     """
     Persistente si:
     - con infusión activa y 2 controles consecutivos >= 360
-    - o 3 controles consecutivos > 200 en el mismo escalón
+    - o 3 controles consecutivos > 200 y < 360 en el mismo escalón
     """
     if not _a_bool(infusion_activa):
         return False
@@ -105,15 +105,20 @@ def es_hiperglucemia_persistente(actual, previa=None, anterior=None, infusion_ac
     previa = _a_decimal(previa, permitir_none=True)
     anterior = _a_decimal(anterior, permitir_none=True)
 
+    # 2 valores >= 360
     if previa is not None and actual >= Decimal("360") and previa >= Decimal("360"):
         return True
 
+    # 3 valores > 200 y < 360 en mismo escalón
     if (
         previa is not None
         and anterior is not None
-        and actual > Decimal("200")
-        and previa > Decimal("200")
-        and anterior > Decimal("200")
+        and actual > UMBRAL_ALERTA_ALTA
+        and actual < Decimal("360")
+        and previa > UMBRAL_ALERTA_ALTA
+        and previa < Decimal("360")
+        and anterior > UMBRAL_ALERTA_ALTA
+        and anterior < Decimal("360")
         and estan_en_mismo_escalon(actual, previa, anterior)
     ):
         return True
@@ -194,7 +199,12 @@ def evaluar_hiperglucemia(
     hubo_ajuste_insulina = _a_bool(hubo_ajuste_insulina)
     tercera_medicion = _a_decimal(tercera_medicion, permitir_none=True)
 
-    if actual < UMBRAL_HIPER:
+    # Sin infusión: hiper desde 180
+    # Con infusión: hiper real desde >200
+    if not infusion_activa and actual < UMBRAL_HIPER:
+        return None
+
+    if infusion_activa and actual <= Decimal("200"):
         return None
 
     resultado = _resultado_base()
@@ -221,7 +231,7 @@ def evaluar_hiperglucemia(
         if previa >= UMBRAL_HIPER:
             return armar_resultado_insulinizacion(actual)
 
-        resultado["estado"] = "Hiperglucemia en ascenso"
+        resultado["estado"] = "Hiperglucemia en Ascenso"
         resultado["subestado"] = "Actual >= 180 mg/dL con previa < 180 mg/dL"
         resultado["mensaje"] = "Hiperglucemia en ascenso."
         resultado["conducta"] = "Requiere nueva medición para evaluar persistencia."
@@ -245,6 +255,7 @@ def evaluar_hiperglucemia(
 
     # ------------------------------------------------------
     # 1) >= 360 con infusión activa
+    # 2 valores ya alcanzan para persistente
     # ------------------------------------------------------
     if actual >= Decimal("360"):
         if previa is not None and previa >= Decimal("360"):
@@ -267,9 +278,10 @@ def evaluar_hiperglucemia(
         return resultado
 
     # ------------------------------------------------------
-    # 2) > 200 y < 360
+    # 2) > 200 y < 360 con infusión activa
+    # 3 valores en mismo escalón = persistente
     # ------------------------------------------------------
-    if actual > UMBRAL_ALERTA_ALTA:
+    if actual > UMBRAL_ALERTA_ALTA and actual < Decimal("360"):
         if es_hiperglucemia_persistente(
             actual=actual,
             previa=previa,
@@ -277,7 +289,7 @@ def evaluar_hiperglucemia(
             infusion_activa=infusion_activa,
         ):
             resultado["estado"] = "Hiperglucemia Persistente"
-            resultado["subestado"] = "Tres controles consecutivos > 200 mg/dL en el mismo escalón"
+            resultado["subestado"] = "Tres controles consecutivos > 200 mg/dL y < 360 mg/dL en el mismo escalón"
             resultado["mensaje"] = "Hiperglucemia persistente fuera del rango objetivo."
             resultado["conducta"] = "Dar aviso médico y seguir Algoritmo 2 según protocolo."
             resultado["requiere_recontrol"] = True
@@ -302,15 +314,15 @@ def evaluar_hiperglucemia(
             _asignar_control(actual)
             return resultado
 
-        if previa is not None and previa > UMBRAL_ALERTA_ALTA:
-            resultado["estado"] = "Hiperglucemia Fuera de Objetivo"
+        if previa is not None and previa > UMBRAL_ALERTA_ALTA and previa < Decimal("360"):
+            resultado["estado"] = "Hiperglucemia"
             resultado["subestado"] = "Dos controles consecutivos > 200 mg/dL, aún sin criterio de persistencia"
             resultado["mensaje"] = "Hiperglucemia fuera del rango objetivo."
             resultado["conducta"] = "Obtener tercera medición para evaluar persistencia por escalón."
             resultado["requiere_recontrol"] = True
             resultado["proximo_control"] = "Obtener tercera medición"
             resultado["comentario_control"] = (
-                "Evaluar si las 3 mediciones permanecen > 200 mg/dL en el mismo escalón."
+                "Evaluar si las 3 mediciones permanecen > 200 mg/dL y < 360 mg/dL en el mismo escalón."
             )
             return resultado
 
@@ -322,13 +334,4 @@ def evaluar_hiperglucemia(
         _asignar_control(actual)
         return resultado
 
-    # ------------------------------------------------------
-    # 3) 180 - 200 con infusión activa
-    # ------------------------------------------------------
-    resultado["estado"] = "Hiperglucemia en rango alto"
-    resultado["subestado"] = "Valor dentro de rango alto con infusión activa"
-    resultado["mensaje"] = "Continuar monitoreo y ajustar según evolución."
-    resultado["conducta"] = "Seguir algoritmo vigente."
-    resultado["requiere_recontrol"] = True
-    _asignar_control(actual)
-    return resultado
+    return None
