@@ -68,25 +68,38 @@
     </div>
   {% endif %}
 
-  {% if resultado.conducta or resultado.tasa_algoritmo %}
+  {% if resultado.conducta or resultado.tasa_algoritmo or resultado.algoritmo_sugerido %}
     <div class="glicemia-resultado-hiper-card glicemia-resultado-hiper-card--conducta
       {% if 'aislada' in resultado.estado|lower %}
         glicemia-resultado-hiper-card--aislada
       {% else %}
         glicemia-resultado-hiper-card--critico
       {% endif %}">
-      
-      <h3 class="glicemia-resultado-hiper-card-title">Conducta</h3>
-      <p class="glicemia-resultado-hiper-card-text glicemia-resultado-hiper-card-text--principal">
-        Iniciar protocolo de insulinización
-      </p>
 
-      <h3 class="glicemia-resultado-hiper-card-title glicemia-resultado-hiper-card-title--secondary">
-        Continuar
-      </h3>
-      <p class="glicemia-resultado-hiper-card-text">
-        Seguir algoritmo 1
-      </p>
+      {% if resultado.conducta %}
+        <h3 class="glicemia-resultado-hiper-card-title">Conducta</h3>
+        <p class="glicemia-resultado-hiper-card-text glicemia-resultado-hiper-card-text--principal">
+          {{ resultado.conducta }}
+        </p>
+      {% endif %}
+
+      {% if resultado.algoritmo_sugerido %}
+        <h3 class="glicemia-resultado-hiper-card-title glicemia-resultado-hiper-card-title--secondary">
+          Algoritmo sugerido
+        </h3>
+        <p class="glicemia-resultado-hiper-card-text">
+          {{ resultado.algoritmo_sugerido }}
+        </p>
+      {% endif %}
+
+      {% if resultado.tasa_algoritmo %}
+        <h3 class="glicemia-resultado-hiper-card-title glicemia-resultado-hiper-card-title--secondary">
+          Tasa según algoritmo
+        </h3>
+        <p class="glicemia-resultado-hiper-card-text">
+          {{ resultado.tasa_algoritmo }}
+        </p>
+      {% endif %}
     </div>
   {% endif %}
 
@@ -138,5 +151,4 @@
       </p>
     </div>
   {% endif %}
-
 </section>

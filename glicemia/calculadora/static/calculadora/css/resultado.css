@@ -705,3 +705,49 @@
   line-height: 1.5;
   font-size: 0.95rem;
 }
+
+.glicemia-secuencia {
+  margin: 10px 0 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.glicemia-secuencia__title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #dce8ff;
+}
+
+.glicemia-secuencia__steps {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.glicemia-secuencia__step {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: rgba(255,255,255,0.06);
+  color: #dce8ff;
+}
+
+.glicemia-secuencia__step--active {
+  background: rgba(60, 200, 120, 0.18);
+  border: 1px solid rgba(60, 200, 120, 0.4);
+  color: #ffffff;
+}
+
+.glicemia-secuencia__step--muted {
+  opacity: 0.65;
+}
+
+.glicemia-secuencia__arrow {
+  opacity: 0.8;
+  font-weight: 700;
+}

@@ -179,10 +179,6 @@ def _filtrar_mediciones_desde_request(request):
 @login_required
 @user_passes_test(tiene_acceso_home, login_url="/login/")
 def control_glicemia(request):
-    """
-    Vista principal de la calculadora.
-    Usa el form principal y el service principal.
-    """
     resultado = None
     medicion_guardada = None
 
@@ -194,14 +190,14 @@ def control_glicemia(request):
             previa = form.cleaned_data.get("glicemia_previa")
             infusion_activa = form.cleaned_data.get("infusion_activa")
             hubo_ajuste_insulina = form.cleaned_data.get("hubo_ajuste_insulina")
-            tercera_medicion = form.cleaned_data.get("tercera_medicion")
+            glicemia_anterior = form.cleaned_data.get("glicemia_anterior")
 
             resultado = resolver_glucemia(
                 actual=actual,
                 previa=previa,
                 infusion_activa=infusion_activa,
                 hubo_ajuste_insulina=hubo_ajuste_insulina,
-                tercera_medicion=tercera_medicion,
+                tercera_medicion=glicemia_anterior,
             )
 
             medicion_guardada = _guardar_medicion(request, form.cleaned_data, resultado)
