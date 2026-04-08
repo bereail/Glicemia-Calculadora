@@ -1,0 +1,182 @@
+.resultado-clinico {
+  margin-top: 24px;
+  padding: 22px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #0f2746 0%, #0b1f36 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 40px rgba(5, 15, 30, 0.18);
+  color: #eaf4ff;
+}
+
+.resultado-clinico__top {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 14px;
+}
+
+.resultado-clinico__chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(123, 196, 255, 0.14);
+  color: #9fd5ff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.resultado-clinico__estado {
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.06);
+  border-left: 5px solid #7bc4ff;
+  margin-bottom: 18px;
+}
+
+.resultado-clinico__label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #9fc6ea;
+  margin-bottom: 6px;
+}
+
+.resultado-clinico__value {
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.resultado-clinico__bloque {
+  margin-top: 16px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.resultado-clinico__bloque--accion {
+  background: rgba(79, 163, 255, 0.12);
+  border: 1px solid rgba(79, 163, 255, 0.28);
+}
+
+.resultado-clinico__bloque--control {
+  background: rgba(255, 193, 7, 0.12);
+  border: 1px solid rgba(255, 193, 7, 0.28);
+}
+
+.resultado-clinico__bloque-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #a9cceb;
+  margin-bottom: 8px;
+}
+
+.resultado-clinico__bloque-value {
+  font-size: 17px;
+  line-height: 1.5;
+  color: #f3f8ff;
+  font-weight: 600;
+}
+
+.resultado-clinico__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.resultado-clinico__card {
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.resultado-clinico__card-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #a9cceb;
+  margin-bottom: 8px;
+}
+
+.resultado-clinico__card-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.resultado-clinico__alerta {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255, 77, 79, 0.12);
+  border: 1px solid rgba(255, 77, 79, 0.35);
+  color: #ffd7d8;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* VARIANTES POR CLASE */
+.resultado-clinico--hipo .resultado-clinico__estado {
+  border-left-color: #ff4d4f;
+  background: rgba(255, 77, 79, 0.12);
+}
+
+.resultado-clinico--hipo .resultado-clinico__chip {
+  background: rgba(255, 77, 79, 0.12);
+  color: #ffb3b4;
+}
+
+.resultado-clinico--hiper .resultado-clinico__estado {
+  border-left-color: #ffb020;
+  background: rgba(255, 176, 32, 0.12);
+}
+
+.resultado-clinico--hiper .resultado-clinico__chip {
+  background: rgba(255, 176, 32, 0.12);
+  color: #ffd38a;
+}
+
+.resultado-clinico--en_rango .resultado-clinico__estado,
+.resultado-clinico--rango .resultado-clinico__estado {
+  border-left-color: #33c27f;
+  background: rgba(51, 194, 127, 0.12);
+}
+
+.resultado-clinico--en_rango .resultado-clinico__chip,
+.resultado-clinico--rango .resultado-clinico__chip {
+  background: rgba(51, 194, 127, 0.12);
+  color: #aef0cd;
+}
+
+@media (max-width: 768px) {
+  .resultado-clinico {
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .resultado-clinico__value {
+    font-size: 22px;
+  }
+
+  .resultado-clinico__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .resultado-clinico__card-value {
+    font-size: 20px;
+  }
+
+  .resultado-clinico__bloque-value {
+    font-size: 16px;
+  }
+}

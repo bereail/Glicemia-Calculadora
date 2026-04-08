@@ -68,6 +68,51 @@ def _normalizar_clase_desde_estado(estado):
     return "sin_clasificacion"
 
 
+def _asignar_clase_visual(resultado):
+    """
+    Define la clase visual para la UI:
+    - critico: hipo, hiper persistente/refractaria, alertas mayores
+    - alerta: hiper aislada / fuera de objetivo no crítica
+    - rango: en objetivo / en rango
+    """
+    if not resultado:
+        return resultado
+
+    estado = str(resultado.get("estado") or "").lower()
+    subestado = str(resultado.get("subestado") or "").lower()
+
+    if "hipogluc" in estado:
+        resultado["clase_visual"] = "critico"
+        return resultado
+
+    if "persistente" in estado or "refractaria" in estado:
+        resultado["clase_visual"] = "critico"
+        return resultado
+
+    if "fuera de objetivo" in estado and "persistente" not in estado and "refractaria" not in estado:
+        resultado["clase_visual"] = "alerta"
+        return resultado
+
+    if "hipergluc" in estado:
+        if "aislada" in estado or "aislada" in subestado:
+            resultado["clase_visual"] = "alerta"
+        else:
+            resultado["clase_visual"] = "alerta"
+        return resultado
+
+    if (
+        "rango" in estado
+        or "objetivo" in estado
+        or "estable en rango" in estado
+        or "estable_en_rango" in estado
+    ):
+        resultado["clase_visual"] = "rango"
+        return resultado
+
+    resultado["clase_visual"] = "rango"
+    return resultado
+
+
 def _texto_seguro(valor):
     """
     Convierte None a string vacío para guardar o mostrar.
@@ -206,6 +251,8 @@ def control_glicemia(request):
                 tercera_medicion=tercera_medicion,
             )
 
+            resultado = _asignar_clase_visual(resultado)
+
             medicion_guardada = _guardar_medicion(request, form.cleaned_data, resultado)
     else:
         form = GlucemiaForm()
@@ -219,6 +266,7 @@ def control_glicemia(request):
             "medicion_guardada": medicion_guardada,
         },
     )
+
 
 # =========================================================
 # HOME / CALCULADORA GUIADA
@@ -248,6 +296,8 @@ def home(request):
                 previa=previa,
                 infusion_activa=infusion_activa,
             )
+
+            resultado = _asignar_clase_visual(resultado)
 
             if request.user.is_authenticated:
                 cleaned_data_adaptado = {
@@ -296,6 +346,8 @@ def calculadora_guiada(request):
                 previa=previa,
                 infusion_activa=infusion_activa,
             )
+
+            resultado = _asignar_clase_visual(resultado)
 
             if request.user.is_authenticated:
                 cleaned_data_adaptado = {

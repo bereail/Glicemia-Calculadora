@@ -35,3 +35,38 @@ window.GlicemiaHipo = (function () {
         actualizarHelperHipoglucemia
     };
 })();
+
+document.addEventListener("DOMContentLoaded", function () {
+  const btnAbrirTabla = document.getElementById("btn-tabla-algoritmos");
+  const modalTabla = document.getElementById("modal-tabla");
+  const btnCerrarTabla = document.getElementById("btn-cerrar-tabla");
+  const backdropTabla = document.getElementById("cerrar-modal-tabla");
+
+  if (btnAbrirTabla && modalTabla) {
+    btnAbrirTabla.addEventListener("click", function () {
+      modalTabla.classList.remove("hidden");
+      modalTabla.setAttribute("aria-hidden", "false");
+    });
+  }
+
+  function cerrarModalTabla() {
+    if (modalTabla) {
+      modalTabla.classList.add("hidden");
+      modalTabla.setAttribute("aria-hidden", "true");
+    }
+  }
+
+  if (btnCerrarTabla) {
+    btnCerrarTabla.addEventListener("click", cerrarModalTabla);
+  }
+
+  if (backdropTabla) {
+    backdropTabla.addEventListener("click", cerrarModalTabla);
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      cerrarModalTabla();
+    }
+  });
+});

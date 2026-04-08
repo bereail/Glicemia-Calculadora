@@ -11,10 +11,9 @@
   <link rel="stylesheet" href="{% static 'calculadora/css/styles.css' %}">
   <link rel="stylesheet" href="{% static 'calculadora/css/base.css' %}">
   <link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}">
-  <link rel="stylesheet" href="{% static 'calculadora/css/resultado.css' %}">
-   <link rel="stylesheet" href="{% static 'calculadora/css/resultado_hiper.css' %}">
-    <link rel="stylesheet" href="{% static 'calculadora/css/resultado_hipo.css' %}">
-     <link rel="stylesheet" href="{% static 'calculadora/css/resultado_rango.css' %}">
+  <link rel="stylesheet" href="{% static 'calculadora/css/resultado_hiper.css' %}">
+  <link rel="stylesheet" href="{% static 'calculadora/css/resultado_hipo.css' %}">
+  <link rel="stylesheet" href="{% static 'calculadora/css/resultado_rango.css' %}">
 
   {% block extra_css %}{% endblock %}
 </head>
@@ -39,15 +38,14 @@
     {% endblock %}
   </main>
 
-  <!-- FOOTER -->
   <footer class="footer">
-    <div class="container">
-      <p>© {{ now|date:"Y" }} - Calculadora de Glicemia</p>
-    </div>
-  </footer>
+  <div class="container">
+    <p>© {% now "Y" %} - Calculadora de Glicemia</p>
+  </div>
+</footer>
 
   <!-- JS -->
- <script src="{% static 'calculadora/js/main.js' %}?v=20260406"></script>
+  <script src="{% static 'calculadora/js/control_glicemia.js' %}?v=20260406"></script>
 
   {% block extra_js %}{% endblock %}
 

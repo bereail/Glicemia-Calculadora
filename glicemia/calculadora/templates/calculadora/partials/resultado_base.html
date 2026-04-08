@@ -1,0 +1,119 @@
+<section class="panel panel-result resultado-screen
+  {% if resultado.clase == 'hipo' %}
+    resultado-screen--critico
+  {% elif resultado.clase == 'hiper' %}
+    resultado-screen--critico
+  {% elif resultado.clase == 'en_rango' or resultado.clase == 'rango' %}
+    resultado-screen--rango
+  {% else %}
+    resultado-screen--rango
+  {% endif %}
+">
+
+  <div class="result-top">
+    <span class="result-chip">Resultado</span>
+  </div>
+
+  <h2 class="result-title">Evaluación</h2>
+
+  <div class="estado-box
+    {% if resultado.clase == 'hipo' %}
+      estado-box--alert
+    {% elif resultado.clase == 'hiper' %}
+      estado-box--critico
+    {% elif resultado.clase == 'en_rango' or resultado.clase == 'rango' %}
+      estado-box--rango
+    {% else %}
+      estado-box--rango
+    {% endif %}
+  ">
+    <div class="estado-box__label">Estado</div>
+    <div class="estado-box__value">
+      {{ resultado.estado|default:"Sin clasificación" }}
+    </div>
+  </div>
+
+  {% if resultado.conducta_inmediata %}
+    <div class="result-card
+      {% if resultado.clase == 'hipo' %}
+        result-card--critical
+      {% elif resultado.clase == 'hiper' %}
+        result-card--critical
+      {% else %}
+        result-card--rango
+      {% endif %}
+    ">
+      <div class="result-card__label">Conducta inmediata</div>
+      <div class="result-card__value">
+        {{ resultado.conducta_inmediata }}
+      </div>
+    </div>
+  {% endif %}
+
+  {% if resultado.bolo_inicial or resultado.tasa_infusion %}
+    <div class="result-grid">
+      {% if resultado.bolo_inicial %}
+        <div class="result-card
+          {% if resultado.clase == 'hipo' or resultado.clase == 'hiper' %}
+            result-card--critical
+          {% else %}
+            result-card--rango
+          {% endif %}
+        ">
+          <div class="result-card__label">Bolo inicial</div>
+          <div class="result-card__value">{{ resultado.bolo_inicial }}</div>
+        </div>
+      {% endif %}
+
+      {% if resultado.tasa_infusion %}
+        <div class="result-card
+          {% if resultado.clase == 'hipo' or resultado.clase == 'hiper' %}
+            result-card--critical
+          {% else %}
+            result-card--rango
+          {% endif %}
+        ">
+          <div class="result-card__label">Tasa de infusión</div>
+          <div class="result-card__value">{{ resultado.tasa_infusion }}</div>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {% if resultado.seguimiento %}
+    <div class="result-card
+      {% if resultado.clase == 'hipo' or resultado.clase == 'hiper' %}
+        result-card--critical
+      {% else %}
+        result-card--rango
+      {% endif %}
+    ">
+      <div class="result-card__label">Seguimiento</div>
+      <div class="result-card__value">
+        {{ resultado.seguimiento }}
+      </div>
+    </div>
+  {% endif %}
+
+  {% if resultado.proximo_control %}
+    <div class="resultado-prioridad
+      {% if resultado.clase == 'hipo' %}
+        resultado-prioridad--alert
+      {% else %}
+        resultado-prioridad--alert
+      {% endif %}
+    ">
+      <div class="resultado-prioridad__label">Próximo control</div>
+      <div class="resultado-prioridad__value">
+        {{ resultado.proximo_control }}
+      </div>
+    </div>
+  {% endif %}
+
+  {% if resultado.alerta %}
+    <div class="result-warning">
+      {{ resultado.alerta }}
+    </div>
+  {% endif %}
+
+</section>
