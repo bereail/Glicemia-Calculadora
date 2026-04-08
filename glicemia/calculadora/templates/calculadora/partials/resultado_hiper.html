@@ -12,7 +12,15 @@
     <span class="glicemia-resultado-hiper-chip">Resultado</span>
   </div>
 
-  <h2 class="glicemia-resultado-hiper-title">Evaluación</h2>
+  <h2 class="glicemia-resultado-hiper-title">
+    {{ resultado.resumen_objetivo|default:"Fuera de rango objetivo" }}
+  </h2>
+
+  {% if resultado.texto_rango_objetivo %}
+    <p class="glicemia-resultado-hiper-subtitle">
+      {{ resultado.texto_rango_objetivo }}
+    </p>
+  {% endif %}
 
   <div class="glicemia-resultado-hiper-estado-box
     {% if resultado.clase_visual == 'critico' %}
@@ -29,58 +37,7 @@
     </div>
   </div>
 
-  {% if resultado.subestado %}
-    <p class="glicemia-resultado-hiper-subtitle">
-      {{ resultado.subestado }}
-    </p>
-  {% endif %}
-
-  {% if resultado.tendencia %}
-    <div class="glicemia-resultado-hiper-info">
-      <strong>Tendencia:</strong>
-      {{ resultado.tendencia }}
-      {% if resultado.flecha_tendencia %} {{ resultado.flecha_tendencia }}{% endif %}
-      {% if resultado.delta %} (Δ {{ resultado.delta }}){% endif %}
-    </div>
-  {% endif %}
-
-  {% if resultado.bolo_inicial or resultado.tasa_inicial %}
-    <div class="glicemia-resultado-hiper-grid">
-
-      {% if resultado.bolo_inicial %}
-        <div class="glicemia-resultado-hiper-card glicemia-resultado-hiper-card--mini
-          {% if resultado.clase_visual == 'critico' %}
-            glicemia-resultado-hiper-card--critico
-          {% elif resultado.clase_visual == 'alerta' %}
-            glicemia-resultado-hiper-card--alerta
-          {% else %}
-            glicemia-resultado-hiper-card--rango
-          {% endif %}
-        ">
-          <h3 class="glicemia-resultado-hiper-card-title">Bolo inicial</h3>
-          <p class="glicemia-resultado-hiper-card-text">{{ resultado.bolo_inicial }}</p>
-        </div>
-      {% endif %}
-
-      {% if resultado.tasa_inicial %}
-        <div class="glicemia-resultado-hiper-card glicemia-resultado-hiper-card--mini
-          {% if resultado.clase_visual == 'critico' %}
-            glicemia-resultado-hiper-card--critico
-          {% elif resultado.clase_visual == 'alerta' %}
-            glicemia-resultado-hiper-card--alerta
-          {% else %}
-            glicemia-resultado-hiper-card--rango
-          {% endif %}
-        ">
-          <h3 class="glicemia-resultado-hiper-card-title">Tasa inicial / infusión</h3>
-          <p class="glicemia-resultado-hiper-card-text">{{ resultado.tasa_inicial }}</p>
-        </div>
-      {% endif %}
-
-    </div>
-  {% endif %}
-
-  {% if resultado.conducta or resultado.tasa_algoritmo or resultado.algoritmo_sugerido %}
+  {% if resultado.conducta or resultado.tasa_algoritmo or resultado.algoritmo_sugerido or resultado.bolo_inicial or resultado.tasa_inicial %}
     <div class="glicemia-resultado-hiper-card glicemia-resultado-hiper-card--conducta
       {% if resultado.clase_visual == 'critico' %}
         glicemia-resultado-hiper-card--critico
@@ -90,11 +47,10 @@
         glicemia-resultado-hiper-card--rango
       {% endif %}
     ">
-
       {% if resultado.conducta %}
-        <h3 class="glicemia-resultado-hiper-card-title">Conducta inmediata</h3>
+        <h3 class="glicemia-resultado-hiper-card-title">Conducta</h3>
         <p class="glicemia-resultado-hiper-card-text glicemia-resultado-hiper-card-text--principal">
-          {{ resultado.conducta }}
+          {{ resultado.conducta|safe }}
         </p>
       {% endif %}
 
@@ -102,25 +58,34 @@
         <h3 class="glicemia-resultado-hiper-card-title glicemia-resultado-hiper-card-title--secondary">
           Algoritmo sugerido
         </h3>
-        <p class="glicemia-resultado-hiper-card-text">
-          {{ resultado.algoritmo_sugerido }}
-        </p>
+        <p class="glicemia-resultado-hiper-card-text">{{ resultado.algoritmo_sugerido }}</p>
       {% endif %}
 
       {% if resultado.tasa_algoritmo %}
         <h3 class="glicemia-resultado-hiper-card-title glicemia-resultado-hiper-card-title--secondary">
           Tasa según algoritmo
         </h3>
-        <p class="glicemia-resultado-hiper-card-text">
-          {{ resultado.tasa_algoritmo }}
-        </p>
+        <p class="glicemia-resultado-hiper-card-text">{{ resultado.tasa_algoritmo }}</p>
+      {% endif %}
+
+      {% if resultado.bolo_inicial %}
+        <h3 class="glicemia-resultado-hiper-card-title glicemia-resultado-hiper-card-title--secondary">
+          Bolo inicial
+        </h3>
+        <p class="glicemia-resultado-hiper-card-text">{{ resultado.bolo_inicial }}</p>
+      {% endif %}
+
+      {% if resultado.tasa_inicial %}
+        <h3 class="glicemia-resultado-hiper-card-title glicemia-resultado-hiper-card-title--secondary">
+          Tasa inicial / infusión
+        </h3>
+        <p class="glicemia-resultado-hiper-card-text">{{ resultado.tasa_inicial }}</p>
       {% endif %}
     </div>
   {% endif %}
 
   {% if resultado.proximo_control %}
     <div class="glicemia-resultado-hiper-control-block">
-
       <div class="glicemia-resultado-hiper-control-card
         {% if resultado.clase_visual == 'critico' %}
           glicemia-resultado-hiper-control-card--critico
@@ -135,44 +100,32 @@
           {{ resultado.proximo_control }}
         </div>
       </div>
-
-      <div class="glicemia-resultado-hiper-control-alert
-        {% if resultado.clase_visual == 'critico' %}
-          glicemia-resultado-hiper-control-alert--critico
-        {% elif resultado.clase_visual == 'alerta' %}
-          glicemia-resultado-hiper-control-alert--alerta
-        {% else %}
-          glicemia-resultado-hiper-control-alert--rango
-        {% endif %}
-      ">
-        <div class="glicemia-resultado-hiper-control-alert__icon">⚠</div>
-        <div class="glicemia-resultado-hiper-control-alert__content">
-          <div class="glicemia-resultado-hiper-control-alert__title">
-            Advertencia clínica
-          </div>
-          <div class="glicemia-resultado-hiper-control-alert__text">
-            {{ resultado.comentario_control|default:"En pacientes insulinizados el monitoreo capilar puede ser inapropiado. Evaluar muestra venosa." }}
-          </div>
-        </div>
-      </div>
-
     </div>
   {% endif %}
 
-  {% if resultado.monitoreo_glucemico %}
-    <div class="glicemia-resultado-hiper-card glicemia-resultado-hiper-card--monitoreo
+  {% if resultado.comentario_control or resultado.monitoreo_glucemico or resultado.tendencia %}
+    <div class="glicemia-resultado-hiper-control-alert
       {% if resultado.clase_visual == 'critico' %}
-        glicemia-resultado-hiper-card--critico
+        glicemia-resultado-hiper-control-alert--critico
       {% elif resultado.clase_visual == 'alerta' %}
-        glicemia-resultado-hiper-card--alerta
+        glicemia-resultado-hiper-control-alert--alerta
       {% else %}
-        glicemia-resultado-hiper-card--rango
+        glicemia-resultado-hiper-control-alert--rango
       {% endif %}
     ">
-      <h3 class="glicemia-resultado-hiper-card-title">Monitoreo glucémico</h3>
-      <p class="glicemia-resultado-hiper-card-text">
-        {{ resultado.monitoreo_glucemico }}
-      </p>
+      <div class="glicemia-resultado-hiper-control-alert__icon">⚠</div>
+      <div class="glicemia-resultado-hiper-control-alert__content">
+        <div class="glicemia-resultado-hiper-control-alert__title">Advertencia clínica</div>
+        <div class="glicemia-resultado-hiper-control-alert__text">
+          {% if resultado.comentario_control %}
+            {{ resultado.comentario_control }}
+          {% elif resultado.monitoreo_glucemico %}
+            {{ resultado.monitoreo_glucemico }}
+          {% else %}
+            En pacientes insulinizados el monitoreo capilar puede ser inapropiado. Evaluar muestra venosa.
+          {% endif %}
+        </div>
+      </div>
     </div>
   {% endif %}
 </section>

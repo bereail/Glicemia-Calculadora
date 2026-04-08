@@ -1,90 +1,118 @@
-.resultado-screen--rango .resultado-rango-control-block {
+.resultado-rango-control-block {
   display: grid;
   gap: 14px;
   margin-top: 18px;
 }
 
-.resultado-screen--rango .resultado-rango-control-card {
-  background: linear-gradient(180deg, rgba(25, 78, 125, 0.95) 0%, rgba(22, 68, 110, 0.92) 100%);
-  border: 1px solid rgba(71, 190, 144, 0.22);
+.resultado-rango-control-card {
   border-radius: 18px;
   padding: 18px 20px;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
 }
 
-.resultado-screen--rango .resultado-rango-control-title {
+.resultado-rango-control-card--critico {
+  background: linear-gradient(180deg, rgba(124, 28, 44, 0.95) 0%, rgba(98, 20, 35, 0.92) 100%);
+  border: 1px solid rgba(255, 120, 120, 0.22);
+}
+
+.resultado-rango-control-card--alerta {
+  background: linear-gradient(180deg, rgba(120, 80, 16, 0.95) 0%, rgba(96, 62, 10, 0.92) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+}
+
+.resultado-rango-control-card--rango {
+  background: linear-gradient(180deg, rgba(18, 96, 54, 0.95) 0%, rgba(14, 76, 42, 0.92) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.26);
+}
+
+.resultado-rango-control-title {
   margin: 0 0 10px 0;
   font-size: 0.98rem;
   font-weight: 700;
-  color: #b6f4c7;
+  color: #d9ffe8;
 }
 
-.resultado-screen--rango .resultado-rango-control-value {
+.resultado-rango-control-value {
   font-size: 1.08rem;
   font-weight: 800;
   line-height: 1.35;
-  color: #f8fbff;
+  color: #fff;
 }
 
-.resultado-screen--rango .resultado-rango-control-alert {
+.resultado-rango-control-alert {
   display: grid;
   grid-template-columns: 38px 1fr;
   gap: 12px;
   align-items: start;
-  background: linear-gradient(180deg, rgba(255, 210, 90, 0.18) 0%, rgba(255, 193, 7, 0.14) 100%);
-  border: 1px solid rgba(255, 210, 90, 0.35);
-  border-left: 5px solid #f4c542;
   border-radius: 16px;
   padding: 14px 16px;
 }
 
-.resultado-screen--rango .resultado-rango-control-alert__icon {
+.resultado-rango-control-alert--critico {
+  background: linear-gradient(180deg, rgba(255, 210, 90, 0.16) 0%, rgba(255, 166, 0, 0.12) 100%);
+  border: 1px solid rgba(255, 196, 0, 0.28);
+  border-left: 5px solid #f59e0b;
+}
+
+.resultado-rango-control-alert--alerta {
+  background: linear-gradient(180deg, rgba(255, 222, 120, 0.18) 0%, rgba(245, 158, 11, 0.12) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  border-left: 5px solid #f59e0b;
+}
+
+.resultado-rango-control-alert--rango {
+  background: linear-gradient(180deg, rgba(126, 231, 135, 0.14) 0%, rgba(34, 197, 94, 0.10) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.24);
+  border-left: 5px solid #22c55e;
+}
+
+.resultado-rango-control-alert__icon {
   width: 38px;
   height: 38px;
   border-radius: 999px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(244, 197, 66, 0.2);
-  color: #ffd65a;
+  background: rgba(34, 197, 94, 0.18);
+  color: #d9ffe8;
   font-size: 1.1rem;
   font-weight: 700;
 }
 
-.resultado-screen--rango .resultado-rango-control-alert__content {
+.resultado-rango-control-alert__content {
   min-width: 0;
 }
 
-.resultado-screen--rango .resultado-rango-control-alert__title {
+.resultado-rango-control-alert__title {
   margin: 0 0 6px 0;
   font-size: 0.92rem;
   font-weight: 800;
-  color: #ffe08a;
+  color: #d9ffe8;
 }
 
-.resultado-screen--rango .resultado-rango-control-alert__text {
+.resultado-rango-control-alert__text {
   margin: 0;
   font-size: 0.93rem;
   line-height: 1.5;
-  color: #fff4cc;
+  color: #f2fff7;
 }
 
 @media (max-width: 768px) {
-  .resultado-screen--rango .resultado-rango-control-card,
-  .resultado-screen--rango .resultado-rango-control-alert {
+  .resultado-rango-control-card,
+  .resultado-rango-control-alert {
     padding: 14px 15px;
   }
 
-  .resultado-screen--rango .resultado-rango-control-value {
+  .resultado-rango-control-value {
     font-size: 1rem;
   }
 
-  .resultado-screen--rango .resultado-rango-control-alert {
+  .resultado-rango-control-alert {
     grid-template-columns: 32px 1fr;
     gap: 10px;
   }
 
-  .resultado-screen--rango .resultado-rango-control-alert__icon {
+  .resultado-rango-control-alert__icon {
     width: 32px;
     height: 32px;
     font-size: 1rem;

@@ -91,22 +91,26 @@
           </div>
 
           <!-- SECUENCIA VISUAL -->
-          <div id="secuencia_mediciones" class="glicemia-secuencia hidden" aria-live="polite">
-            <div class="glicemia-secuencia__title">Secuencia de evaluación</div>
-            <div class="glicemia-secuencia__steps">
-              <span class="glicemia-secuencia__step glicemia-secuencia__step--muted" id="step-anterior">
-                Anterior (1)
-              </span>
-              <span class="glicemia-secuencia__arrow">→</span>
-              <span class="glicemia-secuencia__step" id="step-previa">
-                Previa (2)
-              </span>
-              <span class="glicemia-secuencia__arrow">→</span>
-              <span class="glicemia-secuencia__step glicemia-secuencia__step--active" id="step-actual">
-                Actual (3)
-              </span>
-            </div>
-          </div>
+<div id="secuencia_mediciones" class="glicemia-secuencia hidden" aria-live="polite">
+  <div class="glicemia-secuencia__title">Secuencia de evaluación</div>
+  <div class="glicemia-secuencia__steps">
+    <span class="glicemia-secuencia__step glicemia-secuencia__step--muted" id="step-anterior">
+      Anterior (1)
+    </span>
+
+    <span class="glicemia-secuencia__arrow" id="arrow-anterior-previa">→</span>
+
+    <span class="glicemia-secuencia__step" id="step-previa">
+      Previa (2)
+    </span>
+
+    <span class="glicemia-secuencia__arrow" id="arrow-previa-actual">→</span>
+
+    <span class="glicemia-secuencia__step glicemia-secuencia__step--active" id="step-actual">
+      Actual (3)
+    </span>
+  </div>
+</div>
 
           <!-- BLOQUE PREVIAS -->
           <div id="previas_box" class="field-group hidden">
@@ -183,15 +187,17 @@
     </section>
 
     {% if resultado %}
-      {% if "hipogluc" in resultado.estado|lower %}
-        {% include "calculadora/partials/resultado_hipo.html" %}
-      {% elif "hipergluc" in resultado.estado|lower or "fuera de objetivo" in resultado.estado|lower or "refractaria" in resultado.estado|lower or "persistente" in resultado.estado|lower %}
-        {% include "calculadora/partials/resultado_hiper.html" %}
-      {% elif resultado.clase == "en_rango" or "en rango" in resultado.estado|lower or "objetivo con infusión" in resultado.estado|lower or "objetivo con ascenso" in resultado.estado|lower or "objetivo con descenso" in resultado.estado|lower %}
-        {% include "calculadora/partials/resultado_rango.html" %}
-      {% else %}
-        {% include "calculadora/partials/resultado_hiper.html" %}
-      {% endif %}
+      {% with estado_lower=resultado.estado|default:''|lower %}
+        {% if "hipogluc" in estado_lower %}
+          {% include "calculadora/partials/resultado_hipo.html" %}
+        {% elif "hipergluc" in estado_lower or "fuera de objetivo" in estado_lower or "refractaria" in estado_lower or "persistente" in estado_lower %}
+          {% include "calculadora/partials/resultado_hiper.html" %}
+        {% elif resultado.clase == "en_rango" or "en rango" in estado_lower or "objetivo con infusión" in estado_lower or "objetivo con ascenso" in estado_lower or "objetivo con descenso" in estado_lower %}
+          {% include "calculadora/partials/resultado_rango.html" %}
+        {% else %}
+          {% include "calculadora/partials/resultado_hiper.html" %}
+        {% endif %}
+      {% endwith %}
     {% endif %}
 
   </div>
@@ -199,5 +205,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'calculadora/js/control_glicemia.js' %}"></script>
+<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=20260408"></script>
 {% endblock %}

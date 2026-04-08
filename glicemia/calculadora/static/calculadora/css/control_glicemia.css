@@ -769,3 +769,162 @@ input[type="number"]:focus,
   line-height: 1;
 }
 
+
+/* CONTENEDOR */
+.glicemia-ui-secuencia {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(10, 30, 60, 0.6);
+  border: 1px solid rgba(123, 196, 255, 0.12);
+}
+
+/* TITULO */
+.glicemia-ui-secuencia__title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #7bc4ff;
+  margin-bottom: 8px;
+}
+
+/* STEPS */
+.glicemia-ui-secuencia__steps {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+/* STEP BASE */
+.glicemia-ui-secuencia__step {
+  flex: 1;
+  text-align: center;
+  padding: 8px 6px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  transition: all 0.2s ease;
+}
+
+/* ACTUAL (DESTACADO) */
+.glicemia-ui-secuencia__step--active {
+  background: linear-gradient(180deg, rgba(79,163,255,0.25), rgba(79,163,255,0.12));
+  border: 1px solid rgba(79,163,255,0.5);
+  color: #cfe7ff;
+}
+
+/* PREVIA (OBLIGATORIA) */
+.glicemia-ui-secuencia__step--required {
+  background: linear-gradient(180deg, rgba(255,193,7,0.2), rgba(255,193,7,0.08));
+  border: 1px solid rgba(255,193,7,0.5);
+  color: #ffe69c;
+}
+
+/* ANTERIOR (OPCIONAL) */
+.glicemia-ui-secuencia__step--muted {
+  opacity: 0.45;
+}
+
+/* FLECHAS */
+.glicemia-ui-secuencia__arrow {
+  font-size: 1.1rem;
+  opacity: 0.5;
+}
+
+/* =========================================================
+   SECUENCIA VISUAL DE MEDICIONES
+   más compacta, limpia y con tono más verde
+   ========================================================= */
+
+#secuencia_mediciones.glicemia-secuencia {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(10, 42, 52, 0.55) 0%, rgba(8, 32, 44, 0.55) 100%);
+  border: 1px solid rgba(70, 199, 142, 0.16);
+}
+
+#secuencia_mediciones .glicemia-secuencia__title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #8fe6c0;
+  margin-bottom: 7px;
+  letter-spacing: 0.01em;
+}
+
+#secuencia_mediciones .glicemia-secuencia__steps {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+}
+
+#secuencia_mediciones .glicemia-secuencia__step {
+  flex: 1;
+  text-align: center;
+  padding: 7px 5px;
+  border-radius: 9px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.2;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.05);
+  color: #dceef2;
+  transition: all 0.2s ease;
+}
+
+#secuencia_mediciones .glicemia-secuencia__step--active {
+  background: linear-gradient(180deg, rgba(70, 199, 142, 0.22), rgba(70, 199, 142, 0.10));
+  border: 1px solid rgba(70, 199, 142, 0.42);
+  color: #d9fff0;
+  box-shadow: 0 0 0 1px rgba(70, 199, 142, 0.12);
+}
+
+#secuencia_mediciones .glicemia-secuencia__step--required {
+  background: linear-gradient(180deg, rgba(255,193,7,0.16), rgba(255,193,7,0.06));
+  border: 1px solid rgba(255,193,7,0.38);
+  color: #ffe7a6;
+}
+
+#secuencia_mediciones .glicemia-secuencia__step--muted {
+  opacity: 0.42;
+}
+
+#secuencia_mediciones .glicemia-secuencia__arrow {
+  font-size: 0.95rem;
+  color: #84d8b5;
+  opacity: 0.7;
+  font-weight: 700;
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  #secuencia_mediciones.glicemia-secuencia {
+    padding: 9px 10px;
+  }
+
+  #secuencia_mediciones .glicemia-secuencia__title {
+    font-size: 0.74rem;
+    margin-bottom: 6px;
+  }
+
+  #secuencia_mediciones .glicemia-secuencia__steps {
+    gap: 4px;
+  }
+
+  #secuencia_mediciones .glicemia-secuencia__step {
+    font-size: 0.68rem;
+    padding: 6px 4px;
+  }
+
+  #secuencia_mediciones .glicemia-secuencia__arrow {
+    font-size: 0.85rem;
+  }
+}
+
+.glicemia-secuencia__step.hidden {
+  display: none;
+}

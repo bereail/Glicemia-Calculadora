@@ -29,7 +29,6 @@ class ExportacionesHistorialTest(TestCase):
             mensaje="Glucemia por encima del objetivo.",
             proximo_control="Cada 4 horas (primeras 24 h) y luego cada 6 h si estable",
             observacion="Evaluar protocolo 2",
-            tendencia="Ascenso",
             algoritmo_usado="Inicio / Reinicio (Algoritmo 1)",
             velocidad_sugerida="1.5",
             bolo_ui="2",

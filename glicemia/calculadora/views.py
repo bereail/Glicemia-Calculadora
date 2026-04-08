@@ -223,6 +223,31 @@ def _filtrar_mediciones_desde_request(request):
     return mediciones, usuario, estado, clase, periodo
 
 
+def _asignar_resumen_objetivo(resultado, infusion_activa):
+    """
+    Define el título superior del resultado:
+    - En rango objetivo
+    - Fuera de rango objetivo
+    y el texto del rango usado.
+    """
+    if not resultado:
+        return resultado
+
+    clase_visual = resultado.get("clase_visual")
+    estado = str(resultado.get("estado") or "").lower()
+
+    if clase_visual == "rango":
+        resultado["resumen_objetivo"] = "En rango objetivo"
+    else:
+        resultado["resumen_objetivo"] = "Fuera de rango objetivo"
+
+    # Texto visible del rango objetivo usado por la UI
+    if infusion_activa:
+        resultado["texto_rango_objetivo"] = "Paciente insulinizado: 140 a 200 mg/dL"
+    else:
+        resultado["texto_rango_objetivo"] = "Paciente no insulinizado: 70 a 180 mg/dL"
+
+    return resultado
 # =========================================================
 # VISTA PRINCIPAL
 # =========================================================
@@ -252,6 +277,7 @@ def control_glicemia(request):
             )
 
             resultado = _asignar_clase_visual(resultado)
+            resultado = _asignar_resumen_objetivo(resultado, infusion_activa)
 
             medicion_guardada = _guardar_medicion(request, form.cleaned_data, resultado)
     else:
@@ -298,6 +324,7 @@ def home(request):
             )
 
             resultado = _asignar_clase_visual(resultado)
+            resultado = _asignar_resumen_objetivo(resultado, infusion_activa)
 
             if request.user.is_authenticated:
                 cleaned_data_adaptado = {
@@ -348,6 +375,7 @@ def calculadora_guiada(request):
             )
 
             resultado = _asignar_clase_visual(resultado)
+            resultado = _asignar_resumen_objetivo(resultado, infusion_activa)
 
             if request.user.is_authenticated:
                 cleaned_data_adaptado = {

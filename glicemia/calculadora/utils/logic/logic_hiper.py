@@ -262,7 +262,10 @@ def evaluar_hiperglucemia(
             resultado["estado"] = "Hiperglucemia Persistente"
             resultado["subestado"] = "2 controles consecutivos ≥ 360 mg/dL con infusión activa"
             resultado["mensaje"] = "Hiperglucemia persistente severa."
-            resultado["conducta"] = "Dar aviso médico y continuar con Algoritmo 2."
+            resultado["conducta"] = (
+            'Dar aviso médico y continuar con '
+            '<span class="link-algoritmo" data-algoritmo="2">Algoritmo 2</span>.'
+)
             resultado["requiere_recontrol"] = True
             resultado["algoritmo_sugerido"] = "Algoritmo 2"
             resultado["tasa_algoritmo"] = obtener_tasa_algoritmo_2(actual)
