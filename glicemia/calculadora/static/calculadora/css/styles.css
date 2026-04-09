@@ -332,7 +332,7 @@ select:focus {
 /* HELPERS / INPUT STATES */
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 .field-helper {

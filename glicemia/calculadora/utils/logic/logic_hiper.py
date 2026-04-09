@@ -88,6 +88,25 @@ def estan_en_mismo_escalon(*valores):
     return len(set(escalones)) == 1
 
 
+def _numero_escalon(valor):
+    escalon = obtener_escalon_glucemia(valor)
+    return int(escalon.replace("E", ""))
+
+
+def estan_en_escalon_persistencia(*valores):
+    """
+    Criterio clínico tolerante para persistencia en > 200 y < 360:
+    acepta que las mediciones estén en el mismo escalón o en escalones contiguos.
+    Esto evita que casos como 230 / 240 / 250 queden afuera por un corte rígido.
+    """
+    valores_validos = [v for v in valores if v is not None]
+    if len(valores_validos) < 3:
+        return False
+
+    numeros = [_numero_escalon(v) for v in valores_validos]
+    return max(numeros) - min(numeros) <= 1
+
+
 # =========================================================
 # REGLAS CLÍNICAS
 # =========================================================
@@ -97,6 +116,7 @@ def es_hiperglucemia_persistente(actual, previa=None, anterior=None, infusion_ac
     Persistente si:
     - con infusión activa y 2 controles consecutivos >= 360
     - o 3 controles consecutivos > 200 y < 360 en el mismo escalón
+      o en escalones contiguos (criterio clínico tolerante)
     """
     if not _a_bool(infusion_activa):
         return False
@@ -109,7 +129,7 @@ def es_hiperglucemia_persistente(actual, previa=None, anterior=None, infusion_ac
     if previa is not None and actual >= Decimal("360") and previa >= Decimal("360"):
         return True
 
-    # 3 valores > 200 y < 360 en mismo escalón
+    # 3 valores > 200 y < 360 en mismo escalón o escalón contiguo
     if (
         previa is not None
         and anterior is not None
@@ -119,7 +139,7 @@ def es_hiperglucemia_persistente(actual, previa=None, anterior=None, infusion_ac
         and previa < Decimal("360")
         and anterior > UMBRAL_ALERTA_ALTA
         and anterior < Decimal("360")
-        and estan_en_mismo_escalon(actual, previa, anterior)
+        and estan_en_escalon_persistencia(actual, previa, anterior)
     ):
         return True
 
@@ -263,9 +283,9 @@ def evaluar_hiperglucemia(
             resultado["subestado"] = "2 controles consecutivos ≥ 360 mg/dL con infusión activa"
             resultado["mensaje"] = "Hiperglucemia persistente severa."
             resultado["conducta"] = (
-            'Dar aviso médico y continuar con '
-            '<span class="link-algoritmo" data-algoritmo="2">Algoritmo 2</span>.'
-)
+                'Dar aviso médico y continuar con '
+                '<span class="link-algoritmo" data-algoritmo="2">Algoritmo 2</span>.'
+            )
             resultado["requiere_recontrol"] = True
             resultado["algoritmo_sugerido"] = "Algoritmo 2"
             resultado["tasa_algoritmo"] = obtener_tasa_algoritmo_2(actual)
@@ -282,7 +302,7 @@ def evaluar_hiperglucemia(
 
     # ------------------------------------------------------
     # 2) > 200 y < 360 con infusión activa
-    # 3 valores en mismo escalón = persistente
+    # 3 valores en mismo escalón o contiguos = persistente
     # ------------------------------------------------------
     if actual > UMBRAL_ALERTA_ALTA and actual < Decimal("360"):
         if es_hiperglucemia_persistente(
@@ -292,7 +312,10 @@ def evaluar_hiperglucemia(
             infusion_activa=infusion_activa,
         ):
             resultado["estado"] = "Hiperglucemia Persistente"
-            resultado["subestado"] = "Tres controles consecutivos > 200 mg/dL y < 360 mg/dL en el mismo escalón"
+            resultado["subestado"] = (
+                "Tres controles consecutivos > 200 mg/dL y < 360 mg/dL "
+                "en el mismo escalón o en escalones contiguos"
+            )
             resultado["mensaje"] = "Hiperglucemia persistente fuera del rango objetivo."
             resultado["conducta"] = "Dar aviso médico y seguir Algoritmo 2 según protocolo."
             resultado["requiere_recontrol"] = True
@@ -325,7 +348,8 @@ def evaluar_hiperglucemia(
             resultado["requiere_recontrol"] = True
             resultado["proximo_control"] = "Obtener tercera medición"
             resultado["comentario_control"] = (
-                "Evaluar si las 3 mediciones permanecen > 200 mg/dL y < 360 mg/dL en el mismo escalón."
+                "Evaluar si las 3 mediciones permanecen > 200 mg/dL y < 360 mg/dL "
+                "en el mismo escalón o en escalones contiguos."
             )
             return resultado
 

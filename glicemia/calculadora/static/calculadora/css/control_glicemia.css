@@ -61,7 +61,7 @@ body {
 }
 
 .hidden {
-    display: none;
+  display: none !important;
 }
 
 .field-group--locked {
@@ -334,7 +334,7 @@ input[type="number"]:focus,
 }
 
 .hidden {
-    display: none;
+  display: none !important;
 }
 
 /* =========================================================

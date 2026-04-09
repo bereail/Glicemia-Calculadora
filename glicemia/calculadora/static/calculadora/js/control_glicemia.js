@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-
   const inputActual = document.getElementById("id_glicemia_actual");
   const radiosInfusion = document.querySelectorAll('input[name="infusion_activa"]');
 
@@ -21,6 +20,11 @@ document.addEventListener("DOMContentLoaded", function () {
   const arrowAnteriorPrevia = document.getElementById("arrow-anterior-previa");
   const arrowPreviaActual = document.getElementById("arrow-previa-actual");
 
+  // TABLA DE ALGORITMOS
+  const btnTablaAlgoritmos = document.getElementById("btn-tabla-algoritmos");
+  const modalTablaAlgoritmos = document.getElementById("modal-tabla-algoritmos");
+  const cerrarTablaAlgoritmos = document.getElementById("cerrar-tabla-algoritmos");
+
   function obtenerActual() {
     const valor = parseFloat(inputActual?.value);
     return Number.isFinite(valor) ? valor : null;
@@ -35,123 +39,203 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function mostrar(el) {
-    if (el) el.classList.remove("hidden");
+    if (!el) return;
+    el.classList.remove("hidden");
+    el.style.display = "";
   }
 
   function ocultar(el) {
-    if (el) el.classList.add("hidden");
+    if (!el) return;
+    el.classList.add("hidden");
+    el.style.display = "none";
   }
 
   function resetSecuencia() {
-    stepAnterior.className = "glicemia-secuencia__step glicemia-secuencia__step--muted";
-    stepPrevia.className = "glicemia-secuencia__step";
-    stepActual.className = "glicemia-secuencia__step glicemia-secuencia__step--active";
+    if (stepAnterior) {
+      stepAnterior.className = "glicemia-secuencia__step glicemia-secuencia__step--muted";
+      stepAnterior.textContent = "Anterior (1)";
+      stepAnterior.classList.remove("hidden");
+      stepAnterior.style.display = "";
+    }
 
-    stepAnterior.textContent = "Anterior (1)";
-    stepPrevia.textContent = "Previa (2)";
-    stepActual.textContent = "Actual (3)";
+    if (stepPrevia) {
+      stepPrevia.className = "glicemia-secuencia__step";
+      stepPrevia.textContent = "Previa (2)";
+      stepPrevia.classList.remove("hidden");
+      stepPrevia.style.display = "";
+    }
 
-    arrowAnteriorPrevia?.classList.remove("hidden");
-    arrowPreviaActual?.classList.remove("hidden");
+    if (stepActual) {
+      stepActual.className = "glicemia-secuencia__step glicemia-secuencia__step--active";
+      stepActual.textContent = "Actual (3)";
+      stepActual.classList.remove("hidden");
+      stepActual.style.display = "";
+    }
+
+    if (arrowAnteriorPrevia) {
+      arrowAnteriorPrevia.classList.remove("hidden");
+      arrowAnteriorPrevia.style.display = "";
+    }
+
+    if (arrowPreviaActual) {
+      arrowPreviaActual.classList.remove("hidden");
+      arrowPreviaActual.style.display = "";
+    }
   }
 
-  function secuenciaDosMediciones() {
+  function secuenciaDosMediciones(obligatoria = true) {
     resetSecuencia();
 
-    stepAnterior.classList.add("hidden");
-    arrowAnteriorPrevia?.classList.add("hidden");
+    if (stepAnterior) {
+      stepAnterior.classList.add("hidden");
+      stepAnterior.style.display = "none";
+    }
 
-    stepPrevia.className = "glicemia-secuencia__step glicemia-secuencia__step--required";
-    stepActual.className = "glicemia-secuencia__step glicemia-secuencia__step--active";
+    if (arrowAnteriorPrevia) {
+      arrowAnteriorPrevia.classList.add("hidden");
+      arrowAnteriorPrevia.style.display = "none";
+    }
 
-    stepPrevia.textContent = "Previa (obligatoria)";
-    stepActual.textContent = "Actual";
+    if (stepPrevia) {
+      stepPrevia.className = obligatoria
+        ? "glicemia-secuencia__step glicemia-secuencia__step--required"
+        : "glicemia-secuencia__step";
+      stepPrevia.textContent = obligatoria ? "Previa (obligatoria)" : "Previa";
+      stepPrevia.style.display = "";
+    }
+
+    if (stepActual) {
+      stepActual.className = "glicemia-secuencia__step glicemia-secuencia__step--active";
+      stepActual.textContent = "Actual";
+      stepActual.style.display = "";
+    }
   }
 
   function secuenciaTresMediciones() {
     resetSecuencia();
 
-    stepAnterior.classList.remove("hidden");
-    arrowAnteriorPrevia?.classList.remove("hidden");
-
-    stepAnterior.className = "glicemia-secuencia__step";
-    stepPrevia.className = "glicemia-secuencia__step glicemia-secuencia__step--required";
-    stepActual.className = "glicemia-secuencia__step glicemia-secuencia__step--active";
-  }
-
-
- function actualizarFormulario() {
-  const actual = obtenerActual();
-  const infusion = infusionActiva();
-
-  resetSecuencia();
-
-  if (actual === null) {
-    ocultar(hipoHelperBox);
-    ocultar(bloqueContexto);
-    ocultar(previasBox);
-    ocultar(anteriorContainer);
-    ocultar(secuenciaMediciones);
-    return;
-  }
-
-  if (actual <= 70) {
-    mostrar(hipoHelperBox);
-    ocultar(bloqueContexto);
-    ocultar(previasBox);
-    ocultar(anteriorContainer);
-    ocultar(secuenciaMediciones);
-    return;
-  }
-
-  ocultar(hipoHelperBox);
-  mostrar(bloqueContexto);
-
-  if (infusion === null) {
-    ocultar(previasBox);
-    ocultar(anteriorContainer);
-    ocultar(secuenciaMediciones);
-    return;
-  }
-
-  mostrar(previasBox);
-
-  if (infusion) {
-    helperPrevia.textContent = "La glicemia previa es obligatoria para evaluar tendencia.";
-    labelPreviaHint.textContent = "(obligatoria)";
-
-    if (actual > 200) {
-      mostrar(secuenciaMediciones);
-    } else {
-      ocultar(secuenciaMediciones);
+    if (stepAnterior) {
+      stepAnterior.className = "glicemia-secuencia__step";
+      stepAnterior.textContent = "Anterior (1)";
+      stepAnterior.classList.remove("hidden");
+      stepAnterior.style.display = "";
     }
 
-    if (actual > 200 && actual < 360) {
-      mostrar(anteriorContainer);
-      secuenciaTresMediciones();
-    } else {
+    if (arrowAnteriorPrevia) {
+      arrowAnteriorPrevia.classList.remove("hidden");
+      arrowAnteriorPrevia.style.display = "";
+    }
+
+    if (stepPrevia) {
+      stepPrevia.className = "glicemia-secuencia__step glicemia-secuencia__step--required";
+      stepPrevia.textContent = "Previa (2)";
+      stepPrevia.style.display = "";
+    }
+
+    if (stepActual) {
+      stepActual.className = "glicemia-secuencia__step glicemia-secuencia__step--active";
+      stepActual.textContent = "Actual (3)";
+      stepActual.style.display = "";
+    }
+  }
+
+  function actualizarFormulario() {
+    const actual = obtenerActual();
+    const infusion = infusionActiva();
+
+    resetSecuencia();
+
+    if (actual === null) {
+      ocultar(hipoHelperBox);
+      ocultar(bloqueContexto);
+      ocultar(helperPreviaContainer);
+      ocultar(previasBox);
       ocultar(anteriorContainer);
-      secuenciaDosMediciones();
-    }
-
-  } else {
-    helperPrevia.textContent = "La glicemia previa ayuda a evaluar tendencia.";
-    labelPreviaHint.textContent = "(opcional)";
-
-    ocultar(anteriorContainer);
-
-    if (actual > 200) {
-      mostrar(secuenciaMediciones);
-    } else {
       ocultar(secuenciaMediciones);
+      return;
     }
 
-    secuenciaDosMediciones();
+    if (actual <= 70) {
+      mostrar(hipoHelperBox);
+      ocultar(bloqueContexto);
+      ocultar(helperPreviaContainer);
+      ocultar(previasBox);
+      ocultar(anteriorContainer);
+      ocultar(secuenciaMediciones);
+      return;
+    }
+
+    ocultar(hipoHelperBox);
+    mostrar(bloqueContexto);
+
+    if (infusion === null) {
+      ocultar(helperPreviaContainer);
+      ocultar(previasBox);
+      ocultar(anteriorContainer);
+      ocultar(secuenciaMediciones);
+      return;
+    }
+
+    mostrar(helperPreviaContainer);
+    mostrar(previasBox);
+
+    if (infusion) {
+      if (helperPrevia) {
+        helperPrevia.textContent = "La glicemia previa es obligatoria para evaluar tendencia.";
+      }
+      if (labelPreviaHint) {
+        labelPreviaHint.textContent = "(obligatoria)";
+      }
+
+      if (actual > 200 && actual < 360) {
+        mostrar(secuenciaMediciones);
+        mostrar(anteriorContainer);
+        secuenciaTresMediciones();
+      } else {
+        ocultar(secuenciaMediciones);
+        ocultar(anteriorContainer);
+        secuenciaDosMediciones(true);
+      }
+    } else {
+      if (helperPrevia) {
+        helperPrevia.textContent = "La glicemia previa ayuda a evaluar tendencia.";
+      }
+      if (labelPreviaHint) {
+        labelPreviaHint.textContent = "(opcional)";
+      }
+
+      ocultar(anteriorContainer);
+      ocultar(secuenciaMediciones);
+      secuenciaDosMediciones(false);
+    }
   }
-}
 
-inputActual?.addEventListener("input", actualizarFormulario);
-radiosInfusion.forEach(r => r.addEventListener("change", actualizarFormulario));
+  // EVENTOS TABLA DE ALGORITMOS
+  if (btnTablaAlgoritmos && modalTablaAlgoritmos) {
+    btnTablaAlgoritmos.addEventListener("click", function () {
+      modalTablaAlgoritmos.classList.remove("hidden");
+      modalTablaAlgoritmos.style.display = "flex";
+    });
+  }
 
-actualizarFormulario();
+  if (cerrarTablaAlgoritmos && modalTablaAlgoritmos) {
+    cerrarTablaAlgoritmos.addEventListener("click", function () {
+      modalTablaAlgoritmos.classList.add("hidden");
+      modalTablaAlgoritmos.style.display = "none";
+    });
+  }
+
+  if (modalTablaAlgoritmos) {
+    modalTablaAlgoritmos.addEventListener("click", function (e) {
+      if (e.target === modalTablaAlgoritmos) {
+        modalTablaAlgoritmos.classList.add("hidden");
+        modalTablaAlgoritmos.style.display = "none";
+      }
+    });
+  }
+
+  inputActual?.addEventListener("input", actualizarFormulario);
+  radiosInfusion.forEach((r) => r.addEventListener("change", actualizarFormulario));
+
+  actualizarFormulario();
 });

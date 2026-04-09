@@ -2,8 +2,8 @@ from django import forms
 
 
 SI_NO_CHOICES = [
-    ("si", "Sí"),
-    ("no", "No"),
+    ("true", "Sí"),
+    ("false", "No"),
 ]
 
 
@@ -25,11 +25,8 @@ class GlucemiaForm(forms.Form):
     infusion_activa = forms.TypedChoiceField(
         label="¿Infusión activa?",
         required=False,
-        coerce=lambda x: str(x).lower() in ("true", "1", "si", "sí"),
-        choices=(
-            ("True", "Sí"),
-            ("False", "No"),
-        ),
+        coerce=lambda x: str(x).lower() == "true",
+        choices=SI_NO_CHOICES,
         widget=forms.RadioSelect(attrs={
             "class": "radio-inline",
             "id": "id_infusion_activa",
@@ -67,11 +64,11 @@ class GlucemiaForm(forms.Form):
     hubo_ajuste_insulina = forms.TypedChoiceField(
         label="¿Hubo ajuste de insulina?",
         required=False,
-        coerce=lambda x: str(x).lower() in ("true", "1", "si", "sí"),
+        coerce=lambda x: str(x).lower() == "true",
         choices=(
             ("", "Seleccionar"),
-            ("True", "Sí"),
-            ("False", "No"),
+            ("true", "Sí"),
+            ("false", "No"),
         ),
         widget=forms.RadioSelect(attrs={
             "class": "radio-inline",
@@ -121,8 +118,8 @@ class GlucemiaForm(forms.Form):
                 "Para usar la tercera medición, primero necesitás una glicemia previa."
             )
 
-        # Ajuste solo aplica si hay infusión
-        if hubo_ajuste_insulina and not infusion_activa:
+        # Ajuste solo aplica si hay infusión activa
+        if hubo_ajuste_insulina is not None and hubo_ajuste_insulina and not infusion_activa:
             self.add_error(
                 "hubo_ajuste_insulina",
                 "El ajuste de insulina solo aplica si hay infusión activa."
@@ -149,11 +146,14 @@ class PasoInicialForm(forms.Form):
         }),
     )
 
-    infusion_activa = forms.ChoiceField(
+    infusion_activa = forms.TypedChoiceField(
         label="¿Infusión activa?",
-        choices=SI_NO_CHOICES,
         required=False,
-        widget=forms.RadioSelect(attrs={"class": "radio-inline"}),
+        coerce=lambda x: str(x).lower() == "true",
+        choices=SI_NO_CHOICES,
+        widget=forms.RadioSelect(attrs={
+            "class": "radio-inline",
+        }),
     )
 
     glicemia_previa = forms.IntegerField(
@@ -180,7 +180,14 @@ class PasoInicialForm(forms.Form):
         if actual <= 70:
             return cleaned_data
 
-        if infusion_activa == "si" and glicemia_previa is None:
+        if infusion_activa is None:
+            self.add_error(
+                "infusion_activa",
+                "Debés indicar si tiene infusión activa."
+            )
+            return cleaned_data
+
+        if infusion_activa and glicemia_previa is None:
             self.add_error(
                 "glicemia_previa",
                 "La glicemia previa es obligatoria si hay infusión activa."
