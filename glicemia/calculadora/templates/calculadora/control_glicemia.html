@@ -40,19 +40,11 @@
             step="1"
             value="{{ form.glicemia_actual.value|default_if_none:'' }}"
           >
-
-          {% if form.glicemia_actual.errors %}
-            <div class="error-list">
-              {% for error in form.glicemia_actual.errors %}
-                <span class="error-item">{{ error }}</span>
-              {% endfor %}
-            </div>
-          {% endif %}
         </div>
 
         <!-- HIPO DIRECTA -->
         <div id="hipo_helper_box" class="field-helper field-helper--warning hidden">
-          La glicemia actual es ≤ 70 mg/dL. Se prioriza manejo de hipoglucemia y no se requieren más datos para esta clasificación inicial.
+          La glicemia actual es ≤ 70 mg/dL. Se prioriza manejo de hipoglucemia.
         </div>
 
         <!-- CONTEXTO -->
@@ -75,135 +67,92 @@
                 </label>
               {% endfor %}
             </div>
-
-            {% if form.infusion_activa.errors %}
-              <div class="error-list">
-                {% for error in form.infusion_activa.errors %}
-                  <span class="error-item">{{ error }}</span>
-                {% endfor %}
-              </div>
-            {% endif %}
           </div>
 
-          <!-- MENSAJE GUÍA -->
-          <div id="helper_previa_container" class="field-group hidden">
-            <p id="helper_previa" class="field-helper"></p>
+          <!-- SECUENCIA -->
+          <div id="secuencia_mediciones" class="glicemia-secuencia hidden">
+            <div class="glicemia-secuencia__title">Secuencia de evaluación</div>
+            <div class="glicemia-secuencia__steps">
+
+              <span class="glicemia-secuencia__step glicemia-secuencia__step--muted">
+                Anterior (1)
+              </span>
+
+              <span class="glicemia-secuencia__arrow">→</span>
+
+              <span class="glicemia-secuencia__step">
+                Previa (2)
+              </span>
+
+              <span class="glicemia-secuencia__arrow">→</span>
+
+              <span class="glicemia-secuencia__step glicemia-secuencia__step--active">
+                Actual (3)
+              </span>
+
+            </div>
           </div>
 
-          <!-- SECUENCIA VISUAL -->
-<div id="secuencia_mediciones" class="glicemia-secuencia hidden" aria-live="polite">
-  <div class="glicemia-secuencia__title">Secuencia de evaluación</div>
-  <div class="glicemia-secuencia__steps">
-    <span class="glicemia-secuencia__step glicemia-secuencia__step--muted" id="step-anterior">
-      Anterior (1)
-    </span>
-
-    <span class="glicemia-secuencia__arrow" id="arrow-anterior-previa">→</span>
-
-    <span class="glicemia-secuencia__step" id="step-previa">
-      Previa (2)
-    </span>
-
-    <span class="glicemia-secuencia__arrow" id="arrow-previa-actual">→</span>
-
-    <span class="glicemia-secuencia__step glicemia-secuencia__step--active" id="step-actual">
-      Actual (3)
-    </span>
-  </div>
-</div>
-
-          <!-- BLOQUE PREVIAS -->
+          <!-- PREVIAS -->
           <div id="previas_box" class="field-group hidden">
 
             <div class="field-group">
-              <label for="id_glicemia_previa">
-                Glicemia previa
-                <span id="label_previa_hint" class="muted">(opcional)</span>
-              </label>
-
+              <label for="id_glicemia_previa">Glicemia previa</label>
               <input
                 type="number"
                 name="glicemia_previa"
                 id="id_glicemia_previa"
                 class="input-control"
                 placeholder="Ej: 210"
-                min="0"
-                step="1"
-                value="{{ form.glicemia_previa.value|default_if_none:'' }}"
               >
-
-              {% if form.glicemia_previa.errors %}
-                <div class="error-list">
-                  {% for error in form.glicemia_previa.errors %}
-                    <span class="error-item">{{ error }}</span>
-                  {% endfor %}
-                </div>
-              {% endif %}
             </div>
 
             <div id="anterior_container" class="field-group hidden">
-              <label for="id_tercera_medicion">
-                Glicemia anterior
-                <span class="muted">(opcional)</span>
-              </label>
-
+              <label for="id_tercera_medicion">Glicemia anterior</label>
               <input
                 type="number"
                 name="tercera_medicion"
                 id="id_tercera_medicion"
                 class="input-control"
                 placeholder="Ej: 230"
-                min="0"
-                step="1"
-                value="{{ form.tercera_medicion.value|default_if_none:'' }}"
               >
-
-              {% if form.tercera_medicion.errors %}
-                <div class="error-list">
-                  {% for error in form.tercera_medicion.errors %}
-                    <span class="error-item">{{ error }}</span>
-                  {% endfor %}
-                </div>
-              {% endif %}
             </div>
 
           </div>
         </div>
 
-        {% if form.non_field_errors %}
-          <div class="error-list">
-            {% for error in form.non_field_errors %}
-              <span class="error-item">{{ error }}</span>
-            {% endfor %}
-          </div>
-        {% endif %}
-
         <div class="actions">
           <button type="submit" class="btn-primary">Evaluar</button>
         </div>
 
+        <!-- TABLA / BOTÓN -->
         {% include "calculadora/partials/tabla_algoritmos.html" %}
+
       </form>
     </section>
 
     {% if resultado %}
-      {% with estado_lower=resultado.estado|default:''|lower %}
-        {% if "hipogluc" in estado_lower %}
-          {% include "calculadora/partials/resultado_hipo.html" %}
-        {% elif "hipergluc" in estado_lower or "fuera de objetivo" in estado_lower or "refractaria" in estado_lower or "persistente" in estado_lower %}
-          {% include "calculadora/partials/resultado_hiper.html" %}
-        {% elif resultado.clase == "en_rango" or "en rango" in estado_lower or "objetivo con infusión" in estado_lower or "objetivo con ascenso" in estado_lower or "objetivo con descenso" in estado_lower %}
-          {% include "calculadora/partials/resultado_rango.html" %}
-        {% else %}
-          {% include "calculadora/partials/resultado_hiper.html" %}
-        {% endif %}
-      {% endwith %}
+      {% include "calculadora/partials/resultado_hiper.html" %}
     {% endif %}
 
   </div>
 </div>
+
+<!-- 🔥 MODAL (ESTO ES LO QUE TE FALTABA) -->
+<div id="modal-algoritmo" class="algoritmo-modal">
+  <div class="algoritmo-modal__content">
+
+    <button id="cerrar-modal-algoritmo" class="algoritmo-modal__close">
+      ×
+    </button>
+
+    <img id="img-algoritmo" src="" alt="Algoritmo">
+
+  </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=20260408"></script>
+<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=3"></script>
 {% endblock %}

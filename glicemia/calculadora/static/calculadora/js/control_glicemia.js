@@ -22,8 +22,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // TABLA DE ALGORITMOS
   const btnTablaAlgoritmos = document.getElementById("btn-tabla-algoritmos");
-  const modalTablaAlgoritmos = document.getElementById("modal-tabla-algoritmos");
-  const cerrarTablaAlgoritmos = document.getElementById("cerrar-tabla-algoritmos");
+  const modalTabla = document.getElementById("modal-tabla");
+  const cerrarModalTabla = document.getElementById("cerrar-modal-tabla");
+  const btnCerrarTabla = document.getElementById("btn-cerrar-tabla");
 
   function obtenerActual() {
     const valor = parseFloat(inputActual?.value);
@@ -48,6 +49,20 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!el) return;
     el.classList.add("hidden");
     el.style.display = "none";
+  }
+
+  function abrirModalTabla() {
+    if (!modalTabla) return;
+    modalTabla.classList.remove("hidden");
+    modalTabla.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+  }
+
+  function cerrarModal() {
+    if (!modalTabla) return;
+    modalTabla.classList.add("hidden");
+    modalTabla.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
   }
 
   function resetSecuencia() {
@@ -210,32 +225,68 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // EVENTOS TABLA DE ALGORITMOS
-  if (btnTablaAlgoritmos && modalTablaAlgoritmos) {
-    btnTablaAlgoritmos.addEventListener("click", function () {
-      modalTablaAlgoritmos.classList.remove("hidden");
-      modalTablaAlgoritmos.style.display = "flex";
-    });
+  if (btnTablaAlgoritmos) {
+    btnTablaAlgoritmos.addEventListener("click", abrirModalTabla);
   }
 
-  if (cerrarTablaAlgoritmos && modalTablaAlgoritmos) {
-    cerrarTablaAlgoritmos.addEventListener("click", function () {
-      modalTablaAlgoritmos.classList.add("hidden");
-      modalTablaAlgoritmos.style.display = "none";
-    });
+  if (cerrarModalTabla) {
+    cerrarModalTabla.addEventListener("click", cerrarModal);
   }
 
-  if (modalTablaAlgoritmos) {
-    modalTablaAlgoritmos.addEventListener("click", function (e) {
-      if (e.target === modalTablaAlgoritmos) {
-        modalTablaAlgoritmos.classList.add("hidden");
-        modalTablaAlgoritmos.style.display = "none";
+  if (btnCerrarTabla) {
+    btnCerrarTabla.addEventListener("click", cerrarModal);
+  }
+
+  if (modalTabla) {
+    modalTabla.addEventListener("click", function (e) {
+      if (e.target === modalTabla) {
+        cerrarModal();
       }
     });
   }
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      cerrarModal();
+    }
+  });
 
   inputActual?.addEventListener("input", actualizarFormulario);
   radiosInfusion.forEach((r) => r.addEventListener("change", actualizarFormulario));
 
   actualizarFormulario();
+});
+
+document.addEventListener("click", function (e) {
+  const link = e.target.closest(".link-algoritmo");
+  if (!link) return;
+
+  const algoritmo = link.dataset.algoritmo;
+  console.log("click algoritmo:", algoritmo);
+
+  const modal = document.getElementById("modal-algoritmo");
+  const img = document.getElementById("img-algoritmo");
+
+  if (!modal) {
+    console.error("No existe #modal-algoritmo");
+    return;
+  }
+
+  if (!img) {
+    console.error("No existe #img-algoritmo");
+    return;
+  }
+
+  img.src = `/static/calculadora/img/algoritmo_${algoritmo}.png`;
+  img.alt = `Algoritmo ${algoritmo}`;
+  modal.classList.add("active");
+});
+
+document.addEventListener("click", function (e) {
+  if (e.target.matches("#modal-algoritmo, #cerrar-modal-algoritmo")) {
+    const modal = document.getElementById("modal-algoritmo");
+    if (modal) {
+      modal.classList.remove("active");
+    }
+  }
 });

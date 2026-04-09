@@ -22,15 +22,17 @@ class GlucemiaForm(forms.Form):
         }),
     )
 
-    infusion_activa = forms.TypedChoiceField(
+    infusion_activa = forms.ChoiceField(
         label="¿Infusión activa?",
         required=False,
-        coerce=lambda x: str(x).lower() == "true",
         choices=SI_NO_CHOICES,
         widget=forms.RadioSelect(attrs={
             "class": "radio-inline",
-            "id": "id_infusion_activa",
         }),
+        error_messages={
+            "required": "Debés indicar si tiene infusión activa.",
+            "invalid_choice": "Seleccione una opción válida.",
+        },
     )
 
     glicemia_previa = forms.DecimalField(
@@ -61,18 +63,12 @@ class GlucemiaForm(forms.Form):
         }),
     )
 
-    hubo_ajuste_insulina = forms.TypedChoiceField(
+    hubo_ajuste_insulina = forms.ChoiceField(
         label="¿Hubo ajuste de insulina?",
         required=False,
-        coerce=lambda x: str(x).lower() == "true",
-        choices=(
-            ("", "Seleccionar"),
-            ("true", "Sí"),
-            ("false", "No"),
-        ),
+        choices=SI_NO_CHOICES,
         widget=forms.RadioSelect(attrs={
             "class": "radio-inline",
-            "id": "id_hubo_ajuste_insulina",
         }),
     )
 
@@ -96,8 +92,20 @@ class GlucemiaForm(forms.Form):
         actual = cleaned_data.get("glicemia_actual")
         previa = cleaned_data.get("glicemia_previa")
         tercera_medicion = cleaned_data.get("tercera_medicion")
-        infusion_activa = cleaned_data.get("infusion_activa")
-        hubo_ajuste_insulina = cleaned_data.get("hubo_ajuste_insulina")
+
+        infusion_raw = cleaned_data.get("infusion_activa")
+        if infusion_raw in (None, ""):
+            infusion_activa = None
+        else:
+            infusion_activa = infusion_raw == "true"
+        cleaned_data["infusion_activa"] = infusion_activa
+
+        ajuste_raw = cleaned_data.get("hubo_ajuste_insulina")
+        if ajuste_raw in (None, ""):
+            hubo_ajuste_insulina = None
+        else:
+            hubo_ajuste_insulina = ajuste_raw == "true"
+        cleaned_data["hubo_ajuste_insulina"] = hubo_ajuste_insulina
 
         if actual is None:
             return cleaned_data
@@ -108,7 +116,10 @@ class GlucemiaForm(forms.Form):
 
         # > 70: preguntar infusión sí o sí
         if infusion_activa is None:
-            self.add_error("infusion_activa", "Debés indicar si tiene infusión activa.")
+            self.add_error(
+                "infusion_activa",
+                "Debés indicar si tiene infusión activa."
+            )
             return cleaned_data
 
         # Si hay tercera medición, primero debe haber previa
@@ -119,7 +130,7 @@ class GlucemiaForm(forms.Form):
             )
 
         # Ajuste solo aplica si hay infusión activa
-        if hubo_ajuste_insulina is not None and hubo_ajuste_insulina and not infusion_activa:
+        if hubo_ajuste_insulina is not None and not infusion_activa:
             self.add_error(
                 "hubo_ajuste_insulina",
                 "El ajuste de insulina solo aplica si hay infusión activa."
@@ -146,14 +157,17 @@ class PasoInicialForm(forms.Form):
         }),
     )
 
-    infusion_activa = forms.TypedChoiceField(
+    infusion_activa = forms.ChoiceField(
         label="¿Infusión activa?",
         required=False,
-        coerce=lambda x: str(x).lower() == "true",
         choices=SI_NO_CHOICES,
         widget=forms.RadioSelect(attrs={
             "class": "radio-inline",
         }),
+        error_messages={
+            "required": "Debés indicar si tiene infusión activa.",
+            "invalid_choice": "Seleccione una opción válida.",
+        },
     )
 
     glicemia_previa = forms.IntegerField(
@@ -171,8 +185,14 @@ class PasoInicialForm(forms.Form):
         cleaned_data = super().clean()
 
         actual = cleaned_data.get("glicemia_actual")
-        infusion_activa = cleaned_data.get("infusion_activa")
         glicemia_previa = cleaned_data.get("glicemia_previa")
+
+        infusion_raw = cleaned_data.get("infusion_activa")
+        if infusion_raw in (None, ""):
+            infusion_activa = None
+        else:
+            infusion_activa = infusion_raw == "true"
+        cleaned_data["infusion_activa"] = infusion_activa
 
         if actual is None:
             return cleaned_data

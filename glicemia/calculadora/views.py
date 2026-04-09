@@ -309,7 +309,7 @@ def home(request):
         if form.is_valid():
             actual = form.cleaned_data["glicemia_actual"]
             previa = form.cleaned_data.get("glicemia_previa")
-            infusion_activa = form.cleaned_data.get("infusion_activa") == "si"
+            infusion_activa = form.cleaned_data.get("infusion_activa")
 
             resultado = evaluar_glucemia_service(
                 actual=actual,
@@ -360,7 +360,7 @@ def calculadora_guiada(request):
         if form.is_valid():
             actual = form.cleaned_data["glicemia_actual"]
             previa = form.cleaned_data.get("glicemia_previa")
-            infusion_activa = form.cleaned_data.get("infusion_activa") == "si"
+            infusion_activa = form.cleaned_data.get("infusion_activa")
 
             resultado = evaluar_glucemia_service(
                 actual=actual,
