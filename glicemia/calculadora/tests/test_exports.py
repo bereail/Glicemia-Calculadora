@@ -19,12 +19,12 @@ class ExportacionesHistorialTest(TestCase):
 
         MedicionGlucemia.objects.create(
             usuario=self.user,
-            glucemia=180,
+            glucemia_actual=180,
             modo="inicio",
             infusion_activa=True,
             glucemia_previa=170,
             estado="Hiperglucemia",
-            clase="warn",
+            clase="hiperglucemia",
             conducta="Ajustar infusión según algoritmo",
             mensaje="Glucemia por encima del objetivo.",
             proximo_control="Cada 4 horas (primeras 24 h) y luego cada 6 h si estable",

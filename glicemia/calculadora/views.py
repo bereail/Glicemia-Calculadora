@@ -10,12 +10,6 @@ from django.utils import timezone
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
 
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4, landscape
-from reportlab.lib.units import mm
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
-
 from .forms import GlucemiaForm, PasoInicialForm
 from .models import MedicionGlucemia
 from .services import evaluar_glucemia_service
@@ -563,6 +557,12 @@ def exportar_historial_excel(request):
 @login_required
 @user_passes_test(tiene_acceso_home, login_url="/login/")
 def exportar_historial_pdf(request):
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib.units import mm
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
     mediciones, usuario, estado, clase, periodo = _filtrar_mediciones_desde_request(request)
 
     buffer = BytesIO()
