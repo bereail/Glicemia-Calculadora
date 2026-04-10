@@ -1,95 +1,54 @@
-<section class="panel panel-result resultado-screen resultado-screen--hipo
-  {% if resultado.clase_visual == 'critico' %}
-    resultado-screen--critico
-  {% elif resultado.clase_visual == 'alerta' %}
-    resultado-screen--alerta
-  {% else %}
-    resultado-screen--rango
-  {% endif %}
-">
-
+<section class="panel panel-result resultado-screen resultado-screen--hipo">
   <div class="result-top">
     <span class="result-chip">Resultado</span>
   </div>
 
-  <h2 class="result-title">
-    {{ resultado.resumen_objetivo|default:"Fuera de rango objetivo" }}
-  </h2>
+  <!-- CABECERA PRINCIPAL -->
+  <div class="resultado-header-clinico">
+    <div class="resultado-header-clinico__main">
+      <p class="resultado-header-clinico__label">Situación actual</p>
+      <h2 class="result-title">
+        {{ resultado.resumen_objetivo|default:"Fuera de rango objetivo" }}
+      </h2>
+    </div>
 
-  {% if resultado.texto_rango_objetivo %}
-    <p class="result-subtitle">{{ resultado.texto_rango_objetivo }}</p>
-  {% endif %}
-
-  <div class="estado-box
-    {% if resultado.clase_visual == 'critico' %}
-      estado-box--critico
-    {% elif resultado.clase_visual == 'alerta' %}
-      estado-box--alerta
-    {% else %}
-      estado-box--rango
-    {% endif %}
-  ">
-    <div class="estado-box__label">Estado</div>
-    <div class="estado-box__value">
-      {{ resultado.estado|cut:"_"|title }}
+    <div class="resultado-header-clinico__estado">
+      <span class="resultado-header-clinico__estado-label">Estado</span>
+      <span class="resultado-header-clinico__estado-value">
+        {{ resultado.estado }}
+      </span>
     </div>
   </div>
 
+  <!-- CONDUCTA: lo más importante -->
   {% if resultado.conducta %}
-    <div class="result-card
-      {% if resultado.clase_visual == 'critico' %}
-        result-card--critical
-      {% elif resultado.clase_visual == 'alerta' %}
-        result-card--alerta
-      {% else %}
-        result-card--rango
-      {% endif %}
-    ">
-      <h3>Conducta</h3>
-      <p>{{ resultado.conducta }}</p>
+    <div class="result-card result-card--hipo-critical">
+      <div class="result-card__eyebrow">Conducta inmediata</div>
+      <h3 class="result-card__title result-card__title--danger">Actuar ahora</h3>
+      <p class="result-card__text">{{ resultado.conducta|safe }}</p>
     </div>
   {% endif %}
 
+  <!-- PRÓXIMO CONTROL -->
   {% if resultado.proximo_control %}
-    <div class="resultado-hipo-control-block">
-      <div class="resultado-hipo-control-card
-        {% if resultado.clase_visual == 'critico' %}
-          resultado-hipo-control-card--critico
-        {% elif resultado.clase_visual == 'alerta' %}
-          resultado-hipo-control-card--alerta
-        {% else %}
-          resultado-hipo-control-card--rango
-        {% endif %}
-      ">
-        <h3 class="resultado-hipo-control-title">Próximo control</h3>
-        <div class="resultado-hipo-control-value">
-          {{ resultado.proximo_control }}
-        </div>
-      </div>
+    <div class="resultado-prioridad resultado-prioridad--hipo">
+      <div class="resultado-prioridad__label">Próximo control</div>
+      <div class="resultado-prioridad__value">{{ resultado.proximo_control }}</div>
     </div>
   {% endif %}
 
-  {% if resultado.comentario_control or resultado.suspender_insulina or resultado.administrar_dextrosa or resultado.reiniciar_insulina %}
-    <div class="resultado-hipo-control-alert
-      {% if resultado.clase_visual == 'critico' %}
-        resultado-hipo-control-alert--critico
-      {% elif resultado.clase_visual == 'alerta' %}
-        resultado-hipo-control-alert--alerta
-      {% else %}
-        resultado-hipo-control-alert--rango
-      {% endif %}
-    ">
-      <div class="resultado-hipo-control-alert__icon">⚠</div>
-      <div class="resultado-hipo-control-alert__content">
-        <div class="resultado-hipo-control-alert__title">Advertencia clínica</div>
-        <div class="resultado-hipo-control-alert__text">
-          {% if resultado.comentario_control %}
-            {{ resultado.comentario_control }}
-          {% else %}
-            En pacientes insulinizados el monitoreo capilar puede ser inapropiado. Evaluar muestra venosa.
-          {% endif %}
-        </div>
-      </div>
+  <!-- DETALLES SECUNDARIOS -->
+  {% if resultado.texto_rango_objetivo %}
+    <div class="result-card result-card--neutral">
+      <h3>Rango objetivo utilizado</h3>
+      <p>{{ resultado.texto_rango_objetivo }}</p>
+    </div>
+  {% endif %}
+
+  {% if resultado.observacion %}
+    <div class="result-card result-card--neutral">
+      <h3>Observación</h3>
+      <p>{{ resultado.observacion }}</p>
     </div>
   {% endif %}
 </section>

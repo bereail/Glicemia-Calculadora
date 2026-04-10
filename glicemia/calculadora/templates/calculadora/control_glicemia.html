@@ -111,6 +111,8 @@
           </div>
         </div>
 
+        
+
         <div class="actions">
           <button type="submit" class="btn-primary">Evaluar</button>
         </div>
@@ -120,9 +122,16 @@
     </section>
 
     {% if resultado %}
-      {% include "calculadora/partials/resultado_hiper.html" %}
-    {% endif %}
-
+  {% if resultado.clase_visual == "critico" and "hipogluc" in resultado.estado|lower %}
+    {% include "calculadora/partials/resultado_hipo.html" %}
+  {% elif resultado.clase_visual == "alerta" %}
+    {% include "calculadora/partials/resultado_hiper.html" %}
+  {% elif resultado.clase_visual == "rango" %}
+    {% include "calculadora/partials/resultado_rango.html" %}
+  {% else %}
+    {% include "calculadora/partials/resultado_rango.html" %}
+  {% endif %}
+{% endif %}
   </div>
 </div>
 

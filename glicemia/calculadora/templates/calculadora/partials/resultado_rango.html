@@ -1,99 +1,25 @@
-<section class="panel panel-result resultado-screen resultado-screen--rango
-  {% if resultado.clase_visual == 'critico' %}
-    resultado-screen--critico
-  {% elif resultado.clase_visual == 'alerta' %}
-    resultado-screen--alerta
-  {% else %}
-    resultado-screen--rango
-  {% endif %}
-">
-
+<section class="panel panel-result resultado-screen resultado-screen--rango">
   <div class="result-top">
-    <span class="result-chip">Resultado</span>
+    <span class="result-chip">Resultados</span>
   </div>
 
-  <h2 class="result-title">
-    {{ resultado.resumen_objetivo|default:"En rango objetivo" }}
-  </h2>
+  <h2 class="result-title">Evaluación</h2>
 
-  {% if resultado.texto_rango_objetivo %}
-    <p class="result-subtitle">{{ resultado.texto_rango_objetivo }}</p>
-  {% endif %}
-
-  <div class="estado-box
-    {% if resultado.clase_visual == 'critico' %}
-      estado-box--critico
-    {% elif resultado.clase_visual == 'alerta' %}
-      estado-box--alerta
-    {% else %}
-      estado-box--rango
-    {% endif %}
-  ">
-    <div class="estado-box__label">Estado</div>
-    <div class="estado-box__value">
-      {{ resultado.estado }}
-    </div>
+  <div class="estado-box estado-box--rango">
+    <p class="estado-label">Estado</p>
+    <p class="estado-value">{{ resultado.estado }}</p>
   </div>
 
   {% if resultado.conducta %}
-    <div class="result-grid">
-      <div class="result-card
-        {% if resultado.clase_visual == 'critico' %}
-          result-card--critical
-        {% elif resultado.clase_visual == 'alerta' %}
-          result-card--alerta
-        {% else %}
-          result-card--rango
-        {% endif %}
-      ">
-        <h3>Conducta</h3>
-        <p>{{ resultado.conducta }}</p>
-      </div>
+    <div class="result-card result-card--rango">
+      <h3>Conducta sugerida</h3>
+      <p>{{ resultado.conducta|safe }}</p>
     </div>
   {% endif %}
 
   {% if resultado.proximo_control %}
-    <div class="resultado-rango-control-block">
-      <div class="resultado-rango-control-card
-        {% if resultado.clase_visual == 'critico' %}
-          resultado-rango-control-card--critico
-        {% elif resultado.clase_visual == 'alerta' %}
-          resultado-rango-control-card--alerta
-        {% else %}
-          resultado-rango-control-card--rango
-        {% endif %}
-      ">
-        <h3 class="resultado-rango-control-title">Próximo control</h3>
-        <div class="resultado-rango-control-value">
-          {{ resultado.proximo_control }}
-        </div>
-      </div>
-    </div>
-  {% endif %}
-
-  {% if resultado.alerta_borde_hipo or resultado.comentario_control %}
-    <div class="resultado-rango-control-alert
-      {% if resultado.clase_visual == 'critico' %}
-        resultado-rango-control-alert--critico
-      {% elif resultado.clase_visual == 'alerta' %}
-        resultado-rango-control-alert--alerta
-      {% else %}
-        resultado-rango-control-alert--rango
-      {% endif %}
-    ">
-      <div class="resultado-rango-control-alert__icon">⚠</div>
-      <div class="resultado-rango-control-alert__content">
-        <div class="resultado-rango-control-alert__title">Advertencia clínica</div>
-        <div class="resultado-rango-control-alert__text">
-          {% if resultado.alerta_borde_hipo %}
-            En objetivo, pero cercano a hipoglucemia. Vigilar evolución.
-          {% elif resultado.comentario_control %}
-            {{ resultado.comentario_control }}
-          {% else %}
-            En pacientes insulinizados el monitoreo capilar puede ser inapropiado. Evaluar muestra venosa.
-          {% endif %}
-        </div>
-      </div>
+    <div class="resultado-prioridad resultado-prioridad--rango">
+      <strong>Próximo control:</strong> {{ resultado.proximo_control }}
     </div>
   {% endif %}
 </section>
