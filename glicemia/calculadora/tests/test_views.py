@@ -44,7 +44,7 @@ class ControlGlicemiaViewTests(TestCase):
                 "glicemia_actual": 65,
                 "infusion_activa": self.VALOR_NO,
             },
-            follow=True
+            follow=True,
         )
 
         self.assertEqual(response.status_code, 200)
@@ -60,7 +60,7 @@ class ControlGlicemiaViewTests(TestCase):
                 "glicemia_actual": 70,
                 "infusion_activa": self.VALOR_NO,
             },
-            follow=True
+            follow=True,
         )
 
         self.assertEqual(response.status_code, 200)
@@ -76,7 +76,7 @@ class ControlGlicemiaViewTests(TestCase):
                 "glicemia_actual": 120,
                 "infusion_activa": self.VALOR_NO,
             },
-            follow=True
+            follow=True,
         )
 
         self.assertEqual(response.status_code, 200)
@@ -93,7 +93,7 @@ class ControlGlicemiaViewTests(TestCase):
                 "glicemia_previa": 140,
                 "infusion_activa": self.VALOR_NO,
             },
-            follow=True
+            follow=True,
         )
 
         self.assertEqual(response.status_code, 200)
@@ -110,7 +110,7 @@ class ControlGlicemiaViewTests(TestCase):
                 "glicemia_previa": 190,
                 "infusion_activa": self.VALOR_NO,
             },
-            follow=True
+            follow=True,
         )
 
         self.assertEqual(response.status_code, 200)
@@ -127,7 +127,7 @@ class ControlGlicemiaViewTests(TestCase):
                 "glicemia_previa": 170,
                 "infusion_activa": self.VALOR_SI,
             },
-            follow=True
+            follow=True,
         )
 
         self.assertEqual(response.status_code, 200)
@@ -143,7 +143,7 @@ class ControlGlicemiaViewTests(TestCase):
                 "glicemia_actual": 180,
                 "infusion_activa": self.VALOR_SI,
             },
-            follow=True
+            follow=True,
         )
 
         self.assertEqual(response.status_code, 200)
@@ -163,7 +163,7 @@ class ControlGlicemiaViewTests(TestCase):
                 "hubo_ajuste_insulina": self.VALOR_NO,
                 "tercera_medicion": 230,
             },
-            follow=True
+            follow=True,
         )
 
         self.assertEqual(response.status_code, 200)
@@ -180,7 +180,7 @@ class ControlGlicemiaViewTests(TestCase):
                 "glicemia_previa": 185,
                 "infusion_activa": self.VALOR_NO,
             },
-            follow=True
+            follow=True,
         )
 
         self.assertEqual(response.status_code, 200)

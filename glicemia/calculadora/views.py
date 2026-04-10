@@ -6,14 +6,12 @@ from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils import timezone
-
 from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.styles import Alignment, Font, PatternFill
 
-from .forms import GlucemiaForm, PasoInicialForm
+from .forms import GlucemiaForm
 from .models import MedicionGlucemia
 from .services import evaluar_glucemia_service
-
 
 # =========================================================
 # PERMISOS
@@ -32,7 +30,6 @@ def tiene_acceso_home(user):
         or user.groups.filter(name="Medicos").exists()
     )
 
-
 # =========================================================
 # HELPERS DE VISTA
 # =========================================================
@@ -50,13 +47,26 @@ def _normalizar_clase_desde_estado(estado):
     if "hipogluc" in estado:
         return "hipoglucemia"
 
-    if "post_hipo" in estado or "post_hipogluc" in estado or "rebote_post_hipoglucemia" in estado:
+    if (
+        "post_hipo" in estado
+        or "post_hipogluc" in estado
+        or "rebote_post_hipoglucemia" in estado
+    ):
         return "post_hipoglucemia"
 
-    if "rango" in estado or "objetivo" in estado or "estable en rango" in estado or "estable_en_rango" in estado:
+    if (
+        "rango" in estado
+        or "objetivo" in estado
+        or "estable en rango" in estado
+        or "estable_en_rango" in estado
+    ):
         return "en_rango"
 
-    if "hipergluc" in estado or "fuera de objetivo" in estado or "fuera_objetivo" in estado:
+    if (
+        "hipergluc" in estado
+        or "fuera de objetivo" in estado
+        or "fuera_objetivo" in estado
+    ):
         return "hiperglucemia"
 
     return "sin_clasificacion"
@@ -83,7 +93,11 @@ def _asignar_clase_visual(resultado):
         resultado["clase_visual"] = "critico"
         return resultado
 
-    if "fuera de objetivo" in estado and "persistente" not in estado and "refractaria" not in estado:
+    if (
+        "fuera de objetivo" in estado
+        and "persistente" not in estado
+        and "refractaria" not in estado
+    ):
         resultado["clase_visual"] = "alerta"
         return resultado
 
@@ -126,8 +140,8 @@ def _guardar_medicion(request, cleaned_data, resultado):
 
     medicion = MedicionGlucemia.objects.create(
         usuario=request.user,
-        glucemia_actual=int(cleaned_data["glicemia_actual"]),
-        glucemia_previa=(
+        glicemia_actual=int(cleaned_data["glicemia_actual"]),
+        glicemia_previa=(
             int(cleaned_data["glicemia_previa"])
             if cleaned_data.get("glicemia_previa") is not None
             else None
@@ -140,7 +154,6 @@ def _guardar_medicion(request, cleaned_data, resultado):
             else None
         ),
         modo=cleaned_data.get("modo") or "seguimiento",
-
         estado=_texto_seguro(resultado.get("estado")),
         subestado=_texto_seguro(resultado.get("subestado")),
         clase=clase,
@@ -152,11 +165,9 @@ def _guardar_medicion(request, cleaned_data, resultado):
             or resultado.get("comentario_control")
             or resultado.get("conducta_extra")
         ),
-
         tendencia=_texto_seguro(resultado.get("tendencia")),
         flecha_tendencia=_texto_seguro(resultado.get("flecha_tendencia")),
         delta=_texto_seguro(resultado.get("delta")),
-
         algoritmo_usado=_texto_seguro(
             resultado.get("algoritmo_usado") or resultado.get("algoritmo_sugerido")
         ),
@@ -164,13 +175,13 @@ def _guardar_medicion(request, cleaned_data, resultado):
         bolo_ui=_texto_seguro(resultado.get("bolo_inicial")),
         tasa_inicial_ui_h=_texto_seguro(resultado.get("tasa_inicial")),
         tasa_algoritmo=_texto_seguro(resultado.get("tasa_algoritmo")),
-
         requiere_recontrol=bool(resultado.get("requiere_recontrol")),
         suspender_insulina=bool(resultado.get("suspender_insulina")),
         administrar_dextrosa=bool(resultado.get("administrar_dextrosa")),
         reiniciar_insulina=bool(resultado.get("reiniciar_insulina")),
-
-        alerta_hgr=(clase == "hiperglucemia" and "refractaria" in _texto_seguro(estado).lower()),
+        alerta_hgr=(
+            clase == "hiperglucemia" and "refractaria" in _texto_seguro(estado).lower()
+        ),
     )
 
     return medicion
@@ -190,10 +201,7 @@ def _filtrar_mediciones_desde_request(request):
     periodo = request.GET.get("periodo", "").strip().lower()
 
     mediciones = (
-        MedicionGlucemia.objects
-        .select_related("usuario")
-        .all()
-        .order_by("-fecha_hora")
+        MedicionGlucemia.objects.select_related("usuario").all().order_by("-fecha_hora")
     )
 
     if usuario:
@@ -228,7 +236,6 @@ def _asignar_resumen_objetivo(resultado, infusion_activa):
         return resultado
 
     clase_visual = resultado.get("clase_visual")
-    estado = str(resultado.get("estado") or "").lower()
 
     if clase_visual == "rango":
         resultado["resumen_objetivo"] = "En rango objetivo"
@@ -242,6 +249,7 @@ def _asignar_resumen_objetivo(resultado, infusion_activa):
         resultado["texto_rango_objetivo"] = "Paciente no insulinizado: 70 a 180 mg/dL"
 
     return resultado
+
 # =========================================================
 # VISTA PRINCIPAL
 # =========================================================
@@ -287,114 +295,6 @@ def control_glicemia(request):
         },
     )
 
-
-# =========================================================
-# HOME / CALCULADORA GUIADA
-# =========================================================
-
-@login_required
-@user_passes_test(tiene_acceso_home, login_url="/login/")
-def home(request):
-    """
-    Home del módulo.
-    Podés usar esta misma vista como entrada principal si tu template home
-    muestra el formulario guiado o resumido.
-    """
-    resultado = None
-    medicion_guardada = None
-
-    if request.method == "POST":
-        form = PasoInicialForm(request.POST)
-
-        if form.is_valid():
-            actual = form.cleaned_data["glicemia_actual"]
-            previa = form.cleaned_data.get("glicemia_previa")
-            infusion_activa = form.cleaned_data.get("infusion_activa")
-
-            resultado = evaluar_glucemia_service(
-                actual=actual,
-                previa=previa,
-                infusion_activa=infusion_activa,
-            )
-
-            resultado = _asignar_clase_visual(resultado)
-            resultado = _asignar_resumen_objetivo(resultado, infusion_activa)
-
-            if request.user.is_authenticated:
-                cleaned_data_adaptado = {
-                    "glicemia_actual": actual,
-                    "glicemia_previa": previa,
-                    "infusion_activa": infusion_activa,
-                    "hubo_ajuste_insulina": False,
-                    "tercera_medicion": None,
-                    "modo": "seguimiento",
-                }
-                medicion_guardada = _guardar_medicion(request, cleaned_data_adaptado, resultado)
-    else:
-        form = PasoInicialForm()
-
-    return render(
-        request,
-        "calculadora/home.html",
-        {
-            "form": form,
-            "resultado": resultado,
-            "medicion_guardada": medicion_guardada,
-        },
-    )
-
-
-@login_required
-@user_passes_test(tiene_acceso_home, login_url="/login/")
-def calculadora_guiada(request):
-    """
-    Alias funcional de home().
-    La dejo separada por si querés otra template después.
-    """
-    resultado = None
-    medicion_guardada = None
-
-    if request.method == "POST":
-        form = PasoInicialForm(request.POST)
-
-        if form.is_valid():
-            actual = form.cleaned_data["glicemia_actual"]
-            previa = form.cleaned_data.get("glicemia_previa")
-            infusion_activa = form.cleaned_data.get("infusion_activa")
-
-            resultado = evaluar_glucemia_service(
-                actual=actual,
-                previa=previa,
-                infusion_activa=infusion_activa,
-            )
-
-            resultado = _asignar_clase_visual(resultado)
-            resultado = _asignar_resumen_objetivo(resultado, infusion_activa)
-
-            if request.user.is_authenticated:
-                cleaned_data_adaptado = {
-                    "glicemia_actual": actual,
-                    "glicemia_previa": previa,
-                    "infusion_activa": infusion_activa,
-                    "hubo_ajuste_insulina": False,
-                    "tercera_medicion": None,
-                    "modo": "seguimiento",
-                }
-                medicion_guardada = _guardar_medicion(request, cleaned_data_adaptado, resultado)
-    else:
-        form = PasoInicialForm()
-
-    return render(
-        request,
-        "calculadora/home.html",
-        {
-            "form": form,
-            "resultado": resultado,
-            "medicion_guardada": medicion_guardada,
-        },
-    )
-
-
 # =========================================================
 # HISTORIAL
 # =========================================================
@@ -402,7 +302,13 @@ def calculadora_guiada(request):
 @login_required
 @user_passes_test(tiene_acceso_home, login_url="/login/")
 def historial(request):
-    mediciones_qs, usuario_seleccionado, estado_seleccionado, clase_seleccionada, periodo = _filtrar_mediciones_desde_request(request)
+    (
+        mediciones_qs,
+        usuario_seleccionado,
+        estado_seleccionado,
+        clase_seleccionada,
+        periodo,
+    ) = _filtrar_mediciones_desde_request(request)
 
     total = mediciones_qs.count()
     hipoglucemias = mediciones_qs.filter(clase="hipoglucemia").count()
@@ -452,7 +358,6 @@ def historial(request):
         },
     )
 
-
 # =========================================================
 # EXPORTAR EXCEL
 # =========================================================
@@ -460,7 +365,9 @@ def historial(request):
 @login_required
 @user_passes_test(tiene_acceso_home, login_url="/login/")
 def exportar_historial_excel(request):
-    mediciones, usuario, estado, clase, periodo = _filtrar_mediciones_desde_request(request)
+    mediciones, usuario, estado, clase, periodo = _filtrar_mediciones_desde_request(
+        request
+    )
 
     wb = Workbook()
     ws = wb.active
@@ -503,10 +410,18 @@ def exportar_historial_excel(request):
 
     fila = 5
     for m in mediciones:
-        ws.cell(row=fila, column=1, value=timezone.localtime(m.fecha_hora).strftime("%d/%m/%Y %H:%M"))
+        ws.cell(
+            row=fila,
+            column=1,
+            value=timezone.localtime(m.fecha_hora).strftime("%d/%m/%Y %H:%M"),
+        )
         ws.cell(row=fila, column=2, value=m.usuario.username if m.usuario else "")
-        ws.cell(row=fila, column=3, value=f"{m.glucemia_actual} mg/dL")
-        ws.cell(row=fila, column=4, value=f"{m.glucemia_previa} mg/dL" if m.glucemia_previa is not None else "")
+        ws.cell(row=fila, column=3, value=f"{m.glicemia_actual} mg/dL")
+        ws.cell(
+            row=fila,
+            column=4,
+            value=f"{m.glicemia_previa} mg/dL" if m.glicemia_previa is not None else "",
+        )
         ws.cell(row=fila, column=5, value="Sí" if m.infusion_activa else "No")
         ws.cell(row=fila, column=6, value=m.get_modo_display())
         ws.cell(row=fila, column=7, value=m.estado)
@@ -554,6 +469,7 @@ def exportar_historial_excel(request):
 # EXPORTAR PDF
 # =========================================================
 
+
 @login_required
 @user_passes_test(tiene_acceso_home, login_url="/login/")
 def exportar_historial_pdf(request):
@@ -561,9 +477,12 @@ def exportar_historial_pdf(request):
     from reportlab.lib.pagesizes import A4, landscape
     from reportlab.lib.styles import getSampleStyleSheet
     from reportlab.lib.units import mm
-    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    from reportlab.platypus import (Paragraph, SimpleDocTemplate, Spacer,
+                                    Table, TableStyle)
 
-    mediciones, usuario, estado, clase, periodo = _filtrar_mediciones_desde_request(request)
+    mediciones, usuario, estado, clase, periodo = _filtrar_mediciones_desde_request(
+        request
+    )
 
     buffer = BytesIO()
     doc = SimpleDocTemplate(
@@ -578,56 +497,81 @@ def exportar_historial_pdf(request):
     styles = getSampleStyleSheet()
     elements = []
 
-    elements.append(Paragraph(f"Reporte de mediciones - {periodo or 'completo'}", styles["Title"]))
+    elements.append(
+        Paragraph(f"Reporte de mediciones - {periodo or 'completo'}", styles["Title"])
+    )
     elements.append(Spacer(1, 8))
     elements.append(Paragraph(f"Usuario: {usuario or 'Todos'}", styles["Normal"]))
     elements.append(Paragraph(f"Estado: {estado or 'Todos'}", styles["Normal"]))
     elements.append(Paragraph(f"Clase: {clase or 'Todas'}", styles["Normal"]))
-    elements.append(Paragraph(f"Generado: {timezone.localtime().strftime('%d/%m/%Y %H:%M')}", styles["Normal"]))
+    elements.append(
+        Paragraph(
+            f"Generado: {timezone.localtime().strftime('%d/%m/%Y %H:%M')}",
+            styles["Normal"],
+        )
+    )
     elements.append(Spacer(1, 12))
 
-    data = [[
-        "Fecha",
-        "Usuario",
-        "Actual",
-        "Previa",
-        "Infusión",
-        "Estado",
-        "Clase",
-        "Conducta",
-        "Tendencia",
-    ]]
+    data = [
+        [
+            "Fecha",
+            "Usuario",
+            "Actual",
+            "Previa",
+            "Infusión",
+            "Estado",
+            "Clase",
+            "Conducta",
+            "Tendencia",
+        ]
+    ]
 
     for m in mediciones:
-        data.append([
-            timezone.localtime(m.fecha_hora).strftime("%d/%m/%Y %H:%M"),
-            m.usuario.username if m.usuario else "",
-            f"{m.glucemia_actual}",
-            f"{m.glucemia_previa}" if m.glucemia_previa is not None else "",
-            "Sí" if m.infusion_activa else "No",
-            m.estado,
-            m.clase,
-            m.conducta,
-            f"{m.tendencia or ''} {m.flecha_tendencia or ''}".strip(),
-        ])
+        data.append(
+            [
+                timezone.localtime(m.fecha_hora).strftime("%d/%m/%Y %H:%M"),
+                m.usuario.username if m.usuario else "",
+                f"{m.glicemia_actual}",
+                f"{m.glicemia_previa}" if m.glicemia_previa is not None else "",
+                "Sí" if m.infusion_activa else "No",
+                m.estado,
+                m.clase,
+                m.conducta,
+                f"{m.tendencia or ''} {m.flecha_tendencia or ''}".strip(),
+            ]
+        )
 
     table = Table(
         data,
-        colWidths=[28 * mm, 28 * mm, 18 * mm, 18 * mm, 18 * mm, 34 * mm, 24 * mm, 60 * mm, 24 * mm]
+        colWidths=[
+            28 * mm,
+            28 * mm,
+            18 * mm,
+            18 * mm,
+            18 * mm,
+            34 * mm,
+            24 * mm,
+            60 * mm,
+            24 * mm,
+        ],
     )
 
-    table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1F4E78")),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-        ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#C7D3E0")),
-        ("BACKGROUND", (0, 1), (-1, -1), colors.whitesmoke),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("FONTSIZE", (0, 0), (-1, -1), 8),
-        ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
-        ("TOPPADDING", (0, 0), (-1, 0), 8),
-    ]))
+    table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1F4E78")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#C7D3E0")),
+                ("BACKGROUND", (0, 1), (-1, -1), colors.whitesmoke),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("FONTSIZE", (0, 0), (-1, -1), 8),
+                ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
+                ("TOPPADDING", (0, 0), (-1, 0), 8),
+            ]
+        )
+    )
 
     elements.append(table)
     doc.build(elements)

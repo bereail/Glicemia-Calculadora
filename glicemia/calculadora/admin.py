@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from .models import MedicionGlucemia
 
 
@@ -7,8 +8,8 @@ class MedicionGlucemiaAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "fecha_hora",
-        "glucemia_actual",
-        "glucemia_previa",
+        "glicemia_actual",
+        "glicemia_previa",
         "usuario",
         "estado",
         "subestado",

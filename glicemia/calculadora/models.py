@@ -1,10 +1,10 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 
 
 class MedicionGlucemia(models.Model):
     """
-    Guarda una evaluación de glucemia realizada por el usuario.
+    Guarda una evaluación de glicemia realizada por el usuario.
     """
 
     MODO_CHOICES = [
@@ -31,8 +31,8 @@ class MedicionGlucemia(models.Model):
     # -----------------------------
     # DATOS DE ENTRADA
     # -----------------------------
-    glucemia_actual = models.PositiveIntegerField()
-    glucemia_previa = models.PositiveIntegerField(null=True, blank=True)
+    glicemia_actual = models.PositiveIntegerField()
+    glicemia_previa = models.PositiveIntegerField(null=True, blank=True)
 
     infusion_activa = models.BooleanField(default=False)
     hubo_ajuste_insulina = models.BooleanField(default=False)
@@ -90,12 +90,12 @@ class MedicionGlucemia(models.Model):
 
     class Meta:
         ordering = ["-fecha_hora"]
-        verbose_name = "Medición de glucemia"
-        verbose_name_plural = "Mediciones de glucemia"
+        verbose_name = "Medición de glicemia"
+        verbose_name_plural = "Mediciones de glicemia"
 
     def __str__(self):
         return (
             f"{self.fecha_hora:%d/%m/%Y %H:%M} - "
-            f"{self.glucemia_actual} mg/dL - "
+            f"{self.glicemia_actual} mg/dL - "
             f"{self.usuario.username}"
         )

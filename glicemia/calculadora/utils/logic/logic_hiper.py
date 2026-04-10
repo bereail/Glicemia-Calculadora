@@ -1,47 +1,40 @@
 from decimal import Decimal
 
-from ..constants import (
-    UMBRAL_HIPER,
-    UMBRAL_ALERTA_ALTA,
-)
-from ..helpers import (
-    _a_decimal,
-    _a_bool,
-    _resultado_base,
-    calcular_proximo_control,
-    armar_resultado_insulinizacion,
-)
-
+from ..constants import UMBRAL_ALERTA_ALTA, UMBRAL_HIPER
+from ..helpers import (_a_bool, _a_decimal, _resultado_base,
+                       armar_resultado_insulinizacion,
+                       calcular_proximo_control)
 
 # =========================================================
 # ESCALONES Y ALGORITMOS
 # =========================================================
 
-def obtener_escalon_glucemia(glucemia):
-    glucemia = _a_decimal(glucemia)
 
-    if glucemia < Decimal("120"):
+def obtener_escalon_glucemia(glicemia):
+    glicemia = _a_decimal(glicemia)
+
+    if glicemia < Decimal("120"):
         return "E0"
-    if glucemia <= Decimal("149"):
+    if glicemia <= Decimal("149"):
         return "E1"
-    if glucemia <= Decimal("179"):
+    if glicemia <= Decimal("179"):
         return "E2"
-    if glucemia <= Decimal("209"):
+    if glicemia <= Decimal("209"):
         return "E3"
-    if glucemia <= Decimal("239"):
+    if glicemia <= Decimal("239"):
         return "E4"
-    if glucemia <= Decimal("269"):
+    if glicemia <= Decimal("269"):
         return "E5"
-    if glucemia <= Decimal("299"):
+    if glicemia <= Decimal("299"):
         return "E6"
-    if glucemia <= Decimal("329"):
+    if glicemia <= Decimal("329"):
         return "E7"
-    if glucemia <= Decimal("359"):
+    if glicemia <= Decimal("359"):
         return "E8"
     return "E9"
 
 
-def obtener_tasa_algoritmo_1(glucemia):
+def obtener_tasa_algoritmo_1(glicemia):
     tabla = {
         "E0": "Suspender",
         "E1": "0,5 UI/h",
@@ -54,10 +47,10 @@ def obtener_tasa_algoritmo_1(glucemia):
         "E8": "4 UI/h",
         "E9": "5 UI/h",
     }
-    return tabla[obtener_escalon_glucemia(glucemia)]
+    return tabla[obtener_escalon_glucemia(glicemia)]
 
 
-def obtener_tasa_algoritmo_2(glucemia):
+def obtener_tasa_algoritmo_2(glicemia):
     tabla = {
         "E0": "Suspender",
         "E1": "1 UI/h",
@@ -70,14 +63,14 @@ def obtener_tasa_algoritmo_2(glucemia):
         "E8": "6 UI/h",
         "E9": "8 UI/h",
     }
-    return tabla[obtener_escalon_glucemia(glucemia)]
+    return tabla[obtener_escalon_glucemia(glicemia)]
 
 
-def obtener_tasa_por_algoritmo(glucemia, algoritmo=1):
+def obtener_tasa_por_algoritmo(glicemia, algoritmo=1):
     if algoritmo == 1:
-        return obtener_tasa_algoritmo_1(glucemia)
+        return obtener_tasa_algoritmo_1(glicemia)
     if algoritmo == 2:
-        return obtener_tasa_algoritmo_2(glucemia)
+        return obtener_tasa_algoritmo_2(glicemia)
     raise ValueError("Algoritmo inválido. Debe ser 1 o 2.")
 
 
@@ -111,7 +104,10 @@ def estan_en_escalon_persistencia(*valores):
 # REGLAS CLÍNICAS
 # =========================================================
 
-def es_hiperglucemia_persistente(actual, previa=None, anterior=None, infusion_activa=False):
+
+def es_hiperglucemia_persistente(
+    actual, previa=None, anterior=None, infusion_activa=False
+):
     """
     Persistente si:
     - con infusión activa y 2 controles consecutivos >= 360
@@ -146,7 +142,9 @@ def es_hiperglucemia_persistente(actual, previa=None, anterior=None, infusion_ac
     return False
 
 
-def es_fallo_algoritmo_1(actual, previa=None, infusion_activa=False, hubo_ajuste_insulina=False):
+def es_fallo_algoritmo_1(
+    actual, previa=None, infusion_activa=False, hubo_ajuste_insulina=False
+):
     """
     Fallo algoritmo 1:
     - paciente con infusión activa
@@ -176,7 +174,13 @@ def es_fallo_algoritmo_1(actual, previa=None, infusion_activa=False, hubo_ajuste
     )
 
 
-def sugerir_algoritmo(actual, previa=None, anterior=None, infusion_activa=False, hubo_ajuste_insulina=False):
+def sugerir_algoritmo(
+    actual,
+    previa=None,
+    anterior=None,
+    infusion_activa=False,
+    hubo_ajuste_insulina=False,
+):
     """
     Sugerencia:
     - Algoritmo 2 si hay persistente
@@ -205,6 +209,7 @@ def sugerir_algoritmo(actual, previa=None, anterior=None, infusion_activa=False,
 # =========================================================
 # EVALUACIÓN PRINCIPAL
 # =========================================================
+
 
 def evaluar_hiperglucemia(
     actual,
@@ -243,7 +248,9 @@ def evaluar_hiperglucemia(
             resultado["estado"] = "Hiperglucemia Aislada"
             resultado["subestado"] = "Una medición >= 180 mg/dL sin infusión activa"
             resultado["mensaje"] = "Hiperglucemia aislada."
-            resultado["conducta"] = "Solicitar nueva medición para confirmar persistencia."
+            resultado["conducta"] = (
+                "Solicitar nueva medición para confirmar persistencia."
+            )
             resultado["requiere_recontrol"] = True
             resultado["proximo_control"] = "Nueva medición para confirmar persistencia"
             return resultado
@@ -280,11 +287,11 @@ def evaluar_hiperglucemia(
     if actual >= Decimal("360"):
         if previa is not None and previa >= Decimal("360"):
             resultado["estado"] = "Hiperglucemia Persistente"
-            resultado["subestado"] = "2 controles consecutivos ≥ 360 mg/dL con infusión activa"
-            resultado["mensaje"] = "Hiperglucemia persistente severa."
-            resultado["conducta"] = (
-                'Dar aviso médico y continuar con Algoritmo 2.'
+            resultado["subestado"] = (
+                "2 controles consecutivos ≥ 360 mg/dL con infusión activa"
             )
+            resultado["mensaje"] = "Hiperglucemia persistente severa."
+            resultado["conducta"] = "Dar aviso médico y continuar con Algoritmo 2."
             resultado["requiere_recontrol"] = True
             resultado["algoritmo_sugerido"] = "Algoritmo 2"
             resultado["tasa_algoritmo"] = obtener_tasa_algoritmo_2(actual)
@@ -316,7 +323,9 @@ def evaluar_hiperglucemia(
                 "en el mismo escalón o en escalones contiguos"
             )
             resultado["mensaje"] = "Hiperglucemia persistente fuera del rango objetivo."
-            resultado["conducta"] = "Dar aviso médico y seguir Algoritmo 2 según protocolo."
+            resultado["conducta"] = (
+                "Dar aviso médico y seguir Algoritmo 2 según protocolo."
+            )
             resultado["requiere_recontrol"] = True
             resultado["algoritmo_sugerido"] = "Algoritmo 2"
             resultado["tasa_algoritmo"] = obtener_tasa_algoritmo_2(actual)
@@ -330,20 +339,32 @@ def evaluar_hiperglucemia(
             hubo_ajuste_insulina=hubo_ajuste_insulina,
         ):
             resultado["estado"] = "Hiperglucemia Refractaria"
-            resultado["subestado"] = "Mismo escalón fuera de objetivo pese a ajuste previo"
+            resultado["subestado"] = (
+                "Mismo escalón fuera de objetivo pese a ajuste previo"
+            )
             resultado["mensaje"] = "Probable fallo del Algoritmo 1."
-            resultado["conducta"] = "Considerar cambio a Algoritmo 2 y dar aviso médico."
+            resultado["conducta"] = (
+                "Considerar cambio a Algoritmo 2 y dar aviso médico."
+            )
             resultado["requiere_recontrol"] = True
             resultado["algoritmo_sugerido"] = "Algoritmo 2"
             resultado["tasa_algoritmo"] = obtener_tasa_algoritmo_2(actual)
             _asignar_control(actual)
             return resultado
 
-        if previa is not None and previa > UMBRAL_ALERTA_ALTA and previa < Decimal("360"):
+        if (
+            previa is not None
+            and previa > UMBRAL_ALERTA_ALTA
+            and previa < Decimal("360")
+        ):
             resultado["estado"] = "Hiperglucemia"
-            resultado["subestado"] = "Dos controles consecutivos > 200 mg/dL, aún sin criterio de persistencia"
+            resultado["subestado"] = (
+                "Dos controles consecutivos > 200 mg/dL, aún sin criterio de persistencia"
+            )
             resultado["mensaje"] = "Hiperglucemia fuera del rango objetivo."
-            resultado["conducta"] = "Obtener tercera medición para evaluar persistencia por escalón."
+            resultado["conducta"] = (
+                "Obtener tercera medición para evaluar persistencia por escalón."
+            )
             resultado["requiere_recontrol"] = True
             resultado["proximo_control"] = "Obtener tercera medición"
             resultado["comentario_control"] = (

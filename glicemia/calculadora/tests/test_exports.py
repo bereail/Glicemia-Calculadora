@@ -1,6 +1,6 @@
+from django.contrib.auth.models import Group, User
 from django.test import TestCase
 from django.urls import reverse
-from django.contrib.auth.models import User, Group
 
 from calculadora.models import MedicionGlucemia
 
@@ -19,10 +19,10 @@ class ExportacionesHistorialTest(TestCase):
 
         MedicionGlucemia.objects.create(
             usuario=self.user,
-            glucemia_actual=180,
+            glicemia_actual=180,
             modo="inicio",
             infusion_activa=True,
-            glucemia_previa=170,
+            glicemia_previa=170,
             estado="Hiperglucemia",
             clase="hiperglucemia",
             conducta="Ajustar infusión según algoritmo",

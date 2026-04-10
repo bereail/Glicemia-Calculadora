@@ -1,5 +1,5 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 
 
 class Paciente(models.Model):
@@ -13,27 +13,16 @@ class Paciente(models.Model):
 
 class RegistroGlucemia(models.Model):
     paciente = models.ForeignKey(
-        Paciente,
-        on_delete=models.CASCADE,
-        related_name="registros"
+        Paciente, on_delete=models.CASCADE, related_name="registros"
     )
     valor = models.IntegerField()
     fecha_hora = models.DateTimeField(auto_now_add=True)
 
     algoritmo = models.IntegerField(default=1)  # 1 o 2
 
-    escalon = models.DecimalField(
-        max_digits=4,
-        decimal_places=1,
-        null=True,
-        blank=True
-    )
+    escalon = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
 
-    usuario = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True
-    )
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return f"{self.paciente} - {self.valor} mg/dL"

@@ -1,14 +1,11 @@
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
-from django.contrib.auth.models import User
 
 
 class CalculadoraFlujoActualTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
-            username="tester",
-            password="1234"
-        )
+        self.user = User.objects.create_user(username="tester", password="1234")
 
     def test_redirige_si_no_esta_logueado(self):
         response = self.client.get(reverse("control_glicemia"))
@@ -29,7 +26,7 @@ class CalculadoraFlujoActualTests(TestCase):
                 "glicemia_actual": 65,
                 "infusion_activa": "no",
             },
-            follow=True
+            follow=True,
         )
 
         self.assertEqual(response.status_code, 200)
@@ -44,7 +41,7 @@ class CalculadoraFlujoActualTests(TestCase):
                 "glicemia_previa": 185,
                 "infusion_activa": "no",
             },
-            follow=True
+            follow=True,
         )
 
         self.assertEqual(response.status_code, 200)
@@ -59,7 +56,7 @@ class CalculadoraFlujoActualTests(TestCase):
                 "glicemia_previa": 170,
                 "infusion_activa": "si",
             },
-            follow=True
+            follow=True,
         )
 
         self.assertEqual(response.status_code, 200)

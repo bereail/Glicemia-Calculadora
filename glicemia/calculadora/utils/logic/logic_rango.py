@@ -1,13 +1,8 @@
 from decimal import Decimal
 
-from ..constants import (
-    UMBRAL_HIPO,
-    UMBRAL_HIPER,
-    LIMITE_ZONA_INTERMEDIA,
-    OBJETIVO_MIN_INFUSION,
-    OBJETIVO_MAX_INFUSION,
-)
-from ..helpers import _a_decimal, _a_bool, _resultado_base
+from ..constants import (LIMITE_ZONA_INTERMEDIA, OBJETIVO_MAX_INFUSION,
+                         OBJETIVO_MIN_INFUSION, UMBRAL_HIPER, UMBRAL_HIPO)
+from ..helpers import _a_bool, _a_decimal, _resultado_base
 
 
 def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
@@ -71,8 +66,12 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
             if Decimal("121") <= actual < UMBRAL_HIPER:
                 resultado["estado"] = "Límite Alto"
                 resultado["subestado"] = "Glucemia entre 121 y 179 mg/dL"
-                resultado["mensaje"] = "Valor por encima del objetivo sin criterio de hiperglucemia."
-                resultado["conducta"] = "Solicitar nueva medición para evaluar tendencia."
+                resultado["mensaje"] = (
+                    "Valor por encima del objetivo sin criterio de hiperglucemia."
+                )
+                resultado["conducta"] = (
+                    "Solicitar nueva medición para evaluar tendencia."
+                )
                 resultado["requiere_recontrol"] = True
                 resultado["proximo_control"] = "Nueva medición para valorar tendencia"
                 return resultado
@@ -83,7 +82,9 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
                 resultado["estado"] = "Ascenso en Rango"
                 resultado["subestado"] = None
                 resultado["mensaje"] = "Glucemia en ascenso dentro del rango evaluado."
-                resultado["conducta"] = "Control evolutivo para evaluar si continúa en ascenso."
+                resultado["conducta"] = (
+                    "Control evolutivo para evaluar si continúa en ascenso."
+                )
                 resultado["requiere_recontrol"] = True
                 resultado["proximo_control"] = "Recontrol según evolución clínica"
                 return resultado
@@ -92,7 +93,9 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
                 resultado["estado"] = "Descenso en Rango"
                 resultado["subestado"] = None
                 resultado["mensaje"] = "Glucemia en descenso dentro del rango evaluado."
-                resultado["conducta"] = "Vigilar evolución para evitar hipoglucemia si continúa bajando."
+                resultado["conducta"] = (
+                    "Vigilar evolución para evitar hipoglucemia si continúa bajando."
+                )
                 resultado["requiere_recontrol"] = True
                 resultado["proximo_control"] = "Recontrol según evolución clínica"
                 return resultado
@@ -118,7 +121,9 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
             if UMBRAL_HIPO <= actual <= LIMITE_ZONA_INTERMEDIA:
                 resultado["estado"] = "En Rango"
                 resultado["subestado"] = None
-                resultado["mensaje"] = "Valor dentro de rango, pero cercano a hipoglucemia."
+                resultado["mensaje"] = (
+                    "Valor dentro de rango, pero cercano a hipoglucemia."
+                )
                 resultado["alerta_borde_hipo"] = True
                 resultado["conducta"] = "Mantener vigilancia clínica."
                 resultado["conducta_extra"] = "Evaluar y consultar médico de guardia."
@@ -129,7 +134,9 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
             if LIMITE_ZONA_INTERMEDIA < actual < OBJETIVO_MIN_INFUSION:
                 resultado["estado"] = "Debajo de Objetivo con Infusión"
                 resultado["subestado"] = None
-                resultado["mensaje"] = "Valor por debajo del objetivo para paciente con infusión activa."
+                resultado["mensaje"] = (
+                    "Valor por debajo del objetivo para paciente con infusión activa."
+                )
                 resultado["conducta"] = (
                     "Evaluar descenso y considerar ajuste de insulina por riesgo de hipoglucemia."
                 )
@@ -141,8 +148,12 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
             if OBJETIVO_MIN_INFUSION <= actual <= OBJETIVO_MAX_INFUSION:
                 resultado["estado"] = "Objetivo con Infusión"
                 resultado["subestado"] = None
-                resultado["mensaje"] = "Valor dentro del objetivo para paciente con infusión activa."
-                resultado["conducta"] = "Mantener conducta actual y continuar monitoreo."
+                resultado["mensaje"] = (
+                    "Valor dentro del objetivo para paciente con infusión activa."
+                )
+                resultado["conducta"] = (
+                    "Mantener conducta actual y continuar monitoreo."
+                )
                 resultado["proximo_control"] = "Según protocolo"
                 return resultado
 
@@ -152,7 +163,9 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
             if UMBRAL_HIPO <= actual <= LIMITE_ZONA_INTERMEDIA:
                 resultado["estado"] = "En Rango"
                 resultado["subestado"] = None
-                resultado["mensaje"] = "Valor dentro de rango, pero cercano a hipoglucemia."
+                resultado["mensaje"] = (
+                    "Valor dentro de rango, pero cercano a hipoglucemia."
+                )
                 resultado["alerta_borde_hipo"] = True
                 resultado["conducta"] = "Mantener vigilancia clínica."
                 resultado["conducta_extra"] = "Evaluar y consultar médico de guardia."
@@ -163,7 +176,9 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
             if LIMITE_ZONA_INTERMEDIA < actual < OBJETIVO_MIN_INFUSION:
                 resultado["estado"] = "Debajo de Objetivo con Infusión"
                 resultado["subestado"] = None
-                resultado["mensaje"] = "Valor por debajo del objetivo para paciente con infusión activa."
+                resultado["mensaje"] = (
+                    "Valor por debajo del objetivo para paciente con infusión activa."
+                )
                 resultado["conducta"] = (
                     "Evaluar descenso y considerar ajuste de insulina por riesgo de hipoglucemia."
                 )
@@ -176,8 +191,12 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
                 if actual < previa:
                     resultado["estado"] = "Objetivo con Descenso"
                     resultado["subestado"] = None
-                    resultado["mensaje"] = "Dentro de objetivo con tendencia descendente."
-                    resultado["conducta"] = "Vigilar riesgo de hipoglucemia y reevaluar infusión."
+                    resultado["mensaje"] = (
+                        "Dentro de objetivo con tendencia descendente."
+                    )
+                    resultado["conducta"] = (
+                        "Vigilar riesgo de hipoglucemia y reevaluar infusión."
+                    )
                     resultado["requiere_recontrol"] = True
                     resultado["proximo_control"] = "Control según protocolo"
                     return resultado
@@ -185,7 +204,9 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
                 if actual > previa:
                     resultado["estado"] = "Objetivo con Ascenso"
                     resultado["subestado"] = None
-                    resultado["mensaje"] = "Dentro de objetivo con tendencia ascendente."
+                    resultado["mensaje"] = (
+                        "Dentro de objetivo con tendencia ascendente."
+                    )
                     resultado["conducta"] = "Mantener monitoreo y evaluar tendencia."
                     resultado["requiere_recontrol"] = True
                     resultado["proximo_control"] = "Control según protocolo"
@@ -193,8 +214,12 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
 
                 resultado["estado"] = "Objetivo con Infusión"
                 resultado["subestado"] = None
-                resultado["mensaje"] = "Valor dentro del objetivo para paciente con infusión activa."
-                resultado["conducta"] = "Mantener conducta actual y continuar monitoreo."
+                resultado["mensaje"] = (
+                    "Valor dentro del objetivo para paciente con infusión activa."
+                )
+                resultado["conducta"] = (
+                    "Mantener conducta actual y continuar monitoreo."
+                )
                 resultado["proximo_control"] = "Según protocolo"
                 return resultado
 

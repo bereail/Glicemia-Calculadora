@@ -26,20 +26,19 @@
       <form method="post" novalidate id="form-glicemia">
         {% csrf_token %}
 
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
         <!-- GLICEMIA ACTUAL -->
         <div class="field-group">
           <label for="id_glicemia_actual">Glicemia actual</label>
-
-          <input
-            type="number"
-            name="glicemia_actual"
-            id="id_glicemia_actual"
-            class="input-control"
-            placeholder="Ej: 185"
-            min="0"
-            step="1"
-            value="{{ form.glicemia_actual.value|default_if_none:'' }}"
-          >
+          {{ form.glicemia_actual }}
+          {% if form.glicemia_actual.errors %}
+            <div class="field-error">{{ form.glicemia_actual.errors }}</div>
+          {% endif %}
         </div>
 
         <!-- HIPO DIRECTA -->
@@ -50,74 +49,65 @@
         <!-- CONTEXTO -->
         <div id="bloque_contexto" class="hidden">
 
-          <!-- INFUSIÓN -->
           <div class="field-group">
             <label class="field-label">{{ form.infusion_activa.label }}</label>
-
             <div class="glicemia-radio-group">
-              {% for value, label in form.fields.infusion_activa.choices %}
+              {% for radio in form.infusion_activa %}
                 <label class="glicemia-radio-card">
-                  <input
-                    type="radio"
-                    name="infusion_activa"
-                    value="{{ value }}"
-                    {% if form.infusion_activa.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}
-                  >
-                  <span>{{ label }}</span>
+                  {{ radio.tag }}
+                  <span>{{ radio.choice_label }}</span>
                 </label>
               {% endfor %}
             </div>
+            {% if form.infusion_activa.errors %}
+              <div class="field-error">{{ form.infusion_activa.errors }}</div>
+            {% endif %}
           </div>
 
-          <!-- SECUENCIA -->
+          <div id="helper_previa_container" class="field-helper hidden">
+            <span id="helper_previa"></span>
+          </div>
+
           <div id="secuencia_mediciones" class="glicemia-secuencia hidden">
             <div class="glicemia-secuencia__title">Secuencia de evaluación</div>
-            <div class="glicemia-secuencia__steps">
 
-              <span class="glicemia-secuencia__step glicemia-secuencia__step--muted">
+            <div class="glicemia-secuencia__steps">
+              <span id="step-anterior" class="glicemia-secuencia__step glicemia-secuencia__step--muted">
                 Anterior (1)
               </span>
 
-              <span class="glicemia-secuencia__arrow">→</span>
+              <span id="arrow-anterior-previa" class="glicemia-secuencia__arrow">→</span>
 
-              <span class="glicemia-secuencia__step">
+              <span id="step-previa" class="glicemia-secuencia__step">
                 Previa (2)
               </span>
 
-              <span class="glicemia-secuencia__arrow">→</span>
+              <span id="arrow-previa-actual" class="glicemia-secuencia__arrow">→</span>
 
-              <span class="glicemia-secuencia__step glicemia-secuencia__step--active">
+              <span id="step-actual" class="glicemia-secuencia__step glicemia-secuencia__step--active">
                 Actual (3)
               </span>
-
             </div>
           </div>
 
-          <!-- PREVIAS -->
-          <div id="previas_box" class="field-group hidden">
-
+          <div id="previas_box" class="hidden">
             <div class="field-group">
-              <label for="id_glicemia_previa">Glicemia previa</label>
-              <input
-                type="number"
-                name="glicemia_previa"
-                id="id_glicemia_previa"
-                class="input-control"
-                placeholder="Ej: 210"
-              >
+              <label for="id_glicemia_previa">
+                Glicemia previa <span id="label_previa_hint"></span>
+              </label>
+              {{ form.glicemia_previa }}
+              {% if form.glicemia_previa.errors %}
+                <div class="field-error">{{ form.glicemia_previa.errors }}</div>
+              {% endif %}
             </div>
 
             <div id="anterior_container" class="field-group hidden">
               <label for="id_tercera_medicion">Glicemia anterior</label>
-              <input
-                type="number"
-                name="tercera_medicion"
-                id="id_tercera_medicion"
-                class="input-control"
-                placeholder="Ej: 230"
-              >
+              {{ form.tercera_medicion }}
+              {% if form.tercera_medicion.errors %}
+                <div class="field-error">{{ form.tercera_medicion.errors }}</div>
+              {% endif %}
             </div>
-
           </div>
         </div>
 
@@ -125,9 +115,7 @@
           <button type="submit" class="btn-primary">Evaluar</button>
         </div>
 
-        <!-- TABLA / BOTÓN -->
         {% include "calculadora/partials/tabla_algoritmos.html" %}
-
       </form>
     </section>
 
@@ -138,21 +126,14 @@
   </div>
 </div>
 
-<!-- 🔥 MODAL (ESTO ES LO QUE TE FALTABA) -->
 <div id="modal-algoritmo" class="algoritmo-modal">
   <div class="algoritmo-modal__content">
-
-    <button id="cerrar-modal-algoritmo" class="algoritmo-modal__close">
-      ×
-    </button>
-
+    <button id="cerrar-modal-algoritmo" class="algoritmo-modal__close" type="button">×</button>
     <img id="img-algoritmo" src="" alt="Algoritmo">
-
   </div>
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=3"></script>
+<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=10"></script>
 {% endblock %}
