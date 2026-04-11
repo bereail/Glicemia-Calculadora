@@ -16,7 +16,7 @@ def evaluar_hipoglucemia(actual, previa=None, infusion_activa=False):
 
     # 1) Hipoglucemia actual
     if actual <= UMBRAL_HIPO:
-        resultado["estado"] = "hipoglucemia"
+        resultado["estado"] = "Hipoglucemia"
         resultado["subestado"] = "Glucemia actual <= 70 mg/dL"
         resultado["mensaje"] = "Paciente en hipoglucemia."
         resultado["conducta"] = (
@@ -36,7 +36,7 @@ def evaluar_hipoglucemia(actual, previa=None, infusion_activa=False):
         resultado["requiere_recontrol"] = True
 
         if UMBRAL_HIPO < actual <= LIMITE_ZONA_INTERMEDIA:
-            resultado["estado"] = "recontrol_post_hipoglucemia"
+            resultado["estado"] = "Recontrol Post-Hipoglucemia"
             resultado["subestado"] = "Glucemia entre 71 y 120 mg/dL"
             resultado["mensaje"] = "Recuperación inicial post-hipoglucemia."
             resultado["conducta"] = (
@@ -47,7 +47,7 @@ def evaluar_hipoglucemia(actual, previa=None, infusion_activa=False):
             return resultado
 
         if LIMITE_ZONA_INTERMEDIA < actual < UMBRAL_HIPER:
-            resultado["estado"] = "recontrol_post_hipoglucemia"
+            resultado["estado"] = "Recontrol Post-Hipoglucemia"
             resultado["subestado"] = "Glucemia entre 121 y 179 mg/dL"
             resultado["mensaje"] = "Recuperación adecuada post-hipoglucemia."
             resultado["conducta"] = (
@@ -58,7 +58,7 @@ def evaluar_hipoglucemia(actual, previa=None, infusion_activa=False):
             return resultado
 
         if actual >= UMBRAL_HIPER:
-            resultado["estado"] = "rebote_post_hipoglucemia"
+            resultado["estado"] = "Rebote Post-Hipoglucemia"
             resultado["subestado"] = (
                 "Glucemia >= 180 mg/dL en recontrol post-hipoglucemia"
             )

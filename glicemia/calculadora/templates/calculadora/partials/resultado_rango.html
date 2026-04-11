@@ -1,25 +1,85 @@
-<section class="panel panel-result resultado-screen resultado-screen--rango">
+
+<section class="panel panel-result resultado-screen resultado-screen--rango {% if resultado.alerta_rango %}resultado-screen--rango-alerta{% endif %}">
   <div class="result-top">
-    <span class="result-chip">Resultados</span>
+    <span class="result-chip">Resultado</span>
   </div>
 
-  <h2 class="result-title">Evaluación</h2>
 
-  <div class="estado-box estado-box--rango">
-    <p class="estado-label">Estado</p>
-    <p class="estado-value">{{ resultado.estado }}</p>
+
+  <!-- PRIORIDAD 2: ESTADO / SITUACIÓN ACTUAL -->
+  <div class="resultado-header-clinico resultado-header-clinico--rango">
+    <div class="resultado-header-clinico__estado resultado-header-clinico__estado--rango {% if resultado.alerta_rango %}resultado-header-clinico__estado--rango-alerta{% endif %}">
+      <span class="resultado-header-clinico__estado-label">Estado</span>
+      <span class="resultado-header-clinico__estado-value">
+        {{ resultado.estado|default:"en rango" }}
+      </span>
+    </div>
+
+    <div class="resultado-header-clinico__main">
+      <p class="resultado-header-clinico__label">Situación actual</p>
+      <h2 class="result-title result-title--secondary">
+        {{ resultado.resumen_objetivo|default:"Objetivo con infusión" }}
+      </h2>
+    </div>
   </div>
 
-  {% if resultado.conducta %}
-    <div class="result-card result-card--rango">
-      <h3>Conducta sugerida</h3>
-      <p>{{ resultado.conducta|safe }}</p>
+    <!-- PRIORIDAD 1: ATENCIÓN CLÍNICA -->
+  {% if resultado.alerta_rango %}
+    <div class="result-card result-card--warning result-card--warning-principal">
+      <h3>⚠️ Atención clínica</h3>
+      <p>{{ resultado.alerta_rango }}</p>
     </div>
   {% endif %}
 
+
+
+  <!-- SOLO SI ESTÁ INSULINIZADO -->
+  {% if resultado.tasa_calculada %}
+    <div class="result-card result-card--rango-hero">
+      <div class="result-card__eyebrow result-card__eyebrow--rango">
+        Tasa de infusión sugerida
+      </div>
+
+      <div class="result-card__hero-main">
+        {{ resultado.tasa_calculada }} UI/h
+      </div>
+
+      {% if resultado.calculo_texto %}
+        <p class="result-card__hero-support">
+          {{ resultado.calculo_texto }}
+        </p>
+      {% endif %}
+
+      {% if resultado.bolo_calculado %}
+        <p class="result-card__hero-support">
+          Bolo inicial sugerido: {{ resultado.bolo_calculado }} UI
+        </p>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <!-- PRIORIDAD 3: PRÓXIMO CONTROL -->
   {% if resultado.proximo_control %}
-    <div class="resultado-prioridad resultado-prioridad--rango">
-      <strong>Próximo control:</strong> {{ resultado.proximo_control }}
+    <div class="resultado-prioridad resultado-prioridad--rango {% if resultado.alerta_rango %}resultado-prioridad--rango-alerta{% endif %}">
+      <div class="resultado-prioridad__label">Próximo control</div>
+      <div class="resultado-prioridad__value">
+        {{ resultado.proximo_control }}
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- PRIORIDAD 4: CONTEXTO -->
+  {% if resultado.texto_rango_objetivo %}
+    <div class="result-card result-card--neutral result-card--neutral-compacto">
+      <h3>Rango objetivo utilizado</h3>
+      <p>{{ resultado.texto_rango_objetivo }}</p>
+    </div>
+  {% endif %}
+
+  {% if resultado.observacion %}
+    <div class="result-card result-card--neutral result-card--neutral-compacto">
+      <h3>Observación</h3>
+      <p>{{ resultado.observacion }}</p>
     </div>
   {% endif %}
 </section>

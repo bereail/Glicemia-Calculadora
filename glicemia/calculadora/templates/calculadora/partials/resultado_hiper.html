@@ -1,39 +1,96 @@
-<section class="panel panel-result resultado-screen resultado-screen--hiper">
+{% with estado_lower=resultado.estado|lower %}
+<section class="panel panel-result resultado-screen resultado-screen--hiper{% if resultado.es_critico or resultado.nivel_visual == 'critico' or 'persistente' in estado_lower or 'refractaria' in estado_lower %} resultado-screen--hiper-critica{% endif %}">
   <div class="result-top">
-    <span class="result-chip">Resultadoss</span>
+    <span class="result-chip">Resultado</span>
   </div>
 
-  <h2 class="result-title">Evaluación</h2>
+  <div class="resultado-hiper-header">
+    <div class="resultado-hiper-header__left">
+      <span class="resultado-hiper-header__label">Estado</span>
+      <span class="resultado-hiper-header__estado">
+        {{ resultado.estado }}
+      </span>
+    </div>
 
-  <div class="estado-box estado-box--hiper">
-    <p class="estado-label">Estado</p>
-    <p class="estado-value">{{ resultado.estado }}</p>
+    <div class="resultado-hiper-header__right">
+      <span class="resultado-hiper-header__label">Situación actual</span>
+      <span class="resultado-hiper-header__objetivo">
+        {{ resultado.resumen_objetivo|default:"Fuera de rango objetivo" }}
+      </span>
+    </div>
   </div>
 
-  {% if resultado.bolo %}
-    <div class="result-card">
-      <h3>Bolo</h3>
-      <p>{{ resultado.bolo }}</p>
+  {% if resultado.subestado %}
+    <div class="resultado-hiper-subestado">
+      {{ resultado.subestado }}
     </div>
   {% endif %}
 
-  {% if resultado.tasa_algoritmo %}
-    <div class="result-card">
-      <h3>Tasa de infusión</h3>
-      <p>{{ resultado.tasa_algoritmo }}</p>
-    </div>
-  {% endif %}
+  <div class="resultado-hiper-main">
+    <div class="resultado-hiper-conducta">
+      <span class="resultado-hiper-box__label">Conducta sugerida</span>
+      <div class="resultado-hiper-conducta__texto">
+        {{ resultado.conducta|default:"Sin conducta disponible."|safe }}
+      </div>
 
-  {% if resultado.conducta %}
-    <div class="result-card result-card--critical">
-      <h3>Conducta sugerida</h3>
-      <p>{{ resultado.conducta|safe }}</p>
+      {% if resultado.algoritmo_sugerido %}
+        <div class="resultado-hiper-conducta__extra">
+          {{ resultado.algoritmo_sugerido }}
+        </div>
+      {% endif %}
     </div>
-  {% endif %}
 
-  {% if resultado.proximo_control %}
-    <div class="resultado-prioridad resultado-prioridad--hiper">
-      <strong>Próximo control:</strong> {{ resultado.proximo_control }}
+    <div class="resultado-hiper-tasa">
+      <span class="resultado-hiper-box__label">Tasa de infusión sugerida</span>
+
+      <div class="resultado-hiper-tasa__valor">
+        {% if resultado.tasa_algoritmo %}
+          {{ resultado.tasa_algoritmo }}
+        {% elif resultado.tasa_inicial %}
+          {{ resultado.tasa_inicial }}
+        {% elif resultado.tasa_calculada %}
+          {{ resultado.tasa_calculada }} UI/h
+        {% else %}
+          —
+        {% endif %}
+      </div>
+
+      {% if resultado.calculo_texto %}
+        <div class="resultado-hiper-tasa__calculo">
+          {{ resultado.calculo_texto }}
+        </div>
+      {% endif %}
+
+      {% if resultado.bolo_inicial %}
+        <div class="resultado-hiper-tasa__bolo">
+          Bolo inicial sugerido: {{ resultado.bolo_inicial }}
+        </div>
+      {% elif resultado.bolo_calculado %}
+        <div class="resultado-hiper-tasa__bolo">
+          Bolo inicial sugerido: {{ resultado.bolo_calculado }} UI
+        </div>
+      {% endif %}
     </div>
-  {% endif %}
+  </div>
+
+  <div class="resultado-hiper-control">
+    <span class="resultado-hiper-box__label">Próximo control</span>
+    <div class="resultado-hiper-control__texto">
+      {{ resultado.proximo_control|default:"Sin dato disponible" }}
+    </div>
+
+    {% if resultado.comentario_control %}
+      <div class="resultado-hiper-control__comentario">
+        {{ resultado.comentario_control }}
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="resultado-hiper-rango">
+    <span class="resultado-hiper-rango__titulo">Rango objetivo utilizado</span>
+    <span class="resultado-hiper-rango__texto">
+      {{ resultado.texto_rango_objetivo|default:"Paciente insulinizado: 140 a 200 mg/dL" }}
+    </span>
+  </div>
 </section>
+{% endwith %}

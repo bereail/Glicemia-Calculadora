@@ -109,9 +109,8 @@
               {% endif %}
             </div>
           </div>
-        </div>
 
-        
+        </div> <!-- FIN bloque_contexto -->
 
         <div class="actions">
           <button type="submit" class="btn-primary">Evaluar</button>
@@ -122,25 +121,22 @@
     </section>
 
     {% if resultado %}
-  {% if resultado.clase_visual == "critico" and "hipogluc" in resultado.estado|lower %}
-    {% include "calculadora/partials/resultado_hipo.html" %}
-  {% elif resultado.clase_visual == "alerta" %}
-    {% include "calculadora/partials/resultado_hiper.html" %}
-  {% elif resultado.clase_visual == "rango" %}
-    {% include "calculadora/partials/resultado_rango.html" %}
-  {% else %}
-    {% include "calculadora/partials/resultado_rango.html" %}
-  {% endif %}
-{% endif %}
+      {% if resultado.clase_visual == "critico" and "hipogluc" in resultado.estado|lower %}
+        {% include "calculadora/partials/resultado_hipo.html" %}
+      {% elif resultado.clase_visual == "alerta" %}
+
+  {% include "calculadora/partials/resultado_hiper.html" %}
+      {% elif resultado.clase_visual == "rango" %}
+        {% include "calculadora/partials/resultado_rango.html" %}
+      {% else %}
+        {% include "calculadora/partials/resultado_rango.html" %}
+      {% endif %}
+    {% endif %}
+
   </div>
 </div>
 
-<div id="modal-algoritmo" class="algoritmo-modal">
-  <div class="algoritmo-modal__content">
-    <button id="cerrar-modal-algoritmo" class="algoritmo-modal__close" type="button">×</button>
-    <img id="img-algoritmo" src="" alt="Algoritmo">
-  </div>
-</div>
+
 {% endblock %}
 
 {% block extra_js %}

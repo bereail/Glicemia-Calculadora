@@ -3,52 +3,58 @@
     <span class="result-chip">Resultado</span>
   </div>
 
-  <!-- CABECERA PRINCIPAL -->
-  <div class="resultado-header-clinico">
-    <div class="resultado-header-clinico__main">
-      <p class="resultado-header-clinico__label">Situación actual</p>
-      <h2 class="result-title">
-        {{ resultado.resumen_objetivo|default:"Fuera de rango objetivo" }}
-      </h2>
-    </div>
+  <!-- CABECERA SECUNDARIA -->
+  <div class="resultado-header-clinico resultado-header-clinico--compact">
+  
 
-    <div class="resultado-header-clinico__estado">
+    <div class="resultado-header-clinico__estado resultado-header-clinico__estado--hipo">
       <span class="resultado-header-clinico__estado-label">Estado</span>
       <span class="resultado-header-clinico__estado-value">
         {{ resultado.estado }}
       </span>
     </div>
+
+      <div class="resultado-header-clinico__main">
+      <p class="resultado-header-clinico__label">Situación actual</p>
+      <h2 class="result-title result-title--secondary">
+        {{ resultado.resumen_objetivo|default:"Fuera de rango objetivo" }}
+      </h2>
+    </div>
   </div>
 
-  <!-- CONDUCTA: lo más importante -->
+  <!-- PRIORIDAD 1 -->
   {% if resultado.conducta %}
-    <div class="result-card result-card--hipo-critical">
+    <div class="result-card result-card--hipo-critical result-card--hero">
       <div class="result-card__eyebrow">Conducta inmediata</div>
-      <h3 class="result-card__title result-card__title--danger">Actuar ahora</h3>
-      <p class="result-card__text">{{ resultado.conducta|safe }}</p>
+      <h3 class="result-card__title result-card__title--hero">Actuar ahora</h3>
+      <p class="result-card__text result-card__text--hero">
+        {{ resultado.conducta|safe }}
+      </p>
     </div>
   {% endif %}
 
-  <!-- PRÓXIMO CONTROL -->
+  <!-- PRIORIDAD 2 -->
   {% if resultado.proximo_control %}
-    <div class="resultado-prioridad resultado-prioridad--hipo">
+    <div class="resultado-prioridad resultado-prioridad--hipo resultado-prioridad--strong">
       <div class="resultado-prioridad__label">Próximo control</div>
       <div class="resultado-prioridad__value">{{ resultado.proximo_control }}</div>
     </div>
   {% endif %}
 
-  <!-- DETALLES SECUNDARIOS -->
-  {% if resultado.texto_rango_objetivo %}
-    <div class="result-card result-card--neutral">
-      <h3>Rango objetivo utilizado</h3>
-      <p>{{ resultado.texto_rango_objetivo }}</p>
-    </div>
-  {% endif %}
+  <!-- SECUNDARIO -->
+  <div class="resultado-detalles-grid">
+    {% if resultado.texto_rango_objetivo %}
+      <div class="result-card result-card--neutral">
+        <h3>Rango objetivo utilizado</h3>
+        <p>{{ resultado.texto_rango_objetivo }}</p>
+      </div>
+    {% endif %}
 
-  {% if resultado.observacion %}
-    <div class="result-card result-card--neutral">
-      <h3>Observación</h3>
-      <p>{{ resultado.observacion }}</p>
-    </div>
-  {% endif %}
+    {% if resultado.observacion %}
+      <div class="result-card result-card--neutral">
+        <h3>Observación</h3>
+        <p>{{ resultado.observacion }}</p>
+      </div>
+    {% endif %}
+  </div>
 </section>

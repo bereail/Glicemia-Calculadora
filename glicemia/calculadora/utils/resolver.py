@@ -20,6 +20,7 @@ def resolver_glucemia(
     estable = _a_bool(estable)
     tercera_medicion = _a_decimal(tercera_medicion, permitir_none=True)
 
+    # 1) Hipoglucemia
     resultado = evaluar_hipoglucemia(
         actual=actual,
         previa=previa,
@@ -28,6 +29,7 @@ def resolver_glucemia(
     if resultado is not None:
         return _aplicar_tendencia(resultado, actual, previa)
 
+    # 2) Rango / objetivo
     resultado = evaluar_rango_70_180(
         actual=actual,
         previa=previa,
@@ -36,6 +38,7 @@ def resolver_glucemia(
     if resultado is not None:
         return _aplicar_tendencia(resultado, actual, previa)
 
+    # 3) Hiperglucemia
     resultado = evaluar_hiperglucemia(
         actual=actual,
         previa=previa,
@@ -46,8 +49,9 @@ def resolver_glucemia(
     if resultado is not None:
         return _aplicar_tendencia(resultado, actual, previa)
 
+    # 4) Fallback
     resultado = _resultado_base()
-    resultado["estado"] = "Sin Clasificacion"
+    resultado["estado"] = "Sin Clasificación"
     resultado["subestado"] = "No se pudo clasificar el caso"
     resultado["mensaje"] = "Revisar datos ingresados."
     resultado["conducta"] = "Validar entradas y lógica del flujo."
