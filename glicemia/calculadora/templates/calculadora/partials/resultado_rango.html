@@ -3,26 +3,26 @@
     <span class="resultado-base__chip">Resultado</span>
   </div>
 
-  <div class="rango-layout {% if resultado.tasa %}rango-layout--infusion{% endif %}">
-    {% if resultado.tasa %}
-      <div class="rango-bloque rango-bloque--header">
-        <div class="rango-header rango-header--compacto">
-          <div class="rango-header__estado {% if resultado.ui_variant == 'success' %}rango-header__estado--ok{% elif resultado.en_objetivo_con_alerta or resultado.fuera_objetivo %}rango-header__estado--alerta{% endif %}">
-            <div class="rango-header__label">Estado</div>
-            <div class="rango-header__estado-value">
-              {{ resultado.estado|default:"En objetivo" }}
-            </div>
-          </div>
-
-          <div class="rango-header__main">
-            <div class="rango-header__label">Situación actual</div>
-            <h2 class="rango-header__title">
-              {{ resultado.resumen_objetivo|default:"En rango objetivo" }}
-            </h2>
+  <div class="rango-layout {% if resultado.tasa %}rango-layout--infusion{% else %}rango-layout--simple{% endif %}">
+    <div class="rango-bloque rango-bloque--header">
+      <div class="rango-header rango-header--compacto">
+        <div class="rango-header__estado {% if resultado.ui_variant == 'success' %}rango-header__estado--ok{% elif resultado.en_objetivo_con_alerta or resultado.fuera_objetivo %}rango-header__estado--alerta{% endif %}">
+          <div class="rango-header__label">Estado</div>
+          <div class="rango-header__estado-value">
+            {{ resultado.estado|default:"En objetivo" }}
           </div>
         </div>
-      </div>
 
+        <div class="rango-header__main">
+          <div class="rango-header__label">Situación actual</div>
+          <h2 class="rango-header__title">
+            {{ resultado.resumen_objetivo|default:"Dentro de rango" }}
+          </h2>
+        </div>
+      </div>
+    </div>
+
+    {% if resultado.tasa %}
       <div class="rango-bloque rango-bloque--fila-principal">
         <div class="rango-fila-principal">
           <div class="rango-tasa-principal">
@@ -63,60 +63,39 @@
         </div>
       </div>
 
+    {% elif resultado.en_objetivo_con_alerta and resultado.alerta_rango %}
+      <div class="rango-bloque rango-bloque--fila-principal">
+        <div class="rango-fila-principal rango-fila-principal--solo-alerta">
+          <div class="rango-conducta-lateral rango-conducta-lateral--alerta">
+            <div class="rango-conducta-lateral__label">Atención clínica</div>
+            <div class="rango-conducta-lateral__text">
+              {{ resultado.alerta_rango }}
+            </div>
+            {% if resultado.observacion %}
+              <div class="rango-conducta-lateral__subtext">
+                {{ resultado.observacion }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
     {% else %}
-
-      {% if resultado.en_objetivo_con_alerta and resultado.alerta_rango %}
-        <div class="rango-bloque rango-bloque--alerta-top">
-          <div class="rango-alerta-layout">
-            <div class="rango-header">
-              <div class="rango-header__estado {% if resultado.ui_variant == 'success' %}rango-header__estado--ok{% elif resultado.en_objetivo_con_alerta or resultado.fuera_objetivo %}rango-header__estado--alerta{% endif %}">
-                <div class="rango-header__label">Estado</div>
-                <div class="rango-header__estado-value">
-                  {{ resultado.estado|default:"En objetivo" }}
-                </div>
-              </div>
-
-              <div class="rango-header__main">
-                <div class="rango-header__label">Situación actual</div>
-                <h2 class="rango-header__title">
-                  {{ resultado.resumen_objetivo|default:"En rango objetivo" }}
-                </h2>
-              </div>
+      <div class="rango-bloque rango-bloque--fila-principal">
+        <div class="rango-fila-principal rango-fila-principal--solo-ok">
+          <div class="rango-conducta-lateral rango-conducta-lateral--ok-simple">
+            <div class="rango-conducta-lateral__label">Conducta actual</div>
+            <div class="rango-conducta-lateral__text">
+              {{ resultado.conducta|default:"Mantener conducta actual y continuar monitoreo." }}
             </div>
-
-            <div class="rango-alerta-card">
-              <div class="rango-alerta-card__label">Atención clínica</div>
-              <div class="rango-alerta-card__value">
-                {{ resultado.alerta_rango }}
+            {% if resultado.observacion %}
+              <div class="rango-conducta-lateral__subtext">
+                {{ resultado.observacion }}
               </div>
-              {% if resultado.observacion %}
-                <div class="rango-alerta-card__text">
-                  {{ resultado.observacion }}
-                </div>
-              {% endif %}
-            </div>
+            {% endif %}
           </div>
         </div>
-      {% else %}
-        <div class="rango-bloque rango-bloque--header">
-          <div class="rango-header">
-            <div class="rango-header__estado {% if resultado.ui_variant == 'success' %}rango-header__estado--ok{% elif resultado.en_objetivo_con_alerta or resultado.fuera_objetivo %}rango-header__estado--alerta{% endif %}">
-              <div class="rango-header__label">Estado</div>
-              <div class="rango-header__estado-value">
-                {{ resultado.estado|default:"En objetivo" }}
-              </div>
-            </div>
-
-            <div class="rango-header__main">
-              <div class="rango-header__label">Situación actual</div>
-              <h2 class="rango-header__title">
-                {{ resultado.resumen_objetivo|default:"En rango objetivo" }}
-              </h2>
-            </div>
-          </div>
-        </div>
-      {% endif %}
-
+      </div>
     {% endif %}
 
     {% if resultado.proximo_control %}

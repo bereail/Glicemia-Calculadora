@@ -87,7 +87,7 @@ def asignar_resumen_objetivo(resultado, infusion_activa):
     clase_visual = resultado.get("clase_visual")
 
     if clase_visual == "rango":
-        resultado["resumen_objetivo"] = "En rango objetivo"
+        resultado["resumen_objetivo"] = "Dentro de rango"
     else:
         resultado["resumen_objetivo"] = "Fuera de rango objetivo"
 

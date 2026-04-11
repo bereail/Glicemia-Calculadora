@@ -94,7 +94,7 @@ def _resultado_hiper_base():
 
 def _resultado_rango_base():
     resultado = _resultado_base(clase="rango")
-    resultado["resumen_objetivo"] = "En rango objetivo"
+    resultado["resumen_objetivo"] = "Dentro de rango"
     return resultado
 
 

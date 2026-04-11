@@ -6,4 +6,24 @@ HIPOGLICEMIA : < 70
 
 HIPERGLICEMIA SOSTENIDA: PACIENTES NO INSULINIZADOS CON DOS CONTROLES CONSECUTIVOS > 180
 
-HIPERGLICEMIA PERSISTENTE: DOS CONTROLES CONSECUTIVOS > 360 Ó TRES CONTROLES < 200 EN EL MISMO ESCALON
+HIPERGLICEMIA PERSISTENTE: DOS CONTROLES CONSECUTIVOS > 360 Ó TRES CONTROLES < 200 EN EL MISMO ESCALON 
+borde general del resultado: rojo
+tasa de infusión: bloque principal rojo con degradé
+conducta inmediata: rojo también, todavía más dominante
+estado + situación actual: rojo, pero más contenido
+próximo control: amarillo
+rango objetivo: mínimo, discreto
+
+
+orden en el HTML/form:
+estado + situación actual
+tasa
+conducta
+próximo control
+rango objetivo
+jerarquía visual final:
+tasa
+conducta
+estado + situación actual
+próximo control
+rango objetivo
