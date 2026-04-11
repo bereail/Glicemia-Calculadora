@@ -106,9 +106,9 @@ def enriquecer_resultado_ui(resultado, actual, infusion_activa):
     resultado = asignar_resumen_objetivo(resultado, infusion_activa)
 
     # limpiar campos visuales
-    resultado["tasa_calculada"] = ""
-    resultado["bolo_calculado"] = ""
-    resultado["calculo_texto"] = ""
+    resultado["tasa_calculada"] = resultado.get("tasa_calculada") or ""
+    resultado["bolo_calculado"] = resultado.get("bolo_calculado") or ""
+    resultado["calculo_texto"] = resultado.get("calculo_texto") or ""
 
     if infusion_activa and actual not in (None, ""):
         actual_float = float(actual)
@@ -118,7 +118,6 @@ def enriquecer_resultado_ui(resultado, actual, infusion_activa):
 
         resultado["tasa_calculada"] = tasa_texto
         resultado["bolo_calculado"] = tasa_texto
-        resultado["calculo_texto"] = f"{actual_texto} ÷ 100 = {tasa_texto}"
 
         # solo completar si todavía no vino desde lógica clínica
         if not resultado.get("bolo_inicial"):

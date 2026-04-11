@@ -23,31 +23,79 @@ def _a_bool(valor):
     return str(valor).strip().lower() in ("true", "1", "si", "sí", "s", "yes")
 
 
-def _resultado_base():
+def _resultado_base(clase=None):
+    """
+    Estructura única para todos los resultados clínicos.
+    Esto permite que hipo, hiper y rango compartan la misma línea estética
+    y el mismo contrato de datos para la UI.
+    """
     return {
+        # Control general
+        "mostrar_resultado": False,
+        "clase": clase,  # "hipo", "hiper", "rango"
+
+        # Jerarquía visual principal
         "estado": None,
         "subestado": None,
+        "resumen_objetivo": None,      # Ej: "En rango objetivo"
+        "conducta": None,              # Bloque principal
+        "conducta_extra": None,        # Apoyo opcional
+        "proximo_control": None,       # Siempre concreto
+        "comentario_control": None,    # Texto de apoyo
+
+        # Contexto clínico
         "mensaje": None,
-        "conducta": None,
-        "conducta_extra": None,
+        "observacion": None,
+        "texto_rango_objetivo": None,
+        "recordatorio_objetivo": None,
+
+        # Alertas visuales
+        "alerta_rango": "",
+        "alerta_borde_hipo": False,
+        "requiere_recontrol": False,
+        "es_critica": False,
+
+        # Tendencia
         "tendencia": None,
         "flecha_tendencia": None,
         "delta": None,
-        "requiere_recontrol": False,
-        "proximo_control": None,
-        "comentario_control": None,
+
+        # Acciones clínicas
         "suspender_insulina": False,
         "administrar_dextrosa": False,
         "evaluar_goteo_mantenimiento": False,
         "reiniciar_insulina": False,
+
+        # Insulinización / dosis
         "bolo_inicial": None,
         "tasa_inicial": None,
         "tasa_algoritmo": None,
+        "tasa_calculada": None,
+        "bolo_calculado": None,
+        "calculo_texto": None,
+
+        # Monitoreo
         "monitoreo_glucemico": None,
-        "alerta_borde_hipo": False,
-        "recordatorio_objetivo": None,
-        "mostrar_resultado": False,
     }
+
+
+def _resultado_hipo_base():
+    resultado = _resultado_base(clase="hipo")
+    resultado["resumen_objetivo"] = "Fuera de rango objetivo"
+    resultado["es_critica"] = True
+    return resultado
+
+
+def _resultado_hiper_base():
+    resultado = _resultado_base(clase="hiper")
+    resultado["resumen_objetivo"] = "Fuera de rango objetivo"
+    return resultado
+
+
+def _resultado_rango_base():
+    resultado = _resultado_base(clase="rango")
+    resultado["resumen_objetivo"] = "En rango objetivo"
+    return resultado
 
 
 def calcular_bolo_y_tasa_inicial(glicemia):
@@ -80,6 +128,11 @@ def obtener_tasa_algoritmo_inicio(glicemia):
 
 
 def calcular_proximo_control(glicemia, horas_desde_inicio=None, estable=False):
+    """
+    Devuelve textos consistentes para la UI.
+    Evita frases vagas como 'según protocolo' o 'según monitoreo habitual'
+    cuando se puede expresar algo más concreto.
+    """
     glicemia = _a_decimal(glicemia)
     estable = _a_bool(estable)
 
@@ -93,15 +146,15 @@ def calcular_proximo_control(glicemia, horas_desde_inicio=None, estable=False):
 
     if glicemia >= Decimal("400"):
         return {
-            "proximo_control": "Monitoreo capilar una vez por hora",
+            "proximo_control": "Controlar glicemia nuevamente en 1 hora",
             "comentario_control": (
-                "Hasta alcanzar objetivo >140 <200. " + comentario_fijo
+                "Hasta alcanzar objetivo >140 y <200 mg/dL. " + comentario_fijo
             ),
         }
 
     if Decimal("300") <= glicemia < Decimal("400"):
         return {
-            "proximo_control": "Monitoreo capilar cada 2 horas",
+            "proximo_control": "Controlar glicemia nuevamente en 2 horas",
             "comentario_control": comentario_fijo,
         }
 
@@ -112,16 +165,16 @@ def calcular_proximo_control(glicemia, horas_desde_inicio=None, estable=False):
             and estable
         ):
             return {
-                "proximo_control": "Monitoreo capilar cada 6 horas",
+                "proximo_control": "Controlar glicemia nuevamente en 6 horas",
                 "comentario_control": (
-                    "Las primeras 24 h cada 4 hs; luego cada 6 hs si permanece estable. "
+                    "Durante las primeras 24 h controlar cada 4 horas; luego cada 6 horas si permanece estable. "
                     + comentario_fijo
                 ),
             }
         return {
-            "proximo_control": "Monitoreo capilar cada 4 horas",
+            "proximo_control": "Controlar glicemia nuevamente en 4 horas",
             "comentario_control": (
-                "Las primeras 24 h cada 4 hs; luego cada 6 hs si permanece estable. "
+                "Durante las primeras 24 h controlar cada 4 horas; luego cada 6 horas si permanece estable. "
                 + comentario_fijo
             ),
         }
@@ -133,31 +186,29 @@ def calcular_proximo_control(glicemia, horas_desde_inicio=None, estable=False):
             and estable
         ):
             return {
-                "proximo_control": "Monitoreo capilar cada 6 horas",
+                "proximo_control": "Controlar glicemia nuevamente en 6 horas",
                 "comentario_control": (
-                    "Las primeras 24 h cada 4 hs; luego cada 6 hs si permanece estable. "
+                    "Durante las primeras 24 h controlar cada 4 horas; luego cada 6 horas si permanece estable. "
                     + comentario_fijo
                 ),
             }
         return {
-            "proximo_control": "Monitoreo capilar cada 4 horas",
+            "proximo_control": "Controlar glicemia nuevamente en 4 horas",
             "comentario_control": (
-                "Las primeras 24 h cada 4 hs; luego cada 6 hs si permanece estable. "
+                "Durante las primeras 24 h controlar cada 4 horas; luego cada 6 horas si permanece estable. "
                 + comentario_fijo
             ),
         }
 
     if Decimal("70") <= glicemia < Decimal("140"):
         return {
-            "proximo_control": "Próximo control según conducta clínica",
+            "proximo_control": "Controlar glicemia en el próximo horario habitual",
             "comentario_control": comentario_fijo,
         }
 
     return {
         "proximo_control": "Control inmediato",
-        "comentario_control": (
-            "Tratar hipoglucemia según protocolo. " + comentario_fijo
-        ),
+        "comentario_control": "Tratar hipoglucemia según protocolo. " + comentario_fijo,
     }
 
 
@@ -229,20 +280,26 @@ def _aplicar_tendencia(resultado, actual, previa):
 def armar_resultado_insulinizacion(glicemia):
     glicemia = _a_decimal(glicemia)
 
-    resultado = _resultado_base()
+    resultado = _resultado_hiper_base()
     resultado["mostrar_resultado"] = True
+    resultado["es_critica"] = True
 
     dosis = calcular_bolo_y_tasa_inicial(glicemia)
     control_info = calcular_proximo_control(glicemia)
 
     resultado["estado"] = "Hiperglucemia Sostenida"
-    resultado["subestado"] = "Dos controles consecutivos >= 180 mg/dL"
+    resultado["subestado"] = "Dos controles consecutivos ≥ 180 mg/dL"
     resultado["mensaje"] = "Hiperglucemia sostenida."
     resultado["conducta"] = "Iniciar protocolo de insulinización endovenosa."
+    resultado["observacion"] = "Se requieren dos controles consecutivos ≥ 180 mg/dL para iniciar insulinización."
+    resultado["resumen_objetivo"] = "Fuera de rango objetivo"
 
     resultado["bolo_inicial"] = f"{dosis} UI"
     resultado["tasa_inicial"] = f"{dosis} UI/h"
+    resultado["bolo_calculado"] = f"{dosis}"
+    resultado["tasa_calculada"] = f"{dosis}"
     resultado["tasa_algoritmo"] = obtener_tasa_algoritmo_inicio(glicemia)
+    resultado["calculo_texto"] = "Dosis inicial estimada según glucemia actual."
 
     resultado["proximo_control"] = control_info["proximo_control"]
     resultado["comentario_control"] = control_info["comentario_control"]

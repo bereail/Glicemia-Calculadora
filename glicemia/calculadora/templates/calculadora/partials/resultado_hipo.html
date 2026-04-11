@@ -1,59 +1,52 @@
-<section class="panel panel-result resultado-screen resultado-screen--hipo">
-  <div class="result-top">
-    <span class="result-chip">Resultado</span>
+<section class="resultado-base resultado-base--hipo">
+  <div class="resultado-base__top">
+    <span class="resultado-base__chip">Resultado</span>
   </div>
 
-  <!-- CABECERA SECUNDARIA -->
-  <div class="resultado-header-clinico resultado-header-clinico--compact">
-  
-
-    <div class="resultado-header-clinico__estado resultado-header-clinico__estado--hipo">
-      <span class="resultado-header-clinico__estado-label">Estado</span>
-      <span class="resultado-header-clinico__estado-value">
-        {{ resultado.estado }}
-      </span>
+  <div class="hipo-header">
+    <div class="hipo-header__estado">
+      <div class="hipo-header__label">Estado</div>
+      <div class="hipo-header__estado-value">
+        {{ resultado.estado|default:"Hipoglucemia" }}
+      </div>
     </div>
 
-      <div class="resultado-header-clinico__main">
-      <p class="resultado-header-clinico__label">Situación actual</p>
-      <h2 class="result-title result-title--secondary">
+    <div class="hipo-header__main">
+      <div class="hipo-header__label">Situación actual</div>
+      <h2 class="hipo-header__title">
         {{ resultado.resumen_objetivo|default:"Fuera de rango objetivo" }}
       </h2>
     </div>
   </div>
 
-  <!-- PRIORIDAD 1 -->
   {% if resultado.conducta %}
-    <div class="result-card result-card--hipo-critical result-card--hero">
-      <div class="result-card__eyebrow">Conducta inmediata</div>
-      <h3 class="result-card__title result-card__title--hero">Actuar ahora</h3>
-      <p class="result-card__text result-card__text--hero">
+    <div class="hipo-hero">
+      <div class="hipo-hero__eyebrow">Conducta inmediata</div>
+      <div class="hipo-hero__content">
         {{ resultado.conducta|safe }}
-      </p>
+      </div>
     </div>
   {% endif %}
 
-  <!-- PRIORIDAD 2 -->
   {% if resultado.proximo_control %}
-    <div class="resultado-prioridad resultado-prioridad--hipo resultado-prioridad--strong">
-      <div class="resultado-prioridad__label">Próximo control</div>
-      <div class="resultado-prioridad__value">{{ resultado.proximo_control }}</div>
+    <div class="hipo-control">
+      <div class="hipo-control__label">Próximo control</div>
+      <div class="hipo-control__value">{{ resultado.proximo_control }}</div>
     </div>
   {% endif %}
 
-  <!-- SECUNDARIO -->
-  <div class="resultado-detalles-grid">
+  <div class="hipo-footer-grid">
     {% if resultado.texto_rango_objetivo %}
-      <div class="result-card result-card--neutral">
-        <h3>Rango objetivo utilizado</h3>
-        <p>{{ resultado.texto_rango_objetivo }}</p>
+      <div class="hipo-footer-card">
+        <div class="hipo-footer-card__label">Rango objetivo utilizado</div>
+        <div class="hipo-footer-card__text">{{ resultado.texto_rango_objetivo }}</div>
       </div>
     {% endif %}
 
     {% if resultado.observacion %}
-      <div class="result-card result-card--neutral">
-        <h3>Observación</h3>
-        <p>{{ resultado.observacion }}</p>
+      <div class="hipo-footer-card">
+        <div class="hipo-footer-card__label">Observación</div>
+        <div class="hipo-footer-card__text">{{ resultado.observacion }}</div>
       </div>
     {% endif %}
   </div>

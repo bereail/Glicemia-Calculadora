@@ -1,96 +1,98 @@
-{% with estado_lower=resultado.estado|lower %}
-<section class="panel panel-result resultado-screen resultado-screen--hiper{% if resultado.es_critico or resultado.nivel_visual == 'critico' or 'persistente' in estado_lower or 'refractaria' in estado_lower %} resultado-screen--hiper-critica{% endif %}">
-  <div class="result-top">
-    <span class="result-chip">Resultado</span>
+<section class="resultado-base resultado-base--hiper resultado-base--hiper-sostenida {% if resultado.es_critica %}resultado-base--hiper-critica{% endif %}">
+  <div class="resultado-base__top">
+    <span class="resultado-base__chip">Resultado</span>
   </div>
 
-  <div class="resultado-hiper-header">
-    <div class="resultado-hiper-header__left">
-      <span class="resultado-hiper-header__label">Estado</span>
-      <span class="resultado-hiper-header__estado">
-        {{ resultado.estado }}
-      </span>
-    </div>
+  <div class="hiper-layout hiper-layout--sostenida">
 
-    <div class="resultado-hiper-header__right">
-      <span class="resultado-hiper-header__label">Situación actual</span>
-      <span class="resultado-hiper-header__objetivo">
-        {{ resultado.resumen_objetivo|default:"Fuera de rango objetivo" }}
-      </span>
-    </div>
-  </div>
-
-  {% if resultado.subestado %}
-    <div class="resultado-hiper-subestado">
-      {{ resultado.subestado }}
-    </div>
-  {% endif %}
-
-  <div class="resultado-hiper-main">
-    <div class="resultado-hiper-conducta">
-      <span class="resultado-hiper-box__label">Conducta sugerida</span>
-      <div class="resultado-hiper-conducta__texto">
-        {{ resultado.conducta|default:"Sin conducta disponible."|safe }}
-      </div>
-
-      {% if resultado.algoritmo_sugerido %}
-        <div class="resultado-hiper-conducta__extra">
-          {{ resultado.algoritmo_sugerido }}
+    <!-- 1. ESTADO + SITUACION ACTUAL -->
+    <div class="hiper-bloque hiper-bloque--header">
+      <div class="hiper-header hiper-header--compacto">
+        <div class="hiper-header__estado">
+          <div class="hiper-header__label">Estado</div>
+          <div class="hiper-header__estado-value">
+            {{ resultado.estado|default:"Hiperglucemia sostenida" }}
+          </div>
         </div>
-      {% endif %}
+
+        <div class="hiper-header__main">
+          <div class="hiper-header__label">Situación actual</div>
+          <h2 class="hiper-header__title">
+            {{ resultado.resumen_objetivo|default:"Fuera de rango objetivo" }}
+          </h2>
+        </div>
+      </div>
     </div>
 
-    <div class="resultado-hiper-tasa">
-      <span class="resultado-hiper-box__label">Tasa de infusión sugerida</span>
+    <!-- 2 y 3. FILA PRINCIPAL -->
+    <div class="hiper-bloque hiper-bloque--fila-principal">
+      <div class="hiper-fila-principal hiper-fila-principal--sostenida">
 
-      <div class="resultado-hiper-tasa__valor">
-        {% if resultado.tasa_algoritmo %}
-          {{ resultado.tasa_algoritmo }}
-        {% elif resultado.tasa_inicial %}
-          {{ resultado.tasa_inicial }}
-        {% elif resultado.tasa_calculada %}
-          {{ resultado.tasa_calculada }} UI/h
-        {% else %}
-          —
+       <div class="hiper-tasa-principal">
+  <div class="hiper-tasa-principal__label">Tasa de infusión</div>
+
+  <div class="hiper-tasa-principal__valor">
+    {{ resultado.tasa_calculada|default:"NO VIENE TASA" }} <span>UI/h</span>
+  </div>
+
+  <div class="hiper-tasa-principal__meta">
+    {{ resultado.calculo_texto|default:"NO VIENE calculo_texto" }}
+  </div>
+
+  <div class="hiper-tasa-principal__meta">
+    {{ resultado.bolo_calculado|default:"NO VIENE bolo_calculado" }}
+  </div>
+</div>
+
+        {% if resultado.conducta %}
+          <div class="hiper-conducta-lateral hiper-conducta-lateral--sostenida">
+            <div class="hiper-conducta-lateral__label">Conducta inmediata</div>
+
+            <div class="hiper-conducta-lateral__text">
+              {{ resultado.conducta|safe }}
+            </div>
+
+            {% if resultado.subestado %}
+              <div class="hiper-conducta-lateral__subtext">
+                {{ resultado.subestado }}
+              </div>
+            {% endif %}
+          </div>
         {% endif %}
+
       </div>
-
-      {% if resultado.calculo_texto %}
-        <div class="resultado-hiper-tasa__calculo">
-          {{ resultado.calculo_texto }}
-        </div>
-      {% endif %}
-
-      {% if resultado.bolo_inicial %}
-        <div class="resultado-hiper-tasa__bolo">
-          Bolo inicial sugerido: {{ resultado.bolo_inicial }}
-        </div>
-      {% elif resultado.bolo_calculado %}
-        <div class="resultado-hiper-tasa__bolo">
-          Bolo inicial sugerido: {{ resultado.bolo_calculado }} UI
-        </div>
-      {% endif %}
-    </div>
-  </div>
-
-  <div class="resultado-hiper-control">
-    <span class="resultado-hiper-box__label">Próximo control</span>
-    <div class="resultado-hiper-control__texto">
-      {{ resultado.proximo_control|default:"Sin dato disponible" }}
     </div>
 
-    {% if resultado.comentario_control %}
-      <div class="resultado-hiper-control__comentario">
-        {{ resultado.comentario_control }}
+    <!-- 4. PROXIMO CONTROL -->
+    {% if resultado.proximo_control %}
+      <div class="hiper-bloque hiper-bloque--control">
+        <div class="hiper-control hiper-control--destacado">
+          <div class="hiper-control__label">Próximo control</div>
+
+          <div class="hiper-control__value">
+            {{ resultado.proximo_control }}
+          </div>
+
+          {% if resultado.comentario_control %}
+            <div class="hiper-control__comment">
+              {{ resultado.comentario_control }}
+            </div>
+          {% endif %}
+        </div>
       </div>
     {% endif %}
-  </div>
 
-  <div class="resultado-hiper-rango">
-    <span class="resultado-hiper-rango__titulo">Rango objetivo utilizado</span>
-    <span class="resultado-hiper-rango__texto">
-      {{ resultado.texto_rango_objetivo|default:"Paciente insulinizado: 140 a 200 mg/dL" }}
-    </span>
+    <!-- 5. RANGO OBJETIVO -->
+    {% if resultado.texto_rango_objetivo %}
+      <div class="hiper-bloque hiper-bloque--rango">
+        <div class="hiper-rango-minimo">
+          <span class="hiper-rango-minimo__label">Rango objetivo utilizado</span>
+          <span class="hiper-rango-minimo__text">
+            {{ resultado.texto_rango_objetivo }}
+          </span>
+        </div>
+      </div>
+    {% endif %}
+
   </div>
 </section>
-{% endwith %}
