@@ -1,36 +1,14 @@
-/* 🔴 PANEL ALERTA HIPO */
-.estado-hipo-alert {
-  border: 2px solid #ff4d4f;
-  box-shadow: 0 0 0 1px rgba(255, 77, 79, 0.2);
-}
-
-/* TEXTO ROJO SUAVE */
-.text-danger {
-  color: #ff4d4f;
-}
-
-/* ESTADO CON ALERTA */
-.estado-box--alert {
-  border-left: 4px solid #ff4d4f;
-}
-
-/* CARD CRÍTICA (CONDUCTA) */
-.result-card--critical {
-  background: rgba(255, 77, 79, 0.08);
-  border: 1px solid rgba(255, 77, 79, 0.3);
-  border-radius: 12px;
-}
-
-/* PRÓXIMO CONTROL DESTACADO */
-.resultado-prioridad--alert {
-  border: 1px solid rgba(255, 193, 7, 0.4);
-  background: rgba(255, 193, 7, 0.08);
-  border-radius: 12px;
-  margin-top: 16px;
-}
+/* ==============================
+   TABLA DE ALGORITMOS - MODAL
+============================== */
 
 .modal-tabla.hidden {
   display: none !important;
+}
+
+/* evita scroll del body cuando el modal está abierto */
+body.modal-open {
+  overflow: hidden;
 }
 
 .modal-tabla {
@@ -41,11 +19,6 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-}
-
-/* evita scroll del body cuando el modal está abierto */
-body.modal-open {
-  overflow: hidden;
 }
 
 /* fondo oscuro */
@@ -127,11 +100,30 @@ body.modal-open {
 .modal-tabla__body {
   padding: 16px;
   overflow: auto;
+  flex: 1;
+  background: transparent;
+}
+
+/* scroll prolijo */
+.modal-tabla__body::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.modal-tabla__body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+}
+
+.modal-tabla__body::-webkit-scrollbar-track {
   background: transparent;
 }
 
 /* contenedor de imagen */
 .modal-tabla__image-wrap {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
   background: #ffffff;
   border-radius: 14px;
   padding: 12px;
@@ -140,9 +132,10 @@ body.modal-open {
 
 /* imagen */
 .modal-tabla__image {
-  width: 100%;
-  height: auto;
   display: block;
+  width: 100%;
+  min-width: 760px; /* importante para que no se aplaste */
+  height: auto;
   border-radius: 10px;
 }
 
@@ -165,6 +158,40 @@ body.modal-open {
   transform: translateY(-1px);
 }
 
+/* ==============================
+   ALERTAS / RESULTADOS
+============================== */
+
+.estado-hipo-alert {
+  border: 2px solid #ff4d4f;
+  box-shadow: 0 0 0 1px rgba(255, 77, 79, 0.2);
+}
+
+.text-danger {
+  color: #ff4d4f;
+}
+
+.estado-box--alert {
+  border-left: 4px solid #ff4d4f;
+}
+
+.result-card--critical {
+  background: rgba(255, 77, 79, 0.08);
+  border: 1px solid rgba(255, 77, 79, 0.3);
+  border-radius: 12px;
+}
+
+.resultado-prioridad--alert {
+  border: 1px solid rgba(255, 193, 7, 0.4);
+  background: rgba(255, 193, 7, 0.08);
+  border-radius: 12px;
+  margin-top: 16px;
+}
+
+/* ==============================
+   RESPONSIVE
+============================== */
+
 @media (max-width: 768px) {
   .modal-tabla {
     padding: 12px;
@@ -177,6 +204,15 @@ body.modal-open {
 
   .modal-tabla__header {
     padding: 16px;
+    gap: 12px;
+  }
+
+  .modal-tabla__header h3 {
+    font-size: 1rem;
+  }
+
+  .modal-tabla__desc {
+    font-size: 12px;
   }
 
   .modal-tabla__body {
@@ -185,97 +221,15 @@ body.modal-open {
 
   .modal-tabla__image-wrap {
     padding: 8px;
+    border-radius: 12px;
   }
-}
 
-/* Fondo oscuro */
-.modal-tabla__backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(5, 15, 30, 0.8);
-  backdrop-filter: blur(4px);
-}
+  .modal-tabla__image {
+    min-width: 680px;
+  }
 
-/* Caja */
-.modal-tabla__dialog {
-  position: relative;
-  width: min(950px, calc(100% - 32px));
-  max-height: calc(100vh - 40px);
-  margin: 20px auto;
-  background: linear-gradient(180deg, #0f2d52 0%, #0b2340 100%);
-  border-radius: 20px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Header */
-.modal-tabla__header {
-  display: flex;
-  justify-content: space-between;
-  padding: 18px 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-
-.modal-tabla__header h3 {
-  margin: 0;
-  color: white;
-}
-
-.modal-tabla__eyebrow {
-  font-size: 12px;
-  color: #7bc4ff;
-  margin-bottom: 4px;
-}
-
-.modal-tabla__desc {
-  font-size: 13px;
-  opacity: 0.8;
-}
-
-/* Botón cerrar */
-.modal-tabla__close {
-  border: none;
-  background: rgba(255,255,255,0.1);
-  color: white;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 20px;
-}
-
-/* Body */
-.modal-tabla__body {
-  padding: 16px;
-  overflow: auto;
-}
-
-/* Imagen */
-.modal-tabla__image-wrap {
-  background: white;
-  border-radius: 12px;
-  padding: 10px;
-}
-
-.modal-tabla__image {
-  width: 100%;
-  display: block;
-  border-radius: 8px;
-}
-
-/* Botón secundario */
-.btn-outline-info {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid #4fa3ff;
-  background: transparent;
-  color: #cfe7ff;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.btn-outline-info:hover {
-  background: rgba(79,163,255,0.15);
+  .btn-outline-info {
+    padding: 11px 14px;
+    font-size: 0.95rem;
+  }
 }

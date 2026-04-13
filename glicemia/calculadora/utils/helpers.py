@@ -140,7 +140,7 @@ def calcular_proximo_control(glicemia, horas_desde_inicio=None, estable=False):
         horas_desde_inicio = _a_decimal(horas_desde_inicio, permitir_none=True)
 
     comentario_fijo = (
-        "En pacientes insulinizados el monitoreo capilar puede ser inapropiado. "
+        "En pacientes hipotensos el monitoreo capilar puede ser inapropiado"
         "Evaluar muestra venosa."
     )
 

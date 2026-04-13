@@ -32,7 +32,6 @@
           </div>
         {% endif %}
 
-        <!-- GLICEMIA ACTUAL -->
         <div class="field-group">
           <label for="id_glicemia_actual">Glicemia actual</label>
           {{ form.glicemia_actual }}
@@ -41,12 +40,10 @@
           {% endif %}
         </div>
 
-        <!-- HIPO DIRECTA -->
         <div id="hipo_helper_box" class="field-helper field-helper--warning hidden">
           La glicemia actual es ≤ 70 mg/dL. Se prioriza manejo de hipoglucemia.
         </div>
 
-        <!-- CONTEXTO -->
         <div id="bloque_contexto" class="hidden">
 
           <div class="field-group">
@@ -110,22 +107,21 @@
             </div>
           </div>
 
-        </div> <!-- FIN bloque_contexto -->
+        </div>
 
         <div class="actions">
           <button type="submit" class="btn-primary">Evaluar</button>
         </div>
-
-        {% include "calculadora/partials/tabla_algoritmos.html" %}
       </form>
+
+      {% include "calculadora/partials/tabla_algoritmos.html" %}
     </section>
 
     {% if resultado %}
       {% if resultado.clase_visual == "critico" and "hipogluc" in resultado.estado|lower %}
         {% include "calculadora/partials/resultado_hipo.html" %}
       {% elif resultado.clase_visual == "alerta" %}
-
-  {% include "calculadora/partials/resultado_hiper.html" %}
+        {% include "calculadora/partials/resultado_hiper.html" %}
       {% elif resultado.clase_visual == "rango" %}
         {% include "calculadora/partials/resultado_rango.html" %}
       {% else %}
@@ -135,10 +131,8 @@
 
   </div>
 </div>
-
-
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=10"></script>
+<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=11"></script>
 {% endblock %}

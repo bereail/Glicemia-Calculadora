@@ -28,21 +28,27 @@
     <div class="hiper-bloque hiper-bloque--fila-principal">
       <div class="hiper-fila-principal hiper-fila-principal--sostenida">
 
-       <div class="hiper-tasa-principal">
-  <div class="hiper-tasa-principal__label">Tasa de infusión</div>
+        {% if resultado.tasa_calculada %}
+          <div class="hiper-tasa-principal">
+            <div class="hiper-tasa-principal__label">Tasa de infusión</div>
 
-  <div class="hiper-tasa-principal__valor">
-    {{ resultado.tasa_calculada|default:"NO VIENE TASA" }} <span>UI/h</span>
-  </div>
+            <div class="hiper-tasa-principal__valor">
+              {{ resultado.tasa_calculada }} <span>UI/h</span>
+            </div>
 
-  <div class="hiper-tasa-principal__meta">
-    {{ resultado.calculo_texto|default:"NO VIENE calculo_texto" }}
-  </div>
+            {% if resultado.calculo_texto %}
+              <div class="hiper-tasa-principal__meta">
+                {{ resultado.calculo_texto }}
+              </div>
+            {% endif %}
 
-  <div class="hiper-tasa-principal__meta">
-    {{ resultado.bolo_calculado|default:"NO VIENE bolo_calculado" }}
-  </div>
-</div>
+            {% if resultado.bolo_calculado %}
+              <div class="hiper-tasa-principal__meta">
+                {{ resultado.bolo_calculado }}
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
 
         {% if resultado.conducta %}
           <div class="hiper-conducta-lateral hiper-conducta-lateral--sostenida">
