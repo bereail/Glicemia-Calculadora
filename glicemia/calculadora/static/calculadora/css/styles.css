@@ -85,6 +85,9 @@ main {
   display: none !important;
 }
 
+.layout {
+  padding-bottom: 90px !important;
+}
 /* =========================================================
    CONTENEDOR
    ========================================================= */
@@ -204,13 +207,11 @@ main {
 
 .footer {
   flex-shrink: 0;
-  margin-top: auto;
   position: relative;
   border-top: 1px solid rgba(122, 178, 255, 0.12);
   background: rgba(4, 12, 24, 0.78);
   backdrop-filter: blur(8px);
 }
-
 .footer::before {
   content: "";
   position: absolute;
@@ -642,3 +643,4 @@ select:focus {
     padding: 10px 12px;
   }
 }
+

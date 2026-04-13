@@ -1,7 +1,7 @@
 /* =========================================================
    HOME
    Pantalla de inicio / formulario general
-   Unificado con la estética del sistema
+   Aislado para no pisar estilos globales del sistema
    ========================================================= */
 
 :root {
@@ -46,28 +46,14 @@
 }
 
 /* =========================================================
-   BASE
+   CONTENEDOR GENERAL HOME
    ========================================================= */
 
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  background:
-    radial-gradient(circle at top left, rgba(55, 122, 219, 0.12), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(32, 84, 158, 0.12), transparent 24%),
-    linear-gradient(180deg, var(--home-bg-1) 0%, var(--home-bg-2) 100%);
+.home-page {
   color: var(--home-text);
 }
 
-/* =========================================================
-   CONTENEDOR PRINCIPAL
-   ========================================================= */
-
-.contenedor {
+.home-page .contenedor {
   width: min(920px, calc(100% - 24px));
   margin: 24px auto 32px;
   padding: 0;
@@ -77,11 +63,11 @@ body {
    ENCABEZADO
    ========================================================= */
 
-.encabezado {
+.home-page .encabezado {
   margin-bottom: 16px;
 }
 
-.encabezado h1 {
+.home-page .encabezado h1 {
   margin: 0 0 6px;
   font-size: clamp(1.55rem, 2.5vw, 2rem);
   line-height: 1.05;
@@ -89,7 +75,7 @@ body {
   color: #ffffff;
 }
 
-.subtitulo {
+.home-page .subtitulo {
   margin: 0;
   color: var(--home-muted);
   font-size: 0.94rem;
@@ -100,7 +86,7 @@ body {
    CARD
    ========================================================= */
 
-.card {
+.home-page .card {
   background: var(--home-panel);
   border: 1px solid var(--home-border);
   border-radius: var(--home-radius-xl);
@@ -110,7 +96,7 @@ body {
   backdrop-filter: blur(8px);
 }
 
-.card h2 {
+.home-page .card h2 {
   margin: 0 0 14px;
   font-size: 1.08rem;
   line-height: 1.1;
@@ -122,11 +108,11 @@ body {
    CAMPOS
    ========================================================= */
 
-.campo {
+.home-page .campo {
   margin-bottom: 14px;
 }
 
-.campo label {
+.home-page .campo label {
   display: block;
   margin-bottom: 6px;
   font-size: 0.76rem;
@@ -134,7 +120,7 @@ body {
   color: var(--home-text);
 }
 
-.campo input[type="number"] {
+.home-page .campo input[type="number"] {
   width: 100%;
   max-width: 340px;
   height: 40px;
@@ -151,11 +137,11 @@ body {
     transform var(--home-transition);
 }
 
-.campo input[type="number"]::placeholder {
+.home-page .campo input[type="number"]::placeholder {
   color: #7e9abb;
 }
 
-.campo input[type="number"]:focus {
+.home-page .campo input[type="number"]:focus {
   outline: none;
   border-color: var(--home-input-focus);
   box-shadow: 0 0 0 4px rgba(122, 178, 255, 0.14);
@@ -165,7 +151,7 @@ body {
    RADIOS
    ========================================================= */
 
-.radio-group ul {
+.home-page .radio-group ul {
   list-style: none;
   padding-left: 0;
   margin: 0;
@@ -174,11 +160,11 @@ body {
   gap: 10px;
 }
 
-.radio-group li {
+.home-page .radio-group li {
   margin: 0;
 }
 
-.radio-group label {
+.home-page .radio-group label {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -194,17 +180,17 @@ body {
   transition: all 0.2s ease;
 }
 
-.radio-group label:hover {
+.home-page .radio-group label:hover {
   border-color: #2f80ed;
   background: rgba(47, 128, 237, 0.08);
 }
 
-.radio-group input[type="radio"] {
+.home-page .radio-group input[type="radio"] {
   margin: 0;
   accent-color: #2f80ed;
 }
 
-.texto-suave {
+.home-page .texto-suave {
   color: var(--home-muted);
   font-weight: 400;
   font-size: 0.84rem;
@@ -215,18 +201,15 @@ body {
    ACCIONES
    ========================================================= */
 
-.acciones {
+.home-page .acciones {
   display: flex;
   gap: 10px;
   margin-top: 18px;
   flex-wrap: wrap;
 }
 
-/* Importante:
-   mantengo .btn por compatibilidad con tu HTML,
-   pero ajustado a la línea visual nueva.
-*/
-.btn {
+/* Solo botones dentro de la home, no global */
+.home-page .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -247,28 +230,28 @@ body {
     box-shadow var(--home-transition);
 }
 
-.btn:hover {
+.home-page .btn:hover {
   transform: translateY(-1px);
 }
 
-.btn-principal {
+.home-page .btn-principal {
   background: var(--home-primary);
   color: var(--home-primary-text);
   border: none;
   box-shadow: 0 10px 24px rgba(49, 203, 106, 0.22);
 }
 
-.btn-principal:hover {
+.home-page .btn-principal:hover {
   background: var(--home-primary-hover);
 }
 
-.btn-secundario {
+.home-page .btn-secundario {
   background: var(--home-secondary-bg);
   color: #ffffff;
   border: 1px solid var(--home-secondary-border);
 }
 
-.btn-secundario:hover {
+.home-page .btn-secundario:hover {
   background: var(--home-secondary-hover);
   border-color: var(--home-border-strong);
 }
@@ -277,7 +260,7 @@ body {
    RESULTADO SIMPLE
    ========================================================= */
 
-.resultado p {
+.home-page .resultado p {
   margin: 8px 0;
   line-height: 1.45;
   font-size: 0.92rem;
@@ -288,18 +271,18 @@ body {
    ERRORES
    ========================================================= */
 
-.error {
+.home-page .error {
   color: var(--home-danger);
   margin-top: 6px;
   font-size: 0.84rem;
 }
 
-.error ul {
+.home-page .error ul {
   margin: 0;
   padding-left: 18px;
 }
 
-.alerta-error {
+.home-page .alerta-error {
   background: var(--home-danger-bg);
   border: 1px solid var(--home-danger-border);
   color: #ffd6d6;
@@ -315,61 +298,61 @@ body {
    ========================================================= */
 
 @media (max-width: 768px) {
-  .contenedor {
+  .home-page .contenedor {
     width: min(100%, calc(100% - 20px));
     margin: 18px auto 24px;
   }
 
-  .card {
+  .home-page .card {
     padding: 14px;
     border-radius: 18px;
   }
 
-  .acciones {
+  .home-page .acciones {
     flex-direction: column;
   }
 
-  .btn {
+  .home-page .btn {
     width: 100%;
   }
 
-  .campo input[type="number"] {
+  .home-page .campo input[type="number"] {
     max-width: 100%;
   }
 
-  .radio-group ul {
+  .home-page .radio-group ul {
     flex-direction: column;
     gap: 8px;
   }
 
-  .radio-group label {
+  .home-page .radio-group label {
     width: 100%;
   }
 }
 
 @media (max-width: 520px) {
-  .encabezado h1 {
+  .home-page .encabezado h1 {
     font-size: 1.4rem;
   }
 
-  .subtitulo {
+  .home-page .subtitulo {
     font-size: 0.86rem;
   }
 
-  .card h2 {
+  .home-page .card h2 {
     font-size: 1rem;
   }
 
-  .campo label {
+  .home-page .campo label {
     font-size: 0.72rem;
   }
 
-  .campo input[type="number"] {
+  .home-page .campo input[type="number"] {
     height: 38px;
     font-size: 0.9rem;
   }
 
-  .btn {
+  .home-page .btn {
     height: 38px;
     font-size: 0.8rem;
   }

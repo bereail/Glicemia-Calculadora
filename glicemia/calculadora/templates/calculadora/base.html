@@ -7,32 +7,13 @@
 
   <title>{% block title %}Control Glicemia{% endblock %}</title>
 
-  <!-- =========================
-       CSS GLOBAL (BASE)
-  ========================== -->
-  <link rel="stylesheet" href="{% static 'calculadora/css/base.css' %}?v=1">
-  <link rel="stylesheet" href="{% static 'calculadora/css/styles.css' %}?v=1">
-
-  <!-- =========================
-       CSS DE PANTALLA
-  ========================== -->
-  <link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=1">
-
-  <!-- =========================
-       CSS DE RESULTADOS (ORDEN IMPORTA)
-       Más específico abajo
-  ========================== -->
-  <link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=20260411-2">
-
+  <link rel="stylesheet" href="{% static 'calculadora/css/base.css' %}?v=20">
+  <link rel="stylesheet" href="{% static 'calculadora/css/styles.css' %}?v=20">
 
   {% block extra_css %}{% endblock %}
 </head>
 
 <body>
-
-  <!-- =========================
-       HEADER
-  ========================== -->
   <header class="topbar">
     <div class="container topbar__inner">
       <h1 class="logo">Glicemia</h1>
@@ -44,25 +25,17 @@
     </div>
   </header>
 
-  <!-- =========================
-       CONTENIDO
-  ========================== -->
   <main>
     {% block content %}
     {% endblock %}
   </main>
 
-  <!-- =========================
-       FOOTER
-  ========================== -->
+  <footer class="footer">
+    <div class="container">
+      <p>© {% now "Y" %} · Calculadora de Glicemia · Uso clínico interno</p>
+    </div>
+  </footer>
 
-
-  <!-- =========================
-       JS
-  ========================== -->
-  {% block extra_js %}
-    <script src="{% static 'calculadora/js/control_glicemia.js' %}?v=3"></script>
-  {% endblock %}
-
+  {% block extra_js %}{% endblock %}
 </body>
 </html>

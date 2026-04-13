@@ -4,141 +4,143 @@
 {% block title %}Control de glicemia{% endblock %}
 
 {% block content %}
-<div class="app-shell">
-  <div class="layout">
+<div class="home-page">
+  <div class="app-shell">
+    <div class="layout">
 
-    <section class="hero">
-      <div class="hero__text">
-        <p class="eyebrow">Protocolo UCI</p>
-        <h1>Control de glicemia</h1>
-        <div class="alerta-protocolo">
-          Aplicable solo a pacientes UCI con Terapia Nutricional Médica, sin Cetoacidosis Diabética ni estado Hiperosmolar no Cetósico
-        </div>
-      </div>
-    </section>
-
-    <section class="panel panel-form">
-      <div class="panel__header">
-        <h2>Ingresar datos</h2>
-        <p>Completá los campos para obtener una orientación clínica inicial.</p>
-      </div>
-
-      <form method="post" novalidate id="form-glicemia">
-        {% csrf_token %}
-
-        {% if form.non_field_errors %}
-          <div class="alert alert-danger">
-            {{ form.non_field_errors }}
+      <section class="hero">
+        <div class="hero__text">
+          <p class="eyebrow">Protocolo UCI</p>
+          <h1>Control de glicemia</h1>
+          <div class="alerta-protocolo">
+            Aplicable solo a pacientes UCI con Terapia Nutricional Médica, sin Cetoacidosis Diabética ni estado Hiperosmolar no Cetósico
           </div>
-        {% endif %}
+        </div>
+      </section>
 
-        <div class="field-group">
-          <label for="id_glicemia_actual">Glicemia actual</label>
-          {{ form.glicemia_actual }}
-          {% if form.glicemia_actual.errors %}
-            <div class="field-error">{{ form.glicemia_actual.errors }}</div>
+      <section class="panel panel-form">
+        <div class="panel__header">
+          <h2>Ingresar datos</h2>
+          <p>Completá los campos para obtener una orientación clínica inicial.</p>
+        </div>
+
+        <form method="post" novalidate id="form-glicemia">
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              {{ form.non_field_errors }}
+            </div>
           {% endif %}
-        </div>
-
-        <div id="hipo_helper_box" class="field-helper field-helper--warning hidden">
-          La glicemia actual es ≤ 70 mg/dL. Se prioriza manejo de hipoglucemia.
-        </div>
-
-        <div id="bloque_contexto" class="hidden">
 
           <div class="field-group">
-            <label class="field-label">{{ form.infusion_activa.label }}</label>
-            <div class="glicemia-radio-group">
-              {% for radio in form.infusion_activa %}
-                <label class="glicemia-radio-card">
-                  {{ radio.tag }}
-                  <span>{{ radio.choice_label }}</span>
-                </label>
-              {% endfor %}
-            </div>
-            {% if form.infusion_activa.errors %}
-              <div class="field-error">{{ form.infusion_activa.errors }}</div>
+            <label for="id_glicemia_actual">Glicemia actual</label>
+            {{ form.glicemia_actual }}
+            {% if form.glicemia_actual.errors %}
+              <div class="field-error">{{ form.glicemia_actual.errors }}</div>
             {% endif %}
           </div>
 
-          <div id="helper_previa_container" class="field-helper hidden">
-            <span id="helper_previa"></span>
+          <div id="hipo_helper_box" class="field-helper field-helper--warning hidden">
+            La glicemia actual es ≤ 70 mg/dL. Se prioriza manejo de hipoglucemia.
           </div>
 
-          <div id="secuencia_mediciones" class="glicemia-secuencia hidden">
-            <div class="glicemia-secuencia__title">Secuencia de evaluación</div>
+          <div id="bloque_contexto" class="hidden">
 
-            <div class="glicemia-secuencia__steps">
-              <span id="step-anterior" class="glicemia-secuencia__step glicemia-secuencia__step--muted">
-                Anterior (1)
-              </span>
-
-              <span id="arrow-anterior-previa" class="glicemia-secuencia__arrow">→</span>
-
-              <span id="step-previa" class="glicemia-secuencia__step">
-                Previa (2)
-              </span>
-
-              <span id="arrow-previa-actual" class="glicemia-secuencia__arrow">→</span>
-
-              <span id="step-actual" class="glicemia-secuencia__step glicemia-secuencia__step--active">
-                Actual (3)
-              </span>
-            </div>
-          </div>
-
-          <div id="previas_box" class="hidden">
             <div class="field-group">
-              <label for="id_glicemia_previa">
-                Glicemia previa <span id="label_previa_hint"></span>
-              </label>
-              {{ form.glicemia_previa }}
-              {% if form.glicemia_previa.errors %}
-                <div class="field-error">{{ form.glicemia_previa.errors }}</div>
+              <label class="field-label">{{ form.infusion_activa.label }}</label>
+              <div class="glicemia-radio-group">
+                {% for radio in form.infusion_activa %}
+                  <label class="glicemia-radio-card">
+                    {{ radio.tag }}
+                    <span>{{ radio.choice_label }}</span>
+                  </label>
+                {% endfor %}
+              </div>
+              {% if form.infusion_activa.errors %}
+                <div class="field-error">{{ form.infusion_activa.errors }}</div>
               {% endif %}
             </div>
 
-            <div id="anterior_container" class="field-group hidden">
-              <label for="id_tercera_medicion">Glicemia anterior</label>
-              {{ form.tercera_medicion }}
-              {% if form.tercera_medicion.errors %}
-                <div class="field-error">{{ form.tercera_medicion.errors }}</div>
-              {% endif %}
+            <div id="helper_previa_container" class="field-helper hidden">
+              <span id="helper_previa"></span>
             </div>
+
+            <div id="secuencia_mediciones" class="glicemia-secuencia hidden">
+              <div class="glicemia-secuencia__title">Secuencia de evaluación</div>
+
+              <div class="glicemia-secuencia__steps">
+                <span id="step-anterior" class="glicemia-secuencia__step glicemia-secuencia__step--muted">
+                  Anterior (1)
+                </span>
+
+                <span class="glicemia-secuencia__arrow">→</span>
+
+                <span id="step-previa" class="glicemia-secuencia__step">
+                  Previa (2)
+                </span>
+
+                <span class="glicemia-secuencia__arrow">→</span>
+
+                <span id="step-actual" class="glicemia-secuencia__step glicemia-secuencia__step--active">
+                  Actual (3)
+                </span>
+              </div>
+            </div>
+
+            <div id="previas_box" class="hidden">
+              <div class="field-group">
+                <label for="id_glicemia_previa">
+                  Glicemia previa <span id="label_previa_hint"></span>
+                </label>
+                {{ form.glicemia_previa }}
+                {% if form.glicemia_previa.errors %}
+                  <div class="field-error">{{ form.glicemia_previa.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div id="anterior_container" class="field-group hidden">
+                <label for="id_tercera_medicion">Glicemia anterior</label>
+                {{ form.tercera_medicion }}
+                {% if form.tercera_medicion.errors %}
+                  <div class="field-error">{{ form.tercera_medicion.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
           </div>
 
-        </div>
+          <div class="actions">
+            <button type="submit" class="btn-primary">Evaluar</button>
+          </div>
+        </form>
 
-        <div class="actions">
-          <button type="submit" class="btn-primary">Evaluar</button>
-        </div>
-      </form>
+        {% include "calculadora/partials/tabla_algoritmos.html" %}
+      </section>
 
-      {% include "calculadora/partials/tabla_algoritmos.html" %}
-    </section>
-
-    {% if resultado %}
-      {% if resultado.clase_visual == "critico" and "hipogluc" in resultado.estado|lower %}
-        {% include "calculadora/partials/resultado_hipo.html" %}
-      {% elif resultado.clase_visual == "alerta" %}
-        {% include "calculadora/partials/resultado_hiper.html" %}
-      {% elif resultado.clase_visual == "rango" %}
-        {% include "calculadora/partials/resultado_rango.html" %}
-      {% else %}
-        {% include "calculadora/partials/resultado_rango.html" %}
+      {% if resultado %}
+        {% if resultado.clase_visual == "critico" and "hipogluc" in resultado.estado|lower %}
+          {% include "calculadora/partials/resultado_hipo.html" %}
+        {% elif resultado.clase_visual == "alerta" %}
+          {% include "calculadora/partials/resultado_hiper.html" %}
+        {% elif resultado.clase_visual == "rango" %}
+          {% include "calculadora/partials/resultado_rango.html" %}
+        {% else %}
+          {% include "calculadora/partials/resultado_rango.html" %}
+        {% endif %}
       {% endif %}
-    {% endif %}
 
+    </div>
   </div>
 </div>
 {% endblock %}
 
 {% block extra_css %}
-  <link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=2">
-  <link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=2">
-  <link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=2">
+  <link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=20">
+  <link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=20">
+  <link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=20">
 {% endblock %}
 
 {% block extra_js %}
-  <script src="{% static 'calculadora/js/control_glicemia.js' %}?v=4"></script>
+  <script src="{% static 'calculadora/js/control_glicemia.js' %}?v=20"></script>
 {% endblock %}

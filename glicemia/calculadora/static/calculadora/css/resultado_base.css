@@ -1,10 +1,12 @@
 /* =========================================================
    RESULTADO BASE UNIFICADO
    Compacto + consistente + clínico
-   Estados:
-   - hipo
-   - hiper
-   - rango
+   Prioridad visual:
+   1) Conducta inmediata
+   2) Estado / situación
+   3) Tasa (si aplica)
+   4) Próximo control
+   5) Rango objetivo / observación
    ========================================================= */
 
 /* =========================================================
@@ -55,7 +57,7 @@
   display: grid;
   grid-template-columns: 180px 1fr;
   gap: 10px;
-  padding: 0.55rem;
+  padding: 0.5rem;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.025);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -64,15 +66,15 @@
 .hipo-header__estado,
 .hiper-header__estado,
 .rango-header__estado {
-  padding: 0.6rem 0.75rem;
+  padding: 0.58rem 0.72rem;
   border-radius: 12px;
 }
 
 .hipo-header__label,
 .hiper-header__label,
 .rango-header__label {
-  margin-bottom: 0.15rem;
-  font-size: 0.58rem;
+  margin-bottom: 0.14rem;
+  font-size: 0.56rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -82,7 +84,7 @@
 .hipo-header__estado-value,
 .hiper-header__estado-value,
 .rango-header__estado-value {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   line-height: 1.02;
   font-weight: 900;
   text-transform: uppercase;
@@ -95,22 +97,22 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 64px;
-  padding: 0.1rem 0.65rem;
+  min-height: 60px;
+  padding: 0.08rem 0.6rem;
 }
 
 .hipo-header__title,
 .hiper-header__title,
 .rango-header__title {
   margin: 0;
-  font-size: clamp(0.98rem, 1.35vw, 1.16rem);
-  line-height: 1.08;
+  font-size: clamp(0.96rem, 1.3vw, 1.12rem);
+  line-height: 1.06;
   font-weight: 900;
   color: rgba(241, 247, 255, 0.9);
 }
 
 /* =========================================================
-   3) HERO / CARD PRINCIPAL BASE
+   3) TARJETAS PRINCIPALES BASE
    ========================================================= */
 .hipo-hero,
 .hiper-hero,
@@ -137,18 +139,19 @@
 .hiper-hero__eyebrow,
 .rango-hero__eyebrow {
   display: block;
-  margin-bottom: 0.28rem;
-  font-size: 0.62rem;
+  margin-bottom: 0.26rem;
+  font-size: 0.6rem;
   font-weight: 900;
   text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .hipo-hero__content,
 .hiper-hero__content,
 .rango-hero__content {
-  font-size: clamp(1.2rem, 2vw, 1.7rem);
+  font-size: clamp(1.2rem, 2vw, 1.65rem);
   line-height: 1.08;
-  font-weight: 900;
+  font-weight: 950;
   color: #ffffff;
   letter-spacing: -0.02em;
 }
@@ -156,9 +159,9 @@
 .hipo-hero__support,
 .hiper-hero__support,
 .rango-hero__support {
-  margin-top: 0.45rem;
-  font-size: 0.84rem;
-  line-height: 1.3;
+  margin-top: 0.42rem;
+  font-size: 0.82rem;
+  line-height: 1.28;
   font-weight: 700;
 }
 
@@ -168,7 +171,7 @@
 .hipo-control,
 .hiper-control,
 .rango-control {
-  padding: 0.9rem 1rem;
+  padding: 0.85rem 0.95rem;
   border-radius: 18px;
   background: linear-gradient(
     135deg,
@@ -184,8 +187,8 @@
 .hipo-control__label,
 .hiper-control__label,
 .rango-control__label {
-  margin-bottom: 0.22rem;
-  font-size: 0.64rem;
+  margin-bottom: 0.2rem;
+  font-size: 0.62rem;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -195,8 +198,8 @@
 .hipo-control__value,
 .hiper-control__value,
 .rango-control__value {
-  font-size: 1rem;
-  line-height: 1.16;
+  font-size: 0.98rem;
+  line-height: 1.14;
   font-weight: 900;
   color: rgba(255, 244, 213, 0.98);
 }
@@ -204,9 +207,9 @@
 .hipo-control__comment,
 .hiper-control__comment,
 .rango-control__comment {
-  margin-top: 0.38rem;
-  font-size: 0.84rem;
-  line-height: 1.3;
+  margin-top: 0.34rem;
+  font-size: 0.8rem;
+  line-height: 1.26;
   font-weight: 700;
   color: rgba(255, 240, 206, 0.82);
 }
@@ -219,14 +222,14 @@
 .rango-grid {
   display: grid;
   grid-template-columns: minmax(220px, 300px) 1fr;
-  gap: 0.65rem;
+  gap: 0.6rem;
 }
 
 .hipo-footer-card,
 .hiper-footer-card,
 .rango-box {
-  padding: 12px 14px;
-  border-radius: 16px;
+  padding: 11px 13px;
+  border-radius: 15px;
   background: linear-gradient(135deg, rgba(30, 60, 95, 0.5), rgba(20, 45, 75, 0.4));
   border: 1px solid rgba(255, 255, 255, 0.04);
 }
@@ -234,8 +237,8 @@
 .hipo-footer-card__label,
 .hiper-footer-card__label,
 .rango-box__label {
-  margin-bottom: 0.15rem;
-  font-size: 0.58rem;
+  margin-bottom: 0.14rem;
+  font-size: 0.56rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -246,8 +249,8 @@
 .hiper-footer-card__text,
 .rango-box__text {
   margin: 0;
-  font-size: 0.8rem;
-  line-height: 1.24;
+  font-size: 0.78rem;
+  line-height: 1.22;
   font-weight: 700;
   color: rgba(247, 251, 255, 0.92);
 }
@@ -271,13 +274,25 @@
   border: 1px solid rgba(255, 120, 120, 0.22);
 }
 
+/* CONDUCTA HIPO: MÁS DOMINANTE */
 .resultado-base--hipo .hipo-hero {
+  padding: 1.15rem 1.2rem;
   background: linear-gradient(135deg, #e32045 0%, #a4162e 50%, #7f1228 100%);
   border-color: rgba(255, 120, 120, 0.4);
+  box-shadow:
+    0 16px 34px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .resultado-base--hipo .hipo-hero__eyebrow {
   color: rgba(255, 235, 235, 0.88);
+  margin-bottom: 0.34rem;
+}
+
+.resultado-base--hipo .hipo-hero__content {
+  font-size: clamp(1.28rem, 2.15vw, 1.85rem);
+  line-height: 1.1;
+  font-weight: 950;
 }
 
 .resultado-base--hipo .hipo-hero__support,
@@ -313,7 +328,7 @@
 .hiper-layout,
 .hiper-layout--sostenida {
   display: grid;
-  gap: 0.8rem;
+  gap: 0.75rem;
   grid-template-columns: 1fr;
   grid-template-areas:
     "header"
@@ -330,15 +345,16 @@
 .hiper-fila-principal,
 .hiper-fila-principal--sostenida {
   display: grid;
-  grid-template-columns: minmax(250px, 1.05fr) minmax(250px, 1.2fr);
-  gap: 0.8rem;
+  grid-template-columns: minmax(250px, 1fr) minmax(280px, 1.25fr);
+  gap: 0.75rem;
   align-items: stretch;
 }
 
+/* TASA */
 .hiper-tasa-principal,
 .hiper-tasa-principal--sostenida {
-  min-height: 126px;
-  padding: 0.95rem 1rem 0.9rem;
+  min-height: 122px;
+  padding: 0.92rem 0.98rem 0.88rem;
   background:
     radial-gradient(circle at 82% 72%, rgba(255,255,255,0.11), transparent 24%),
     linear-gradient(135deg, rgba(194, 24, 47, 0.98) 0%, rgba(142, 16, 36, 0.98) 52%, rgba(101, 12, 28, 1) 100%);
@@ -349,8 +365,8 @@
 }
 
 .hiper-tasa-principal__label {
-  margin-bottom: 0.3rem;
-  font-size: 0.62rem;
+  margin-bottom: 0.28rem;
+  font-size: 0.6rem;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -358,8 +374,8 @@
 }
 
 .hiper-tasa-principal__valor {
-  margin-bottom: 0.28rem;
-  font-size: clamp(2.3rem, 4vw, 3.5rem);
+  margin-bottom: 0.24rem;
+  font-size: clamp(2.15rem, 3.8vw, 3.2rem);
   line-height: 0.92;
   font-weight: 950;
   color: #ffffff;
@@ -367,49 +383,53 @@
 }
 
 .hiper-tasa-principal__valor span {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 800;
   color: rgba(255, 240, 240, 0.95);
 }
 
 .hiper-tasa-principal__meta {
-  font-size: 0.82rem;
-  line-height: 1.24;
+  font-size: 0.78rem;
+  line-height: 1.22;
   font-weight: 700;
   color: rgba(255, 238, 238, 0.9);
 }
 
+/* CONDUCTA HIPER: MÁS DOMINANTE */
 .hiper-conducta-lateral,
 .hiper-conducta-lateral--sostenida {
-  min-height: 126px;
-  padding: 0.92rem 1rem;
-  background: linear-gradient(135deg, rgba(171, 18, 45, 0.97) 0%, rgba(120, 13, 33, 0.98) 100%);
+  min-height: 122px;
+  padding: 1rem 1.05rem;
+  background: linear-gradient(135deg, rgba(171, 18, 45, 0.99) 0%, rgba(120, 13, 33, 0.99) 100%);
   border: 1px solid rgba(255, 129, 129, 0.2);
   display: flex;
   flex-direction: column;
   justify-content: center;
+  box-shadow:
+    0 16px 34px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
 .hiper-conducta-lateral__label {
-  margin-bottom: 0.38rem;
+  margin-bottom: 0.4rem;
   font-size: 0.62rem;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: rgba(255, 234, 234, 0.9);
+  color: rgba(255, 234, 234, 0.92);
 }
 
 .hiper-conducta-lateral__text {
-  font-size: clamp(0.98rem, 1.35vw, 1.14rem);
+  font-size: clamp(1.08rem, 1.55vw, 1.32rem);
   line-height: 1.12;
-  font-weight: 900;
+  font-weight: 950;
   color: #ffffff;
 }
 
 .hiper-conducta-lateral__subtext {
-  margin-top: 0.45rem;
-  font-size: 0.8rem;
-  line-height: 1.25;
+  margin-top: 0.42rem;
+  font-size: 0.78rem;
+  line-height: 1.22;
   font-weight: 700;
   color: rgba(255, 230, 230, 0.82);
 }
@@ -419,14 +439,14 @@
   align-items: center;
   gap: 8px;
   align-self: flex-start;
-  padding: 0.32rem 0.56rem;
+  padding: 0.3rem 0.54rem;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.035);
   border: 1px solid rgba(255, 255, 255, 0.045);
 }
 
 .hiper-rango-minimo__label {
-  font-size: 0.52rem;
+  font-size: 0.5rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -434,7 +454,7 @@
 }
 
 .hiper-rango-minimo__text {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
   color: rgba(236, 241, 250, 0.88);
 }
@@ -513,7 +533,7 @@
    ========================================================= */
 .rango-layout--infusion {
   display: grid;
-  gap: 0.8rem;
+  gap: 0.75rem;
   grid-template-columns: 1fr;
   grid-template-areas:
     "header"
@@ -529,14 +549,14 @@
 
 .rango-fila-principal {
   display: grid;
-  grid-template-columns: minmax(250px, 1.05fr) minmax(250px, 1.2fr);
-  gap: 0.8rem;
+  grid-template-columns: minmax(250px, 1fr) minmax(280px, 1.25fr);
+  gap: 0.75rem;
   align-items: stretch;
 }
 
 .rango-tasa-principal {
-  min-height: 126px;
-  padding: 0.95rem 1rem 0.9rem;
+  min-height: 122px;
+  padding: 0.92rem 0.98rem 0.88rem;
   background:
     radial-gradient(circle at 82% 72%, rgba(255,255,255,0.11), transparent 24%),
     linear-gradient(135deg, rgba(10, 112, 84, 0.98) 0%, rgba(8, 82, 64, 0.98) 52%, rgba(6, 56, 45, 1) 100%);
@@ -544,8 +564,8 @@
 }
 
 .rango-tasa-principal__label {
-  margin-bottom: 0.3rem;
-  font-size: 0.62rem;
+  margin-bottom: 0.28rem;
+  font-size: 0.6rem;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -553,8 +573,8 @@
 }
 
 .rango-tasa-principal__valor {
-  margin-bottom: 0.28rem;
-  font-size: clamp(2.3rem, 4vw, 3.5rem);
+  margin-bottom: 0.24rem;
+  font-size: clamp(2.15rem, 3.8vw, 3.2rem);
   line-height: 0.92;
   font-weight: 950;
   color: #ffffff;
@@ -562,35 +582,38 @@
 }
 
 .rango-tasa-principal__valor span {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 800;
   color: rgba(234, 255, 246, 0.95);
 }
 
 .rango-tasa-principal__meta {
-  font-size: 0.82rem;
-  line-height: 1.24;
+  font-size: 0.78rem;
+  line-height: 1.22;
   font-weight: 700;
   color: rgba(226, 255, 241, 0.9);
 }
 
 .rango-conducta-lateral {
-  min-height: 126px;
-  padding: 0.92rem 1rem;
-  background: linear-gradient(135deg, rgba(14, 90, 76, 0.97) 0%, rgba(10, 58, 50, 0.98) 100%);
+  min-height: 122px;
+  padding: 1rem 1.05rem;
+  background: linear-gradient(135deg, rgba(14, 90, 76, 0.98) 0%, rgba(10, 58, 50, 0.99) 100%);
   border: 1px solid rgba(108, 240, 178, 0.18);
   display: flex;
   flex-direction: column;
   justify-content: center;
+  box-shadow:
+    0 16px 34px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
 .rango-conducta-lateral--alerta {
-  background: linear-gradient(135deg, rgba(150, 112, 24, 0.97) 0%, rgba(102, 73, 16, 0.98) 100%);
+  background: linear-gradient(135deg, rgba(150, 112, 24, 0.98) 0%, rgba(102, 73, 16, 0.99) 100%);
   border: 1px solid rgba(255, 214, 107, 0.18);
 }
 
 .rango-conducta-lateral__label {
-  margin-bottom: 0.38rem;
+  margin-bottom: 0.4rem;
   font-size: 0.62rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -599,16 +622,16 @@
 }
 
 .rango-conducta-lateral__text {
-  font-size: clamp(0.98rem, 1.35vw, 1.14rem);
+  font-size: clamp(1.06rem, 1.5vw, 1.24rem);
   line-height: 1.12;
-  font-weight: 900;
+  font-weight: 950;
   color: #ffffff;
 }
 
 .rango-conducta-lateral__subtext {
-  margin-top: 0.45rem;
-  font-size: 0.8rem;
-  line-height: 1.25;
+  margin-top: 0.42rem;
+  font-size: 0.78rem;
+  line-height: 1.22;
   font-weight: 700;
   color: rgba(230, 248, 241, 0.82);
 }
@@ -618,7 +641,7 @@
    ========================================================= */
 .rango-layout--simple {
   display: grid;
-  gap: 0.8rem;
+  gap: 0.75rem;
   grid-template-columns: 1fr;
   grid-template-areas:
     "header"
@@ -629,13 +652,13 @@
 
 .rango-fila-principal--sin-infusion {
   display: grid;
-  grid-template-columns: minmax(250px, 1.05fr) minmax(250px, 1.2fr);
-  gap: 0.8rem;
+  grid-template-columns: minmax(250px, 1fr) minmax(280px, 1.25fr);
+  gap: 0.75rem;
   align-items: stretch;
 }
 
 .rango-resumen-principal {
-  min-height: 126px;
+  min-height: 122px;
   padding: 0.92rem 1rem;
   background:
     radial-gradient(circle at 82% 72%, rgba(255,255,255,0.07), transparent 24%),
@@ -647,8 +670,8 @@
 }
 
 .rango-resumen-principal__label {
-  margin-bottom: 0.38rem;
-  font-size: 0.62rem;
+  margin-bottom: 0.34rem;
+  font-size: 0.6rem;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -656,16 +679,16 @@
 }
 
 .rango-resumen-principal__text {
-  font-size: clamp(1rem, 1.4vw, 1.16rem);
+  font-size: clamp(1rem, 1.35vw, 1.14rem);
   line-height: 1.12;
-  font-weight: 900;
+  font-weight: 950;
   color: #ffffff;
 }
 
 .rango-resumen-principal__subtext {
-  margin-top: 0.4rem;
-  font-size: 0.82rem;
-  line-height: 1.24;
+  margin-top: 0.38rem;
+  font-size: 0.8rem;
+  line-height: 1.22;
   font-weight: 700;
   color: rgba(222, 237, 255, 0.82);
 }
@@ -677,7 +700,7 @@
 
 .rango-fila-principal--solo-alerta .rango-conducta-lateral {
   width: 100%;
-  min-height: 132px;
+  min-height: 126px;
   padding: 1rem 1.05rem;
   background: linear-gradient(
     135deg,
@@ -688,11 +711,11 @@
 }
 
 .rango-fila-principal--solo-alerta .rango-conducta-lateral__text {
-  font-size: clamp(1.02rem, 1.55vw, 1.22rem);
+  font-size: clamp(1.04rem, 1.5vw, 1.2rem);
 }
 
 .rango-fila-principal--solo-alerta .rango-conducta-lateral__subtext {
-  font-size: 0.84rem;
+  font-size: 0.82rem;
 }
 
 /* ok solo */
@@ -702,7 +725,7 @@
 
 .rango-fila-principal--solo-ok .rango-conducta-lateral {
   width: 100%;
-  min-height: 136px;
+  min-height: 130px;
   padding: 1rem 1.08rem;
   background:
     radial-gradient(circle at 78% 68%, rgba(255,255,255,0.12), transparent 22%),
@@ -711,7 +734,7 @@
 }
 
 .rango-fila-principal--solo-ok .rango-conducta-lateral__text {
-  font-size: clamp(1.04rem, 1.6vw, 1.24rem);
+  font-size: clamp(1.06rem, 1.55vw, 1.22rem);
 }
 
 /* =========================================================
@@ -720,7 +743,7 @@
 .rango-alerta-layout {
   display: grid;
   grid-template-columns: minmax(210px, 0.85fr) minmax(260px, 1.25fr);
-  gap: 0.75rem;
+  gap: 0.72rem;
   align-items: stretch;
 }
 
@@ -737,7 +760,7 @@
 }
 
 .rango-alerta-card {
-  padding: 0.92rem 1rem;
+  padding: 0.9rem 0.98rem;
   border-radius: 18px;
   background: linear-gradient(
     135deg,
@@ -754,8 +777,8 @@
 }
 
 .rango-alerta-card__label {
-  margin-bottom: 0.25rem;
-  font-size: 0.6rem;
+  margin-bottom: 0.22rem;
+  font-size: 0.58rem;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -763,16 +786,16 @@
 }
 
 .rango-alerta-card__value {
-  font-size: clamp(0.98rem, 1.3vw, 1.12rem);
+  font-size: clamp(0.96rem, 1.25vw, 1.1rem);
   line-height: 1.12;
-  font-weight: 900;
+  font-weight: 950;
   color: #fff8e8;
 }
 
 .rango-alerta-card__text {
-  margin-top: 0.4rem;
-  font-size: 0.8rem;
-  line-height: 1.24;
+  margin-top: 0.36rem;
+  font-size: 0.78rem;
+  line-height: 1.22;
   font-weight: 700;
   color: rgba(255, 245, 220, 0.82);
 }
@@ -800,7 +823,7 @@
   .hipo-hero__content,
   .hiper-hero__content,
   .rango-hero__content {
-    font-size: 1.2rem;
+    font-size: 1.18rem;
     line-height: 1.14;
   }
 }
@@ -838,18 +861,38 @@
 
   .hiper-tasa-principal__valor,
   .rango-tasa-principal__valor {
-    font-size: 2rem;
+    font-size: 1.95rem;
   }
 
   .hiper-conducta-lateral__text,
   .rango-conducta-lateral__text,
   .rango-resumen-principal__text {
-    font-size: 0.98rem;
+    font-size: 0.96rem;
   }
 
   .hipo-control__value,
   .hiper-control__value,
   .rango-control__value {
-    font-size: 0.94rem;
+    font-size: 0.92rem;
   }
+
+  .resultado-base--hipo .hipo-hero__content {
+    font-size: 1.14rem;
+  }
+}
+
+.resultado-base {
+  margin-bottom: 72px !important;
+}
+
+.panel-result {
+  margin-bottom: 32px !important;
+  overflow: hidden;
+}
+
+.hiper-layout,
+.hiper-layout--sostenida,
+.rango-layout--infusion,
+.rango-layout--simple {
+  overflow: visible;
 }
