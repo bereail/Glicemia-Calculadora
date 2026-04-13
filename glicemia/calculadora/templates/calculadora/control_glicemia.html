@@ -133,6 +133,12 @@
 </div>
 {% endblock %}
 
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=2">
+  <link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=2">
+  <link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=2">
+{% endblock %}
+
 {% block extra_js %}
-<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=11"></script>
+  <script src="{% static 'calculadora/js/control_glicemia.js' %}?v=4"></script>
 {% endblock %}
