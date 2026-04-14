@@ -211,6 +211,92 @@
   color: rgba(255, 240, 206, 0.82);
 }
 
+
+.hiper-proximo-card {
+  min-height: 126px;
+  padding: 0.92rem 1rem;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08), transparent 22%),
+    linear-gradient(135deg, rgba(82, 60, 18, 0.85) 0%, rgba(52, 40, 15, 0.9) 100%);
+  border: 1px solid rgba(255, 214, 107, 0.18);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.14),
+    inset 0 1px 0 rgba(255,255,255,0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hiper-proximo-card__label {
+  margin-bottom: 0.35rem;
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 214, 107, 0.9);
+}
+
+.hiper-proximo-card__value {
+  font-size: 1.05rem;
+  line-height: 1.12;
+  font-weight: 900;
+  color: #fff4d5;
+}
+
+.hiper-proximo-card__comment {
+  margin-top: 0.35rem;
+  font-size: 0.82rem;
+  line-height: 1.24;
+  font-weight: 700;
+  color: rgba(255, 240, 200, 0.75);
+}
+
+.hiper-bloque--conducta .hiper-conducta-lateral--full {
+  width: 100%;
+  min-height: 160px;
+}
+
+.hiper-observaciones-card {
+  width: 100%;
+  min-height: 118px;
+  padding: 0.95rem 1rem;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(167, 18, 44, 0.95) 0%, rgba(116, 13, 32, 0.98) 100%);
+  border: 1px solid rgba(255, 129, 129, 0.18);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.14),
+    inset 0 1px 0 rgba(255,255,255,0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.38rem;
+}
+
+.hiper-observaciones-card__label {
+  margin-bottom: 0.25rem;
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 235, 235, 0.9);
+}
+
+.hiper-observaciones-card__item {
+  font-size: 0.84rem;
+  line-height: 1.28;
+  font-weight: 700;
+  color: rgba(255, 239, 239, 0.92);
+}
+
+.hiper-observaciones-card__item-label {
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.hiper-observaciones-card__item-text {
+  color: rgba(255, 239, 239, 0.92);
+}
 /* =========================================================
    5) FOOTER / CAJAS INFERIORES
    ========================================================= */
@@ -449,6 +535,19 @@
 .hiper-control--destacado {
   display: block;
 }
+
+.hiper-bloque--conducta .hiper-conducta-lateral--full {
+  width: 100%;
+  min-height: 160px;
+}
+
+.hiper-bloque--fila-principal .hiper-control {
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 
 /* =========================================================
    9) RANGO GENERAL
@@ -852,4 +951,77 @@
   .rango-control__value {
     font-size: 0.94rem;
   }
+}
+
+/* =========================================================
+   RANGO - OBSERVACIONES UNIFICADAS
+   ========================================================= */
+
+.rango-bloque--observaciones {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.rango-observaciones-card {
+  width: 100%;
+  min-height: 118px;
+  padding: 0.95rem 1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.14),
+    inset 0 1px 0 rgba(255,255,255,0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.38rem;
+}
+
+.rango-observaciones-card--ok {
+  background:
+    radial-gradient(circle at 84% 18%, rgba(255,255,255,0.08), transparent 22%),
+    linear-gradient(135deg, rgba(12, 96, 76, 0.92) 0%, rgba(8, 64, 50, 0.96) 100%);
+  border: 1px solid rgba(112, 255, 201, 0.18);
+}
+
+.rango-observaciones-card--alerta {
+  background:
+    radial-gradient(circle at 84% 18%, rgba(255,255,255,0.08), transparent 22%),
+    linear-gradient(135deg, rgba(146, 108, 26, 0.86) 0%, rgba(95, 70, 18, 0.88) 100%);
+  border: 1px solid rgba(255, 210, 90, 0.18);
+}
+
+.rango-observaciones-card__label {
+  margin-bottom: 0.25rem;
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(235, 255, 246, 0.9);
+}
+
+.rango-observaciones-card--alerta .rango-observaciones-card__label {
+  color: rgba(255, 236, 190, 0.88);
+}
+
+.rango-observaciones-card__item {
+  font-size: 0.84rem;
+  line-height: 1.28;
+  font-weight: 700;
+  color: rgba(235, 255, 246, 0.92);
+}
+
+.rango-observaciones-card--alerta .rango-observaciones-card__item {
+  color: rgba(255, 245, 220, 0.9);
+}
+
+.rango-observaciones-card__item-label {
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.rango-observaciones-card__item-text {
+  color: inherit;
 }

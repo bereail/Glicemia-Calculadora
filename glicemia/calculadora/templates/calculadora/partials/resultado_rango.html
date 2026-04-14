@@ -1,9 +1,12 @@
 <section class="resultado-base resultado-base--rango {% if resultado.ui_variant == 'success' %}resultado-base--rango-ok{% elif resultado.en_objetivo_con_alerta or resultado.fuera_objetivo %}resultado-base--rango-alerta{% endif %} {% if resultado.tasa %}resultado-base--rango-infusion{% endif %}">
+
   <div class="resultado-base__top">
     <span class="resultado-base__chip">Resultado</span>
   </div>
 
   <div class="rango-layout {% if resultado.tasa %}rango-layout--infusion{% else %}rango-layout--simple{% endif %}">
+
+    <!-- 1. HEADER -->
     <div class="rango-bloque rango-bloque--header">
       <div class="rango-header rango-header--compacto">
         <div class="rango-header__estado {% if resultado.ui_variant == 'success' %}rango-header__estado--ok{% elif resultado.en_objetivo_con_alerta or resultado.fuera_objetivo %}rango-header__estado--alerta{% endif %}">
@@ -15,126 +18,93 @@
 
         <div class="rango-header__main">
           <div class="rango-header__label">Situación actual</div>
-          <h2 class="rango-header__title">
+          <div class="rango-header__title">
             {{ resultado.resumen_objetivo|default:"Dentro de rango" }}
-          </h2>
+          </div>
         </div>
       </div>
     </div>
 
-    {% if resultado.tasa %}
-      <div class="rango-bloque rango-bloque--fila-principal">
-        <div class="rango-fila-principal">
+    <!-- 2. FILA PRINCIPAL -->
+    <div class="rango-bloque rango-bloque--fila-principal">
+      <div class="rango-fila-principal {% if resultado.tasa %}rango-fila-principal--infusion{% else %}rango-fila-principal--single{% endif %}">
+
+        {% if resultado.tasa %}
           <div class="rango-tasa-principal">
             <div class="rango-tasa-principal__label">Tasa de infusión</div>
+
             <div class="rango-tasa-principal__valor">
               {{ resultado.tasa }} <span>UI/h</span>
             </div>
+
             {% if resultado.calculo_texto %}
-              <div class="rango-tasa-principal__meta">{{ resultado.calculo_texto }}</div>
-            {% endif %}
-          </div>
-
-          {% if resultado.en_objetivo_con_alerta and resultado.alerta_rango %}
-            <div class="rango-conducta-lateral rango-conducta-lateral--alerta">
-              <div class="rango-conducta-lateral__label">Atención clínica</div>
-              <div class="rango-conducta-lateral__text">
-                {{ resultado.alerta_rango }}
-              </div>
-              {% if resultado.observacion %}
-                <div class="rango-conducta-lateral__subtext">
-                  {{ resultado.observacion }}
-                </div>
-              {% endif %}
-            </div>
-          {% else %}
-            <div class="rango-conducta-lateral">
-              <div class="rango-conducta-lateral__label">Conducta actual</div>
-              <div class="rango-conducta-lateral__text">
-                {{ resultado.conducta|default:"Mantener conducta actual y continuar monitoreo." }}
-              </div>
-              {% if resultado.observacion %}
-                <div class="rango-conducta-lateral__subtext">
-                  {{ resultado.observacion }}
-                </div>
-              {% endif %}
-            </div>
-          {% endif %}
-        </div>
-      </div>
-
-    {% elif resultado.en_objetivo_con_alerta and resultado.alerta_rango %}
-      <div class="rango-bloque rango-bloque--fila-principal">
-        <div class="rango-fila-principal rango-fila-principal--solo-alerta">
-          <div class="rango-conducta-lateral rango-conducta-lateral--alerta">
-            <div class="rango-conducta-lateral__label">Atención clínica</div>
-            <div class="rango-conducta-lateral__text">
-              {{ resultado.alerta_rango }}
-            </div>
-            {% if resultado.observacion %}
-              <div class="rango-conducta-lateral__subtext">
-                {{ resultado.observacion }}
+              <div class="rango-tasa-principal__meta">
+                {{ resultado.calculo_texto }}
               </div>
             {% endif %}
           </div>
-        </div>
-      </div>
-
-    {% else %}
-      <div class="rango-bloque rango-bloque--fila-principal">
-        <div class="rango-fila-principal rango-fila-principal--solo-ok">
-          <div class="rango-conducta-lateral rango-conducta-lateral--ok-simple">
+        {% else %}
+          <div class="rango-conducta-lateral rango-conducta-lateral--full {% if resultado.en_objetivo_con_alerta %}rango-conducta-lateral--alerta{% else %}rango-conducta-lateral--ok-simple{% endif %}">
             <div class="rango-conducta-lateral__label">Conducta actual</div>
+
             <div class="rango-conducta-lateral__text">
               {{ resultado.conducta|default:"Mantener conducta actual y continuar monitoreo." }}
             </div>
+
             {% if resultado.observacion %}
               <div class="rango-conducta-lateral__subtext">
                 {{ resultado.observacion }}
               </div>
             {% endif %}
           </div>
-        </div>
-      </div>
-    {% endif %}
+        {% endif %}
 
-    {% if resultado.proximo_control %}
-      <div class="rango-bloque rango-bloque--control">
-        <div class="rango-control {% if resultado.ui_variant == 'success' %}rango-control--ok{% elif resultado.en_objetivo_con_alerta or resultado.fuera_objetivo %}rango-control--alerta{% endif %}">
-          <div class="rango-control__label">Próximo control</div>
-          <div class="rango-control__value">
-            {{ resultado.proximo_control }}
-          </div>
-          {% if resultado.comentario_control %}
-            <div class="rango-control__comment">
+      </div>
+    </div>
+
+    <!-- 3. OBSERVACIONES -->
+    <div class="rango-bloque rango-bloque--observaciones">
+      <div class="rango-observaciones-card {% if resultado.ui_variant == 'success' %}rango-observaciones-card--ok{% elif resultado.en_objetivo_con_alerta or resultado.fuera_objetivo %}rango-observaciones-card--alerta{% endif %}">
+        <div class="rango-observaciones-card__label">Observaciones</div>
+
+        <div class="rango-observaciones-card__item">
+          <span class="rango-observaciones-card__item-label">Conducta actual:</span>
+          <span class="rango-observaciones-card__item-text">
+            {{ resultado.conducta|default:"Mantener conducta actual y continuar monitoreo." }}
+          </span>
+        </div>
+
+        <div class="rango-observaciones-card__item">
+          <span class="rango-observaciones-card__item-label">Próximo control:</span>
+          <span class="rango-observaciones-card__item-text">
+            {{ resultado.proximo_control|default:"Controlar glicemia nuevamente en 1 hora" }}
+          </span>
+        </div>
+
+        {% if resultado.comentario_control %}
+          <div class="rango-observaciones-card__item">
+            <span class="rango-observaciones-card__item-text">
               {{ resultado.comentario_control }}
-            </div>
-          {% endif %}
-        </div>
-      </div>
-    {% endif %}
-
-    <div class="rango-bloque rango-bloque--footer">
-      <div class="rango-grid">
-        {% if resultado.texto_rango_objetivo %}
-          <div class="rango-box rango-box--info">
-            <div class="rango-box__label">Rango objetivo utilizado</div>
-            <p class="rango-box__text">{{ resultado.texto_rango_objetivo }}</p>
+            </span>
           </div>
         {% endif %}
 
-        {% if resultado.observacion and not resultado.tasa and not resultado.en_objetivo_con_alerta %}
-          <div class="rango-box">
-            <div class="rango-box__label">Observación</div>
-            <p class="rango-box__text">{{ resultado.observacion }}</p>
-          </div>
-        {% elif resultado.tasa and resultado.en_objetivo and not resultado.en_objetivo_con_alerta %}
-          <div class="rango-box">
-            <div class="rango-box__label">Observación</div>
-            <p class="rango-box__text">{{ resultado.observacion }}</p>
+        <div class="rango-observaciones-card__item">
+          <span class="rango-observaciones-card__item-label">Rango objetivo utilizado:</span>
+          <span class="rango-observaciones-card__item-text">
+            {{ resultado.texto_rango_objetivo|default:"Paciente no insulinizado: 70 a 180 mg/dL" }}
+          </span>
+        </div>
+
+        {% if resultado.observacion and resultado.observacion != resultado.alerta_rango %}
+          <div class="rango-observaciones-card__item">
+            <span class="rango-observaciones-card__item-text">
+              {{ resultado.observacion }}
+            </span>
           </div>
         {% endif %}
       </div>
     </div>
+
   </div>
 </section>

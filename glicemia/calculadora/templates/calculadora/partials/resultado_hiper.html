@@ -1,4 +1,5 @@
 <section class="resultado-base resultado-base--hiper resultado-base--hiper-sostenida {% if resultado.es_critica %}resultado-base--hiper-critica{% endif %}">
+
   <div class="resultado-base__top">
     <span class="resultado-base__chip">Resultado</span>
   </div>
@@ -24,7 +25,7 @@
       </div>
     </div>
 
-    <!-- 2 y 3. FILA PRINCIPAL -->
+    <!-- 2 y 3. FILA PRINCIPAL: TASA + PRÓXIMO CONTROL -->
     <div class="hiper-bloque hiper-bloque--fila-principal">
       <div class="hiper-fila-principal hiper-fila-principal--sostenida">
 
@@ -50,17 +51,17 @@
           </div>
         {% endif %}
 
-        {% if resultado.conducta %}
-          <div class="hiper-conducta-lateral hiper-conducta-lateral--sostenida">
-            <div class="hiper-conducta-lateral__label">Conducta inmediata</div>
+        {% if resultado.proximo_control %}
+          <div class="hiper-proximo-card">
+            <div class="hiper-proximo-card__label">Próximo control</div>
 
-            <div class="hiper-conducta-lateral__text">
-              {{ resultado.conducta|safe }}
+            <div class="hiper-proximo-card__value">
+              {{ resultado.proximo_control }}
             </div>
 
-            {% if resultado.subestado %}
-              <div class="hiper-conducta-lateral__subtext">
-                {{ resultado.subestado }}
+            {% if resultado.comentario_control %}
+              <div class="hiper-proximo-card__comment">
+                {{ resultado.comentario_control }}
               </div>
             {% endif %}
           </div>
@@ -69,36 +70,32 @@
       </div>
     </div>
 
-    <!-- 4. PROXIMO CONTROL -->
-    {% if resultado.proximo_control %}
-      <div class="hiper-bloque hiper-bloque--control">
-        <div class="hiper-control hiper-control--destacado">
-          <div class="hiper-control__label">Próximo control</div>
+    <!-- 4. OBSERVACIONES -->
+    <div class="hiper-bloque hiper-bloque--observaciones">
+      <div class="hiper-observaciones-card">
+        <div class="hiper-observaciones-card__label">Observaciones</div>
 
-          <div class="hiper-control__value">
-            {{ resultado.proximo_control }}
+        {% if resultado.conducta %}
+          <div class="hiper-observaciones-card__item">
+            <span class="hiper-observaciones-card__item-label">Conducta inmediata:</span>
+            <span class="hiper-observaciones-card__item-text">{{ resultado.conducta|safe }}</span>
           </div>
+        {% endif %}
 
-          {% if resultado.comentario_control %}
-            <div class="hiper-control__comment">
-              {{ resultado.comentario_control }}
-            </div>
-          {% endif %}
-        </div>
-      </div>
-    {% endif %}
+        {% if resultado.subestado %}
+          <div class="hiper-observaciones-card__item">
+            <span class="hiper-observaciones-card__item-text">{{ resultado.subestado }}</span>
+          </div>
+        {% endif %}
 
-    <!-- 5. RANGO OBJETIVO -->
-    {% if resultado.texto_rango_objetivo %}
-      <div class="hiper-bloque hiper-bloque--rango">
-        <div class="hiper-rango-minimo">
-          <span class="hiper-rango-minimo__label">Rango objetivo utilizado</span>
-          <span class="hiper-rango-minimo__text">
-            {{ resultado.texto_rango_objetivo }}
-          </span>
-        </div>
+        {% if resultado.texto_rango_objetivo %}
+          <div class="hiper-observaciones-card__item">
+            <span class="hiper-observaciones-card__item-label">Rango objetivo utilizado:</span>
+            <span class="hiper-observaciones-card__item-text">{{ resultado.texto_rango_objetivo }}</span>
+          </div>
+        {% endif %}
       </div>
-    {% endif %}
+    </div>
 
   </div>
 </section>
