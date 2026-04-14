@@ -1,54 +1,19 @@
 <section class="resultado-base resultado-base--hiper resultado-base--hiper-sostenida {% if resultado.es_critica %}resultado-base--hiper-critica{% endif %}">
-  <div class="resultado-base__top">
-    <span class="resultado-base__chip">Resultado</span>
+
+  <div class="hiper-header-simple">
+    <div class="hiper-header-simple__estado">
+      {{ resultado.estado|default:"HIPERGLUCEMIA SOSTENIDA" }}
+    </div>
+
+    <div class="hiper-header-simple__situacion">
+      {{ resultado.resumen_objetivo|default:"Fuera de rango objetivo" }}
+    </div>
   </div>
 
   <div class="hiper-layout hiper-layout--sostenida">
 
-    <!-- 1. ESTADO + SITUACION ACTUAL -->
-    <div class="hiper-bloque hiper-bloque--header">
-      <div class="hiper-header hiper-header--compacto">
-        <div class="hiper-header__estado">
-          <div class="hiper-header__label">Estado</div>
-          <div class="hiper-header__estado-value">
-            {{ resultado.estado|default:"Hiperglucemia sostenida" }}
-          </div>
-        </div>
-
-        <div class="hiper-header__main">
-          <div class="hiper-header__label">Situación actual</div>
-          <h2 class="hiper-header__title">
-            {{ resultado.resumen_objetivo|default:"Fuera de rango objetivo" }}
-          </h2>
-        </div>
-      </div>
-    </div>
-
-    <!-- 2 y 3. FILA PRINCIPAL -->
     <div class="hiper-bloque hiper-bloque--fila-principal">
       <div class="hiper-fila-principal hiper-fila-principal--sostenida">
-
-        {% if resultado.tasa_calculada %}
-          <div class="hiper-tasa-principal">
-            <div class="hiper-tasa-principal__label">Tasa de infusión</div>
-
-            <div class="hiper-tasa-principal__valor">
-              {{ resultado.tasa_calculada }} <span>UI/h</span>
-            </div>
-
-            {% if resultado.calculo_texto %}
-              <div class="hiper-tasa-principal__meta">
-                {{ resultado.calculo_texto }}
-              </div>
-            {% endif %}
-
-            {% if resultado.bolo_calculado %}
-              <div class="hiper-tasa-principal__meta">
-                {{ resultado.bolo_calculado }}
-              </div>
-            {% endif %}
-          </div>
-        {% endif %}
 
         {% if resultado.conducta %}
           <div class="hiper-conducta-lateral hiper-conducta-lateral--sostenida">
@@ -66,10 +31,31 @@
           </div>
         {% endif %}
 
+        {% if resultado.tasa_calculada %}
+          <div class="hiper-tasa-principal hiper-tasa-principal--sostenida">
+            <div class="hiper-tasa-principal__label">Tasa de infusión</div>
+
+            <div class="hiper-tasa-principal__valor">
+              {{ resultado.tasa_calculada }} <span>UI/h</span>
+            </div>
+
+            {% if resultado.calculo_texto %}
+              <div class="hiper-tasa-principal__meta">
+                {{ resultado.calculo_texto }}
+              </div>
+            {% endif %}
+
+            {% if resultado.bolo_calculado %}
+              <div class="hiper-tasa-principal__meta">
+                Bolo inicial: {{ resultado.bolo_calculado }}
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+
       </div>
     </div>
 
-    <!-- 4. PROXIMO CONTROL -->
     {% if resultado.proximo_control %}
       <div class="hiper-bloque hiper-bloque--control">
         <div class="hiper-control hiper-control--destacado">
@@ -88,7 +74,6 @@
       </div>
     {% endif %}
 
-    <!-- 5. RANGO OBJETIVO -->
     {% if resultado.texto_rango_objetivo %}
       <div class="hiper-bloque hiper-bloque--rango">
         <div class="hiper-rango-minimo">

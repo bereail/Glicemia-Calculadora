@@ -21,8 +21,9 @@ def evaluar_hipoglucemia(actual, previa=None, infusion_activa=False):
         resultado["mensaje"] = "Paciente en hipoglucemia."
         resultado["resumen_objetivo"] = "Fuera de rango objetivo"
         resultado["conducta"] = (
-            "Suspender insulina si está en infusión, administrar 50 ml de dextrosa al 25% "
-            "y controlar glicemia a los 30 minutos."
+            "Suspender insulina si está en infusión.<br>"
+            "Administrar 50 ml de dextrosa al 25%.<br>"
+            "Controlar glicemia a los 30 minutos."
         )
         resultado["suspender_insulina"] = infusion_activa
         resultado["administrar_dextrosa"] = True

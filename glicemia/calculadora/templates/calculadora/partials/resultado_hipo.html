@@ -1,37 +1,46 @@
-<section class="resultado-base resultado-base--hipo">
-  <div class="resultado-base__top">
-    <span class="resultado-base__chip">Resultado</span>
-  </div>
+<section class="resultado-base resultado-base--hiper resultado-base--hiper-sostenida {% if resultado.es_critica %}resultado-base--hiper-critica{% endif %}">
 
-  <div class="hipo-header">
-    <div class="hipo-header__estado">
-      <div class="hipo-header__label">Estado</div>
-      <div class="hipo-header__estado-value">
-        {{ resultado.estado|default:"Hipoglucemia" }}
-      </div>
+  <div class="hipo-header-simple">
+    <div class="hipo-header-simple__estado">
+      {{ resultado.estado|default:"HIPOGLUCEMIA" }}
     </div>
 
-    <div class="hipo-header__main">
-      <div class="hipo-header__label">Situación actual</div>
-      <h2 class="hipo-header__title">
-        {{ resultado.resumen_objetivo|default:"Fuera de rango objetivo" }}
-      </h2>
+    <div class="hipo-header-simple__situacion">
+      {{ resultado.resumen_objetivo|default:"Fuera de rango objetivo" }}
     </div>
   </div>
 
   {% if resultado.conducta %}
     <div class="hipo-hero">
-      <div class="hipo-hero__eyebrow">Conducta inmediata</div>
+      <div class="hipo-hero__topline">
+        <span class="hipo-hero__icon">⚠</span>
+        <div class="hipo-hero__eyebrow">Conducta inmediata</div>
+      </div>
+
       <div class="hipo-hero__content">
         {{ resultado.conducta|safe }}
       </div>
+
+      {% if resultado.subestado %}
+        <div class="hipo-hero__support">
+          {{ resultado.subestado }}
+        </div>
+      {% endif %}
     </div>
   {% endif %}
 
   {% if resultado.proximo_control %}
     <div class="hipo-control">
       <div class="hipo-control__label">Próximo control</div>
-      <div class="hipo-control__value">{{ resultado.proximo_control }}</div>
+      <div class="hipo-control__value">
+        {{ resultado.proximo_control }}
+      </div>
+
+      {% if resultado.comentario_control %}
+        <div class="hipo-control__comment">
+          {{ resultado.comentario_control }}
+        </div>
+      {% endif %}
     </div>
   {% endif %}
 
@@ -39,14 +48,14 @@
     {% if resultado.texto_rango_objetivo %}
       <div class="hipo-footer-card">
         <div class="hipo-footer-card__label">Rango objetivo utilizado</div>
-        <div class="hipo-footer-card__text">{{ resultado.texto_rango_objetivo }}</div>
+        <p class="hipo-footer-card__text">{{ resultado.texto_rango_objetivo }}</p>
       </div>
     {% endif %}
 
     {% if resultado.observacion %}
       <div class="hipo-footer-card">
         <div class="hipo-footer-card__label">Observación</div>
-        <div class="hipo-footer-card__text">{{ resultado.observacion }}</div>
+        <p class="hipo-footer-card__text">{{ resultado.observacion }}</p>
       </div>
     {% endif %}
   </div>

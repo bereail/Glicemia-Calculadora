@@ -1,873 +1,1070 @@
 /* =========================================================
-   RESULTADO BASE UNIFICADO
-   Compacto + consistente + clínico
-   Prioridad visual:
-   1) Conducta inmediata
-   2) Estado / situación
-   3) Tasa (si aplica)
-   4) Próximo control
-   5) Rango objetivo / observación
+   UI / UX PREMIUM iOS STYLE
+   Resultado clínico - limpio, moderno, responsive
    ========================================================= */
 
-/* =========================================================
-   1) CONTENEDOR GENERAL
-   ========================================================= */
+/* ===============================
+   TOKENS VISUALES
+=============================== */
+:root {
+  --bg-deep: #07111f;
+  --bg-deeper: #050d18;
+  --card-glass: rgba(255, 255, 255, 0.06);
+  --card-glass-strong: rgba(255, 255, 255, 0.1);
+  --stroke-soft: rgba(255, 255, 255, 0.08);
+  --stroke-faint: rgba(255, 255, 255, 0.04);
+  --text-main: #eef4ff;
+  --text-soft: rgba(238, 244, 255, 0.78);
+  --text-faint: rgba(238, 244, 255, 0.56);
+  --shadow-xl: 0 24px 60px rgba(0, 0, 0, 0.42);
+  --shadow-lg: 0 14px 34px rgba(0, 0, 0, 0.28);
+  --shadow-md: 0 10px 24px rgba(0, 0, 0, 0.2);
+  --radius-xl: 28px;
+  --radius-lg: 22px;
+  --radius-md: 18px;
+  --radius-sm: 14px;
+  --blur: blur(18px);
+}
+
+/* ===============================
+   BASE GLOBAL
+=============================== */
 .resultado-base {
-  margin-top: 14px;
-  padding: 14px;
-  border-radius: 22px;
-  color: #f3f7ff;
-  box-shadow:
-    0 12px 28px rgba(0, 0, 0, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
+  width: 100%;
+  padding: clamp(14px, 1.8vw, 22px);
+  border-radius: var(--radius-xl);
+  color: var(--text-main);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(72, 162, 255, 0.12), transparent 32%),
+    radial-gradient(circle at 100% 0%, rgba(0, 255, 191, 0.08), transparent 28%),
+    linear-gradient(180deg, #0a1528 0%, #091120 52%, #060d18 100%);
+  border: 1px solid var(--stroke-soft);
+  box-shadow:
+    var(--shadow-xl),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: var(--blur);
+  overflow: hidden;
+}
+
+.resultado-base::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04), transparent 22%),
+    linear-gradient(135deg, rgba(255,255,255,0.03), transparent 40%);
+  pointer-events: none;
+}
+
+.resultado-base > * {
+  position: relative;
+  z-index: 1;
 }
 
 .resultado-base__top {
   display: flex;
   align-items: center;
-  margin-bottom: 2px;
+  justify-content: flex-start;
 }
 
 .resultado-base__chip {
   display: inline-flex;
   align-items: center;
-  min-height: 28px;
+  min-height: 30px;
   padding: 0 12px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  color: rgba(255, 247, 247, 0.92);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(245, 249, 255, 0.92);
   font-size: 0.68rem;
   font-weight: 800;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+/* ===============================
+   TARJETAS REUTILIZABLES
+=============================== */
+.hipo-hero,
+.hipo-control,
+.hipo-footer-card,
+.hiper-conducta-lateral,
+.hiper-tasa-principal,
+.hiper-control,
+.hiper-rango-minimo,
+.rango-tasa-principal,
+.rango-conducta-lateral,
+.rango-control,
+.rango-box,
+.rango-alerta-card,
+.hipo-header-simple,
+.hiper-header-simple,
+.rango-header,
+.hiper-header {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.04),
+    var(--shadow-md);
+}
+
+/* ===============================
+   TIPOGRAFÍA GENERAL
+=============================== */
+.hipo-hero__eyebrow,
+.hiper-conducta-lateral__label,
+.hiper-tasa-principal__label,
+.hiper-control__label,
+.rango-conducta-lateral__label,
+.rango-tasa-principal__label,
+.rango-control__label,
+.rango-box__label,
+.hiper-rango-minimo__label {
+  font-size: 0.63rem;
+  line-height: 1;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.hiper-conducta-lateral__text,
+.rango-conducta-lateral__text,
+.rango-resumen-principal__text {
+  letter-spacing: -0.03em;
 }
 
 /* =========================================================
-   2) HEADER BASE
+   HIPOGLUCEMIA
+   ========================================================= */
+.resultado-base--hipo {
+  border-color: rgba(255, 90, 114, 0.24);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255, 66, 99, 0.14), transparent 30%),
+    radial-gradient(circle at 100% 100%, rgba(255, 124, 70, 0.06), transparent 26%),
+    linear-gradient(180deg, #1a0d16 0%, #130a12 48%, #0d0910 100%);
+}
+
+.hipo-header-simple {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 14px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
+  border: 1px solid rgba(255,255,255,0.05);
+  backdrop-filter: blur(14px);
+}
+
+.hipo-header-simple__estado {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ff4968 0%, #b51435 100%);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.hipo-header-simple__situacion {
+  margin-left: auto;
+  text-align: right;
+  font-size: 0.84rem;
+  line-height: 1.1;
+  font-weight: 700;
+  color: rgba(255, 241, 244, 0.84);
+}
+
+.hipo-hero {
+  padding: clamp(16px, 2vw, 24px);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 85% 20%, rgba(255,255,255,0.1), transparent 22%),
+    linear-gradient(135deg, #ff3e62 0%, #cc173d 55%, #8e0f2d 100%);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.hipo-hero__topline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.hipo-hero__icon {
+  font-size: 1rem;
+  line-height: 1;
+  color: rgba(255, 224, 164, 0.96);
+}
+
+.hipo-hero__eyebrow {
+  color: rgba(255, 243, 246, 0.92);
+}
+
+.hipo-hero__content {
+  font-size: clamp(1.35rem, 2.7vw, 2.6rem);
+  line-height: 1.02;
+  font-weight: 950;
+  color: #fff;
+}
+
+.hipo-hero__support {
+  margin-top: 8px;
+  font-size: 0.84rem;
+  line-height: 1.24;
+  font-weight: 700;
+  color: rgba(255, 239, 241, 0.86);
+}
+
+.hipo-control {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(255, 193, 72, 0.18), rgba(156, 104, 12, 0.18));
+  border: 1px solid rgba(255, 209, 112, 0.2);
+  backdrop-filter: blur(12px);
+}
+
+.hipo-control__label {
+  margin-bottom: 4px;
+  color: rgba(255, 223, 139, 0.96);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hipo-control__value {
+  font-size: clamp(1rem, 1.6vw, 1.42rem);
+  line-height: 1.08;
+  font-weight: 900;
+  color: rgba(255, 248, 228, 0.98);
+}
+
+.hipo-control__comment {
+  margin-top: 5px;
+  font-size: 0.8rem;
+  line-height: 1.22;
+  font-weight: 700;
+  color: rgba(255, 243, 218, 0.8);
+}
+
+.hipo-footer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.hipo-footer-card {
+  min-height: 52px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025));
+  border: 1px solid rgba(255,255,255,0.05);
+  backdrop-filter: blur(12px);
+}
+
+.hipo-footer-card__label {
+  margin-bottom: 4px;
+  font-size: 0.54rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(218, 227, 247, 0.52);
+}
+
+.hipo-footer-card__text {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  font-weight: 700;
+  color: rgba(243, 248, 255, 0.88);
+}
+
+/* =========================================================
+   HIPERGLUCEMIA PREMIUM
+   ========================================================= */
+.resultado-base--hiper,
+.resultado-base--hiper-sostenida,
+.resultado-base--hiper-persistente {
+  border-color: rgba(255, 87, 114, 0.22);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255, 80, 120, 0.14), transparent 28%),
+    radial-gradient(circle at 100% 0%, rgba(56, 174, 255, 0.08), transparent 24%),
+    linear-gradient(180deg, #170b14 0%, #100812 50%, #0a0810 100%);
+}
+
+.resultado-base--hiper-critica {
+  border-color: rgba(255, 92, 92, 0.34);
+  box-shadow:
+    0 0 0 1px rgba(255, 90, 90, 0.06),
+    0 24px 60px rgba(0,0,0,0.42);
+}
+
+.hiper-header-simple {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 14px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
+  border: 1px solid rgba(255,255,255,0.05);
+  backdrop-filter: blur(14px);
+}
+
+.hiper-header-simple__estado {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ff4968 0%, #b51435 100%);
+  color: #fff;
+  font-size: 0.8rem;
+  line-height: 1;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  box-shadow:
+    0 10px 20px rgba(181, 20, 53, 0.24),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.hiper-header-simple__situacion {
+  margin-left: auto;
+  text-align: right;
+  font-size: 0.84rem;
+  line-height: 1.12;
+  font-weight: 700;
+  color: rgba(255, 240, 244, 0.84);
+  max-width: 50%;
+}
+
+.hiper-layout,
+.hiper-layout--sostenida {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+.hiper-bloque,
+.hiper-bloque--fila-principal,
+.hiper-bloque--control,
+.hiper-bloque--rango {
+  width: 100%;
+  min-width: 0;
+}
+
+.hiper-fila-principal,
+.hiper-fila-principal--sostenida {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+  width: 100%;
+}
+
+.hiper-fila-principal > *,
+.hiper-fila-principal--sostenida > * {
+  min-width: 0;
+}
+
+/* TARJETA CONDUCTA */
+.hiper-conducta-lateral,
+.hiper-conducta-lateral--sostenida {
+  width: 100%;
+  min-height: 190px;
+  height: 100%;
+  padding: clamp(18px, 2vw, 24px);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 82% 18%, rgba(255,255,255,0.14), transparent 22%),
+    linear-gradient(135deg, #ff557a 0%, #d91f4d 52%, #941733 100%);
+  border: 1px solid rgba(255,255,255,0.10);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  backdrop-filter: blur(18px);
+  box-shadow:
+    0 18px 34px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.hiper-conducta-lateral__label {
+  margin-bottom: 10px;
+  font-size: 0.76rem;
+  line-height: 1;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 241, 245, 0.94);
+}
+
+.hiper-conducta-lateral__text {
+  font-size: clamp(1.35rem, 2vw, 2.15rem);
+  line-height: 1.04;
+  font-weight: 950;
+  letter-spacing: -0.035em;
+  color: #ffffff;
+}
+
+.hiper-conducta-lateral__subtext {
+  margin-top: 10px;
+  font-size: 0.94rem;
+  line-height: 1.24;
+  font-weight: 700;
+  color: rgba(255, 232, 237, 0.86);
+}
+
+/* TARJETA TASA */
+.hiper-tasa-principal,
+.hiper-tasa-principal--sostenida {
+  width: 100%;
+  min-height: 190px;
+  height: 100%;
+  padding: clamp(18px, 2vw, 24px);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 76% 24%, rgba(255,255,255,0.18), transparent 18%),
+    radial-gradient(circle at 18% 84%, rgba(0,255,191,0.16), transparent 20%),
+    linear-gradient(135deg, #2648c7 0%, #153a8b 52%, #0a5f72 100%);
+  border: 1px solid rgba(135, 197, 255, 0.22);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  backdrop-filter: blur(18px);
+  box-shadow:
+    0 18px 34px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.hiper-tasa-principal__label {
+  margin-bottom: 10px;
+  font-size: 0.76rem;
+  line-height: 1;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(236, 246, 255, 0.94);
+}
+
+.hiper-tasa-principal__valor {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: clamp(2.8rem, 5vw, 4.4rem);
+  line-height: 0.92;
+  font-weight: 950;
+  letter-spacing: -0.06em;
+  color: #ffffff;
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+}
+
+.hiper-tasa-principal__valor span {
+  font-size: clamp(1rem, 1.4vw, 1.2rem);
+  font-weight: 800;
+  color: rgba(236, 246, 255, 0.92);
+  letter-spacing: 0;
+}
+
+.hiper-tasa-principal__meta {
+  font-size: 0.95rem;
+  line-height: 1.24;
+  font-weight: 700;
+  color: rgba(232, 243, 255, 0.86);
+}
+
+.hiper-tasa-principal__meta + .hiper-tasa-principal__meta {
+  margin-top: 4px;
+}
+
+.hiper-control,
+.hiper-control--destacado {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 20px;
+  background:
+    linear-gradient(135deg, rgba(255, 194, 74, 0.18), rgba(151, 105, 14, 0.16));
+  border: 1px solid rgba(255, 210, 120, 0.18);
+  backdrop-filter: blur(14px);
+}
+
+.hiper-control__label {
+  margin-bottom: 5px;
+  color: rgba(255, 223, 139, 0.96);
+}
+
+.hiper-control__value {
+  font-size: clamp(1rem, 1.45vw, 1.32rem);
+  line-height: 1.08;
+  font-weight: 900;
+  color: rgba(255, 248, 227, 0.98);
+}
+
+.hiper-control__comment {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  line-height: 1.22;
+  font-weight: 700;
+  color: rgba(255, 243, 218, 0.78);
+}
+
+.hiper-rango-minimo {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-self: flex-start;
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(14px);
+}
+
+.hiper-rango-minimo__label {
+  color: rgba(214, 226, 247, 0.58);
+}
+
+.hiper-rango-minimo__text {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(241, 247, 255, 0.86);
+}
+
+/* =========================================================
+   RANGO EN OBJETIVO / ALERTA
+   ========================================================= */
+
+/* =========================================================
+   RANGO EN OBJETIVO / ALERTA
+   MISMA ESTRUCTURA VISUAL QUE HIPER
+   ========================================================= */
+.resultado-base--rango,
+.resultado-base--rango-infusion {
+  border-color: rgba(95, 180, 255, 0.16);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(50, 158, 255, 0.12), transparent 28%),
+    radial-gradient(circle at 100% 0%, rgba(25, 232, 181, 0.08), transparent 24%),
+    linear-gradient(180deg, #081526 0%, #07111d 52%, #050d17 100%);
+}
+
+.resultado-base--rango-ok {
+  border-color: rgba(62, 233, 158, 0.22);
+}
+
+.resultado-base--rango-alerta {
+  border-color: rgba(255, 193, 71, 0.24);
+}
+
+.rango-layout--infusion,
+.rango-layout--simple {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+.rango-bloque,
+.rango-bloque--header,
+.rango-bloque--fila-principal,
+.rango-bloque--control,
+.rango-bloque--footer {
+  width: 100%;
+  min-width: 0;
+}
+
+/* HEADER */
+.rango-header,
+.rango-header--compacto {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
+  border: 1px solid rgba(255,255,255,0.05);
+  backdrop-filter: blur(14px);
+}
+
+.rango-header__estado {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 84px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(48, 82, 128, 0.42), rgba(16, 38, 66, 0.5));
+  border: 1px solid rgba(120, 180, 255, 0.14);
+}
+
+.rango-header__estado--ok {
+  background: linear-gradient(135deg, rgba(12, 143, 104, 0.52), rgba(8, 83, 63, 0.56));
+  border-color: rgba(102, 240, 177, 0.2);
+}
+
+.rango-header__estado--alerta {
+  background: linear-gradient(135deg, rgba(165, 120, 26, 0.5), rgba(96, 72, 19, 0.56));
+  border-color: rgba(255, 211, 108, 0.22);
+}
+
+.rango-header__label {
+  margin-bottom: 6px;
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(231, 239, 255, 0.62);
+}
+
+.rango-header__estado-value {
+  font-size: 0.95rem;
+  line-height: 1.04;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.rango-header__main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 84px;
+  padding: 8px 10px;
+}
+
+.rango-header__title {
+  margin: 0;
+  font-size: clamp(1.05rem, 1.3vw, 1.2rem);
+  line-height: 1.08;
+  font-weight: 900;
+  color: rgba(244, 248, 255, 0.92);
+}
+
+/* FILA PRINCIPAL */
+.rango-fila-principal,
+.rango-fila-principal--infusion {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+  width: 100%;
+}
+
+.rango-fila-principal--single {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  width: 100%;
+}
+
+.rango-fila-principal > *,
+.rango-fila-principal--infusion > *,
+.rango-fila-principal--single > * {
+  min-width: 0;
+}
+
+.rango-tasa-principal,
+.rango-conducta-lateral {
+  width: 100%;
+  min-height: 190px;
+  height: 100%;
+  padding: 18px 20px;
+  border-radius: 26px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  backdrop-filter: blur(16px);
+}
+
+/* TASA */
+.rango-tasa-principal {
+  background:
+    radial-gradient(circle at 80% 24%, rgba(255,255,255,0.14), transparent 18%),
+    radial-gradient(circle at 18% 84%, rgba(0,255,191,0.12), transparent 20%),
+    linear-gradient(135deg, rgba(18, 151, 110, 0.92) 0%, rgba(8, 92, 68, 0.98) 100%);
+  border: 1px solid rgba(112, 255, 201, 0.16);
+}
+
+.rango-tasa-principal__label {
+  margin-bottom: 10px;
+  font-size: 0.76rem;
+  line-height: 1;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(234, 255, 246, 0.92);
+}
+
+.rango-tasa-principal__valor {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: clamp(2.6rem, 4.5vw, 4rem);
+  line-height: 0.92;
+  font-weight: 950;
+  color: #fff;
+  letter-spacing: -0.05em;
+}
+
+.rango-tasa-principal__valor span {
+  font-size: clamp(0.95rem, 1.2vw, 1.1rem);
+  font-weight: 800;
+  color: rgba(234, 255, 246, 0.92);
+}
+
+.rango-tasa-principal__meta {
+  font-size: 0.9rem;
+  line-height: 1.24;
+  font-weight: 700;
+  color: rgba(226, 255, 241, 0.88);
+}
+
+/* CONDUCTA */
+.rango-conducta-lateral {
+  background:
+    radial-gradient(circle at 82% 18%, rgba(255,255,255,0.12), transparent 20%),
+    linear-gradient(135deg, rgba(16, 170, 121, 0.98) 0%, rgba(9, 96, 69, 1) 100%);
+  border: 1px solid rgba(108, 240, 178, 0.16);
+}
+
+.rango-conducta-lateral--alerta {
+  background:
+    radial-gradient(circle at 82% 18%, rgba(255,255,255,0.1), transparent 20%),
+    linear-gradient(135deg, rgba(255, 191, 57, 0.98) 0%, rgba(154, 109, 13, 1) 100%);
+  border-color: rgba(255, 214, 107, 0.16);
+}
+
+.rango-conducta-lateral--full {
+  min-height: 160px;
+}
+
+.rango-conducta-lateral__label {
+  margin-bottom: 10px;
+  font-size: 0.76rem;
+  line-height: 1;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(236, 255, 247, 0.9);
+}
+
+.rango-conducta-lateral__text {
+  font-size: clamp(1.2rem, 1.8vw, 1.7rem);
+  line-height: 1.08;
+  font-weight: 950;
+  color: #fff;
+}
+
+.rango-conducta-lateral__subtext {
+  margin-top: 8px;
+  font-size: 0.88rem;
+  line-height: 1.24;
+  font-weight: 700;
+  color: rgba(232, 247, 241, 0.82);
+}
+
+/* CONTROL */
+.rango-control {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 20px;
+  background:
+    linear-gradient(135deg, rgba(100, 190, 255, 0.14), rgba(45, 118, 206, 0.14));
+  border: 1px solid rgba(112, 178, 255, 0.16);
+  backdrop-filter: blur(14px);
+}
+
+.rango-control--ok {
+  background:
+    linear-gradient(135deg, rgba(24, 174, 126, 0.16), rgba(8, 110, 80, 0.16));
+  border-color: rgba(102, 240, 177, 0.16);
+}
+
+.rango-control--alerta {
+  background:
+    linear-gradient(135deg, rgba(255, 193, 74, 0.16), rgba(156, 104, 14, 0.16));
+  border-color: rgba(255, 214, 107, 0.18);
+}
+
+.rango-control__label {
+  margin-bottom: 5px;
+  color: rgba(232, 242, 255, 0.86);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.rango-control__value {
+  font-size: clamp(1rem, 1.35vw, 1.3rem);
+  line-height: 1.08;
+  font-weight: 900;
+  color: rgba(245, 249, 255, 0.96);
+}
+
+.rango-control__comment {
+  margin-top: 6px;
+  font-size: 0.82rem;
+  line-height: 1.24;
+  font-weight: 700;
+  color: rgba(229, 238, 250, 0.78);
+}
+
+/* FOOTER */
+.rango-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) 1fr;
+  gap: 10px;
+}
+
+.rango-box {
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025));
+  border: 1px solid rgba(255,255,255,0.05);
+  backdrop-filter: blur(12px);
+}
+
+.rango-box__label {
+  margin-bottom: 4px;
+  font-size: 0.56rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(218, 227, 247, 0.56);
+}
+
+.rango-box__text {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.24;
+  font-weight: 700;
+  color: rgba(243, 248, 255, 0.88);
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .rango-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .rango-fila-principal,
+  .rango-fila-principal--infusion {
+    grid-template-columns: 1fr;
+  }
+
+  .rango-tasa-principal,
+  .rango-conducta-lateral {
+    min-height: auto;
+    height: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .rango-header,
+  .rango-header--compacto {
+    grid-template-columns: 1fr;
+    padding: 10px;
+    border-radius: 18px;
+  }
+
+  .rango-header__estado,
+  .rango-header__main {
+    min-height: auto;
+  }
+
+  .rango-header__title {
+    font-size: 1rem;
+  }
+
+  .rango-conducta-lateral__text {
+    font-size: 1.02rem;
+  }
+
+  .rango-tasa-principal__valor {
+    font-size: 2.2rem;
+  }
+
+  .rango-tasa-principal__valor span {
+    font-size: 0.82rem;
+  }
+
+  .rango-box__text,
+  .rango-control__comment {
+    font-size: 0.74rem;
+  }
+}
+
+   
+/* =========================================================
+   COMPATIBILIDAD CON CLASES VIEJAS
    ========================================================= */
 .hipo-header,
 .hiper-header,
 .rango-header,
 .hiper-header--compacto,
 .rango-header--compacto {
-  display: grid;
-  grid-template-columns: 180px 1fr;
-  gap: 10px;
-  padding: 0.5rem;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
 }
 
-.hipo-header__estado,
-.hiper-header__estado,
-.rango-header__estado {
-  padding: 0.58rem 0.72rem;
-  border-radius: 12px;
-}
-
-.hipo-header__label,
-.hiper-header__label,
-.rango-header__label {
-  margin-bottom: 0.14rem;
-  font-size: 0.56rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(230, 236, 255, 0.68);
-}
-
-.hipo-header__estado-value,
-.hiper-header__estado-value,
-.rango-header__estado-value {
-  font-size: 0.88rem;
-  line-height: 1.02;
-  font-weight: 900;
-  text-transform: uppercase;
-  color: #ffffff;
-}
-
-.hipo-header__main,
-.hiper-header__main,
-.rango-header__main {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: 60px;
-  padding: 0.08rem 0.6rem;
-}
-
-.hipo-header__title,
-.hiper-header__title,
-.rango-header__title {
-  margin: 0;
-  font-size: clamp(0.96rem, 1.3vw, 1.12rem);
-  line-height: 1.06;
-  font-weight: 900;
-  color: rgba(241, 247, 255, 0.9);
+.panel-result,
+.resultado-screen,
+.resultado-base {
+  overflow: hidden;
 }
 
 /* =========================================================
-   3) TARJETAS PRINCIPALES BASE
+   RESPONSIVE
    ========================================================= */
-.hipo-hero,
-.hiper-hero,
-.rango-hero,
-.hiper-tasa-principal,
-.hiper-conducta-lateral,
-.rango-tasa-principal,
-.rango-conducta-lateral,
-.rango-resumen-principal {
-  border-radius: 18px;
-  border: 1px solid transparent;
-  box-shadow:
-    0 12px 28px rgba(0, 0, 0, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+@media (max-width: 1200px) {
+  .hiper-header-simple__situacion {
+    max-width: 56%;
+  }
 }
 
-.hipo-hero,
-.hiper-hero,
-.rango-hero {
-  padding: 1rem 1.05rem;
-}
-
-.hipo-hero__eyebrow,
-.hiper-hero__eyebrow,
-.rango-hero__eyebrow {
-  display: block;
-  margin-bottom: 0.26rem;
-  font-size: 0.6rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.hipo-hero__content,
-.hiper-hero__content,
-.rango-hero__content {
-  font-size: clamp(1.2rem, 2vw, 1.65rem);
-  line-height: 1.08;
-  font-weight: 950;
-  color: #ffffff;
-  letter-spacing: -0.02em;
-}
-
-.hipo-hero__support,
-.hiper-hero__support,
-.rango-hero__support {
-  margin-top: 0.42rem;
-  font-size: 0.82rem;
-  line-height: 1.28;
-  font-weight: 700;
-}
-
-/* =========================================================
-   4) CONTROL / PRÓXIMO CONTROL
-   ========================================================= */
-.hipo-control,
-.hiper-control,
-.rango-control {
-  padding: 0.85rem 0.95rem;
-  border-radius: 18px;
-  background: linear-gradient(
-    135deg,
-    rgba(88, 68, 27, 0.34),
-    rgba(54, 43, 18, 0.24)
-  );
-  border: 1px solid rgba(255, 207, 92, 0.18);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.03),
-    0 8px 20px rgba(0,0,0,0.12);
-}
-
-.hipo-control__label,
-.hiper-control__label,
-.rango-control__label {
-  margin-bottom: 0.2rem;
-  font-size: 0.62rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(255, 214, 107, 0.92);
-}
-
-.hipo-control__value,
-.hiper-control__value,
-.rango-control__value {
-  font-size: 0.98rem;
-  line-height: 1.14;
-  font-weight: 900;
-  color: rgba(255, 244, 213, 0.98);
-}
-
-.hipo-control__comment,
-.hiper-control__comment,
-.rango-control__comment {
-  margin-top: 0.34rem;
-  font-size: 0.8rem;
-  line-height: 1.26;
-  font-weight: 700;
-  color: rgba(255, 240, 206, 0.82);
-}
-
-/* =========================================================
-   5) FOOTER / CAJAS INFERIORES
-   ========================================================= */
-.hipo-footer-grid,
-.hiper-footer-grid,
-.rango-grid {
-  display: grid;
-  grid-template-columns: minmax(220px, 300px) 1fr;
-  gap: 0.6rem;
-}
-
-.hipo-footer-card,
-.hiper-footer-card,
-.rango-box {
-  padding: 11px 13px;
-  border-radius: 15px;
-  background: linear-gradient(135deg, rgba(30, 60, 95, 0.5), rgba(20, 45, 75, 0.4));
-  border: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.hipo-footer-card__label,
-.hiper-footer-card__label,
-.rango-box__label {
-  margin-bottom: 0.14rem;
-  font-size: 0.56rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(224, 232, 252, 0.56);
-}
-
-.hipo-footer-card__text,
-.hiper-footer-card__text,
-.rango-box__text {
-  margin: 0;
-  font-size: 0.78rem;
-  line-height: 1.22;
-  font-weight: 700;
-  color: rgba(247, 251, 255, 0.92);
-}
-
-/* =========================================================
-   6) HIPO
-   ========================================================= */
-.resultado-base--hipo {
-  border: 1px solid rgba(201, 86, 97, 0.42);
-  background:
-    radial-gradient(circle at top left, rgba(128, 35, 50, 0.08), transparent 28%),
-    linear-gradient(180deg, rgba(36, 22, 31, 0.98) 0%, rgba(20, 17, 24, 0.99) 100%);
-  box-shadow:
-    0 0 0 1px rgba(201, 86, 97, 0.05),
-    0 16px 32px rgba(0, 0, 0, 0.24);
-  backdrop-filter: blur(6px);
-}
-
-.resultado-base--hipo .hipo-header__estado {
-  background: linear-gradient(180deg, rgba(116, 33, 48, 0.56) 0%, rgba(86, 25, 36, 0.6) 100%);
-  border: 1px solid rgba(255, 120, 120, 0.22);
-}
-
-/* CONDUCTA HIPO: MÁS DOMINANTE */
-.resultado-base--hipo .hipo-hero {
-  padding: 1.15rem 1.2rem;
-  background: linear-gradient(135deg, #e32045 0%, #a4162e 50%, #7f1228 100%);
-  border-color: rgba(255, 120, 120, 0.4);
-  box-shadow:
-    0 16px 34px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-.resultado-base--hipo .hipo-hero__eyebrow {
-  color: rgba(255, 235, 235, 0.88);
-  margin-bottom: 0.34rem;
-}
-
-.resultado-base--hipo .hipo-hero__content {
-  font-size: clamp(1.28rem, 2.15vw, 1.85rem);
-  line-height: 1.1;
-  font-weight: 950;
-}
-
-.resultado-base--hipo .hipo-hero__support,
-.resultado-base--hipo .hipo-control__comment {
-  color: rgba(255, 243, 214, 0.82);
-}
-
-/* =========================================================
-   7) HIPER BASE
-   ========================================================= */
-.resultado-base--hiper,
-.resultado-base--hiper-persistente,
-.resultado-base--hiper-sostenida {
-  border: 1.5px solid rgba(214, 55, 72, 0.56);
-  background:
-    radial-gradient(circle at top left, rgba(120, 20, 35, 0.08), transparent 28%),
-    linear-gradient(180deg, rgba(28, 10, 18, 0.985) 0%, rgba(18, 8, 14, 0.995) 100%);
-  box-shadow:
-    0 0 0 1px rgba(214, 55, 72, 0.07),
-    0 18px 40px rgba(0, 0, 0, 0.3);
-}
-
-.resultado-base--hiper .hiper-header__estado,
-.resultado-base--hiper-persistente .hiper-header__estado,
-.resultado-base--hiper-sostenida .hiper-header__estado {
-  background: linear-gradient(135deg, rgba(126, 33, 49, 0.82) 0%, rgba(88, 22, 35, 0.88) 100%);
-  border: 1px solid rgba(255, 124, 124, 0.2);
-}
-
-/* =========================================================
-   8) HIPER PERSISTENTE / SOSTENIDA LAYOUT
-   ========================================================= */
-.hiper-layout,
-.hiper-layout--sostenida {
-  display: grid;
-  gap: 0.75rem;
-  grid-template-columns: 1fr;
-  grid-template-areas:
-    "header"
-    "fila-principal"
-    "control"
-    "rango";
-}
-
-.hiper-bloque--header { grid-area: header; }
-.hiper-bloque--fila-principal { grid-area: fila-principal; }
-.hiper-bloque--control { grid-area: control; }
-.hiper-bloque--rango { grid-area: rango; }
-
-.hiper-fila-principal,
-.hiper-fila-principal--sostenida {
-  display: grid;
-  grid-template-columns: minmax(250px, 1fr) minmax(280px, 1.25fr);
-  gap: 0.75rem;
-  align-items: stretch;
-}
-
-/* TASA */
-.hiper-tasa-principal,
-.hiper-tasa-principal--sostenida {
-  min-height: 122px;
-  padding: 0.92rem 0.98rem 0.88rem;
-  background:
-    radial-gradient(circle at 82% 72%, rgba(255,255,255,0.11), transparent 24%),
-    linear-gradient(135deg, rgba(194, 24, 47, 0.98) 0%, rgba(142, 16, 36, 0.98) 52%, rgba(101, 12, 28, 1) 100%);
-  border: 1px solid rgba(255, 132, 132, 0.2);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.hiper-tasa-principal__label {
-  margin-bottom: 0.28rem;
-  font-size: 0.6rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(255, 236, 236, 0.9);
-}
-
-.hiper-tasa-principal__valor {
-  margin-bottom: 0.24rem;
-  font-size: clamp(2.15rem, 3.8vw, 3.2rem);
-  line-height: 0.92;
-  font-weight: 950;
-  color: #ffffff;
-  letter-spacing: -0.05em;
-}
-
-.hiper-tasa-principal__valor span {
-  font-size: 0.9rem;
-  font-weight: 800;
-  color: rgba(255, 240, 240, 0.95);
-}
-
-.hiper-tasa-principal__meta {
-  font-size: 0.78rem;
-  line-height: 1.22;
-  font-weight: 700;
-  color: rgba(255, 238, 238, 0.9);
-}
-
-/* CONDUCTA HIPER: MÁS DOMINANTE */
-.hiper-conducta-lateral,
-.hiper-conducta-lateral--sostenida {
-  min-height: 122px;
-  padding: 1rem 1.05rem;
-  background: linear-gradient(135deg, rgba(171, 18, 45, 0.99) 0%, rgba(120, 13, 33, 0.99) 100%);
-  border: 1px solid rgba(255, 129, 129, 0.2);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  box-shadow:
-    0 16px 34px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255,255,255,0.05);
-}
-
-.hiper-conducta-lateral__label {
-  margin-bottom: 0.4rem;
-  font-size: 0.62rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(255, 234, 234, 0.92);
-}
-
-.hiper-conducta-lateral__text {
-  font-size: clamp(1.08rem, 1.55vw, 1.32rem);
-  line-height: 1.12;
-  font-weight: 950;
-  color: #ffffff;
-}
-
-.hiper-conducta-lateral__subtext {
-  margin-top: 0.42rem;
-  font-size: 0.78rem;
-  line-height: 1.22;
-  font-weight: 700;
-  color: rgba(255, 230, 230, 0.82);
-}
-
-.hiper-rango-minimo {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  align-self: flex-start;
-  padding: 0.3rem 0.54rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.045);
-}
-
-.hiper-rango-minimo__label {
-  font-size: 0.5rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(168, 183, 212, 0.68);
-}
-
-.hiper-rango-minimo__text {
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: rgba(236, 241, 250, 0.88);
-}
-
-/* ocultar bloques viejos que no deben convivir */
-.hiper-footer-grid,
-.hiper-conducta-dominante,
-.hiper-control:not(.hiper-control--destacado) {
-  display: none;
-}
-
-.hiper-control--destacado {
-  display: block;
-}
-
-/* =========================================================
-   9) RANGO GENERAL
-   ========================================================= */
-.resultado-base--rango,
-.resultado-base--rango-infusion {
-  border: 1px solid rgba(36, 96, 150, 0.16);
-  background:
-    radial-gradient(circle at top left, rgba(14, 40, 72, 0.08), transparent 28%),
-    linear-gradient(180deg, rgba(8, 18, 34, 0.985) 0%, rgba(6, 14, 28, 0.995) 100%);
-  box-shadow:
-    0 0 0 1px rgba(110, 160, 220, 0.03),
-    0 18px 40px rgba(0, 0, 0, 0.24);
-}
-
-.resultado-base--rango-ok {
-  border-color: rgba(46, 204, 113, 0.34);
-  box-shadow:
-    0 0 0 1px rgba(46, 204, 113, 0.05),
-    0 18px 40px rgba(0, 0, 0, 0.24);
-}
-
-.resultado-base--rango-alerta {
-  border-color: rgba(214, 160, 42, 0.34);
-  box-shadow:
-    0 0 0 1px rgba(214, 160, 42, 0.05),
-    0 18px 40px rgba(0, 0, 0, 0.24);
-}
-
-.resultado-base--rango .rango-header__estado,
-.resultado-base--rango-infusion .rango-header__estado {
-  background: linear-gradient(
-    135deg,
-    rgba(24, 42, 66, 0.38) 0%,
-    rgba(14, 28, 46, 0.4) 100%
-  );
-  border: 1px solid rgba(120, 170, 220, 0.14);
-}
-
-.resultado-base--rango .rango-header__estado--ok,
-.resultado-base--rango-infusion .rango-header__estado--ok {
-  background: linear-gradient(
-    135deg,
-    rgba(16, 104, 72, 0.44) 0%,
-    rgba(10, 70, 48, 0.46) 100%
-  );
-  border: 1px solid rgba(92, 224, 166, 0.22);
-}
-
-.resultado-base--rango .rango-header__estado--alerta,
-.resultado-base--rango-infusion .rango-header__estado--alerta {
-  background: linear-gradient(
-    135deg,
-    rgba(102, 84, 34, 0.38) 0%,
-    rgba(63, 54, 26, 0.42) 100%
-  );
-  border: 1px solid rgba(214, 172, 82, 0.22);
-}
-
-/* =========================================================
-   10) RANGO CON INFUSIÓN
-   ========================================================= */
-.rango-layout--infusion {
-  display: grid;
-  gap: 0.75rem;
-  grid-template-columns: 1fr;
-  grid-template-areas:
-    "header"
-    "fila-principal"
-    "control"
-    "footer";
-}
-
-.rango-bloque--header { grid-area: header; }
-.rango-bloque--fila-principal { grid-area: fila-principal; }
-.rango-bloque--control { grid-area: control; }
-.rango-bloque--footer { grid-area: footer; }
-
-.rango-fila-principal {
-  display: grid;
-  grid-template-columns: minmax(250px, 1fr) minmax(280px, 1.25fr);
-  gap: 0.75rem;
-  align-items: stretch;
-}
-
-.rango-tasa-principal {
-  min-height: 122px;
-  padding: 0.92rem 0.98rem 0.88rem;
-  background:
-    radial-gradient(circle at 82% 72%, rgba(255,255,255,0.11), transparent 24%),
-    linear-gradient(135deg, rgba(10, 112, 84, 0.98) 0%, rgba(8, 82, 64, 0.98) 52%, rgba(6, 56, 45, 1) 100%);
-  border: 1px solid rgba(110, 255, 190, 0.18);
-}
-
-.rango-tasa-principal__label {
-  margin-bottom: 0.28rem;
-  font-size: 0.6rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(232, 255, 246, 0.9);
-}
-
-.rango-tasa-principal__valor {
-  margin-bottom: 0.24rem;
-  font-size: clamp(2.15rem, 3.8vw, 3.2rem);
-  line-height: 0.92;
-  font-weight: 950;
-  color: #ffffff;
-  letter-spacing: -0.05em;
-}
-
-.rango-tasa-principal__valor span {
-  font-size: 0.9rem;
-  font-weight: 800;
-  color: rgba(234, 255, 246, 0.95);
-}
-
-.rango-tasa-principal__meta {
-  font-size: 0.78rem;
-  line-height: 1.22;
-  font-weight: 700;
-  color: rgba(226, 255, 241, 0.9);
-}
-
-.rango-conducta-lateral {
-  min-height: 122px;
-  padding: 1rem 1.05rem;
-  background: linear-gradient(135deg, rgba(14, 90, 76, 0.98) 0%, rgba(10, 58, 50, 0.99) 100%);
-  border: 1px solid rgba(108, 240, 178, 0.18);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  box-shadow:
-    0 16px 34px rgba(0, 0, 0, 0.24),
-    inset 0 1px 0 rgba(255,255,255,0.05);
-}
-
-.rango-conducta-lateral--alerta {
-  background: linear-gradient(135deg, rgba(150, 112, 24, 0.98) 0%, rgba(102, 73, 16, 0.99) 100%);
-  border: 1px solid rgba(255, 214, 107, 0.18);
-}
-
-.rango-conducta-lateral__label {
-  margin-bottom: 0.4rem;
-  font-size: 0.62rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(234, 255, 246, 0.9);
-}
-
-.rango-conducta-lateral__text {
-  font-size: clamp(1.06rem, 1.5vw, 1.24rem);
-  line-height: 1.12;
-  font-weight: 950;
-  color: #ffffff;
-}
-
-.rango-conducta-lateral__subtext {
-  margin-top: 0.42rem;
-  font-size: 0.78rem;
-  line-height: 1.22;
-  font-weight: 700;
-  color: rgba(230, 248, 241, 0.82);
-}
-
-/* =========================================================
-   11) RANGO SIMPLE SIN INFUSIÓN
-   ========================================================= */
-.rango-layout--simple {
-  display: grid;
-  gap: 0.75rem;
-  grid-template-columns: 1fr;
-  grid-template-areas:
-    "header"
-    "fila-principal"
-    "control"
-    "footer";
-}
-
-.rango-fila-principal--sin-infusion {
-  display: grid;
-  grid-template-columns: minmax(250px, 1fr) minmax(280px, 1.25fr);
-  gap: 0.75rem;
-  align-items: stretch;
-}
-
-.rango-resumen-principal {
-  min-height: 122px;
-  padding: 0.92rem 1rem;
-  background:
-    radial-gradient(circle at 82% 72%, rgba(255,255,255,0.07), transparent 24%),
-    linear-gradient(135deg, rgba(16, 58, 102, 0.78) 0%, rgba(10, 36, 70, 0.82) 100%);
-  border: 1px solid rgba(120, 180, 255, 0.16);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.rango-resumen-principal__label {
-  margin-bottom: 0.34rem;
-  font-size: 0.6rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(225, 239, 255, 0.88);
-}
-
-.rango-resumen-principal__text {
-  font-size: clamp(1rem, 1.35vw, 1.14rem);
-  line-height: 1.12;
-  font-weight: 950;
-  color: #ffffff;
-}
-
-.rango-resumen-principal__subtext {
-  margin-top: 0.38rem;
-  font-size: 0.8rem;
-  line-height: 1.22;
-  font-weight: 700;
-  color: rgba(222, 237, 255, 0.82);
-}
-
-/* alerta sola */
-.rango-fila-principal--solo-alerta {
-  display: block;
-}
-
-.rango-fila-principal--solo-alerta .rango-conducta-lateral {
-  width: 100%;
-  min-height: 126px;
-  padding: 1rem 1.05rem;
-  background: linear-gradient(
-    135deg,
-    rgba(138, 102, 22, 0.85) 0%,
-    rgba(92, 67, 14, 0.9) 100%
-  );
-  border: 1px solid rgba(255, 214, 107, 0.14);
-}
-
-.rango-fila-principal--solo-alerta .rango-conducta-lateral__text {
-  font-size: clamp(1.04rem, 1.5vw, 1.2rem);
-}
-
-.rango-fila-principal--solo-alerta .rango-conducta-lateral__subtext {
-  font-size: 0.82rem;
-}
-
-/* ok solo */
-.rango-fila-principal--solo-ok {
-  display: block;
-}
-
-.rango-fila-principal--solo-ok .rango-conducta-lateral {
-  width: 100%;
-  min-height: 130px;
-  padding: 1rem 1.08rem;
-  background:
-    radial-gradient(circle at 78% 68%, rgba(255,255,255,0.12), transparent 22%),
-    linear-gradient(135deg, rgba(12, 96, 76, 0.92) 0%, rgba(8, 64, 50, 0.96) 100%);
-  border: 1px solid rgba(112, 255, 201, 0.22);
-}
-
-.rango-fila-principal--solo-ok .rango-conducta-lateral__text {
-  font-size: clamp(1.06rem, 1.55vw, 1.22rem);
-}
-
-/* =========================================================
-   12) ALERTA SUPERIOR COMPACTA
-   ========================================================= */
-.rango-alerta-layout {
-  display: grid;
-  grid-template-columns: minmax(210px, 0.85fr) minmax(260px, 1.25fr);
-  gap: 0.72rem;
-  align-items: stretch;
-}
-
-.rango-alerta-layout .rango-header {
-  grid-template-columns: 1fr;
-  min-height: 100%;
-}
-
-.rango-alerta-layout .rango-header__estado {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.rango-alerta-card {
-  padding: 0.9rem 0.98rem;
-  border-radius: 18px;
-  background: linear-gradient(
-    135deg,
-    rgba(146, 108, 26, 0.86) 0%,
-    rgba(95, 70, 18, 0.88) 100%
-  );
-  border: 1px solid rgba(255, 210, 90, 0.18);
-  box-shadow:
-    0 10px 24px rgba(0, 0, 0, 0.14),
-    inset 0 1px 0 rgba(255,255,255,0.03);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.rango-alerta-card__label {
-  margin-bottom: 0.22rem;
-  font-size: 0.58rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(255, 236, 190, 0.86);
-}
-
-.rango-alerta-card__value {
-  font-size: clamp(0.96rem, 1.25vw, 1.1rem);
-  line-height: 1.12;
-  font-weight: 950;
-  color: #fff8e8;
-}
-
-.rango-alerta-card__text {
-  margin-top: 0.36rem;
-  font-size: 0.78rem;
-  line-height: 1.22;
-  font-weight: 700;
-  color: rgba(255, 245, 220, 0.82);
-}
-
-/* =========================================================
-   13) RESPONSIVE
-   ========================================================= */
-@media (max-width: 900px) {
-  .hipo-header,
-  .hiper-header,
-  .rango-header,
-  .hiper-header--compacto,
-  .rango-header--compacto,
-  .rango-alerta-layout,
-  .hiper-fila-principal,
-  .hiper-fila-principal--sostenida,
+@media (max-width: 1024px) {
   .rango-fila-principal,
   .rango-fila-principal--sin-infusion,
-  .hipo-footer-grid,
-  .hiper-footer-grid,
   .rango-grid {
     grid-template-columns: 1fr;
   }
+}
 
-  .hipo-hero__content,
-  .hiper-hero__content,
-  .rango-hero__content {
-    font-size: 1.18rem;
-    line-height: 1.14;
+@media (max-width: 900px) {
+  .hiper-fila-principal,
+  .hiper-fila-principal--sostenida {
+    grid-template-columns: 1fr;
+  }
+
+  .hiper-conducta-lateral,
+  .hiper-conducta-lateral--sostenida,
+  .hiper-tasa-principal,
+  .hiper-tasa-principal--sostenida {
+    min-height: auto;
+    height: auto;
+  }
+
+  .hiper-tasa-principal__valor {
+    font-size: clamp(2.2rem, 7vw, 3.2rem);
+  }
+}
+
+@media (max-width: 720px) {
+  .resultado-base {
+    padding: 12px;
+    gap: 10px;
+    border-radius: 20px;
+  }
+
+  .hipo-header-simple,
+  .hiper-header-simple,
+  .rango-header,
+  .rango-header--compacto {
+    border-radius: 16px;
+  }
+
+  .hipo-hero,
+  .hiper-conducta-lateral,
+  .hiper-tasa-principal,
+  .rango-tasa-principal,
+  .rango-conducta-lateral,
+  .hipo-control,
+  .hiper-control,
+  .rango-control,
+  .rango-box,
+  .hipo-footer-card {
+    border-radius: 18px;
+  }
+
+  .rango-fila-principal,
+  .rango-fila-principal--sin-infusion {
+    grid-template-columns: 1fr;
+  }
+
+  .rango-tasa-principal,
+  .rango-conducta-lateral {
+    min-height: auto;
   }
 }
 
 @media (max-width: 640px) {
-  .resultado-base {
-    margin-top: 12px;
-    padding: 12px;
-    border-radius: 18px;
+  .resultado-base__chip {
+    min-height: 28px;
+    font-size: 0.62rem;
+  }
+
+  .hipo-header-simple,
+  .hiper-header-simple {
+    flex-direction: column;
+    align-items: stretch;
     gap: 8px;
   }
 
-  .hipo-hero,
-  .hiper-hero,
-  .rango-hero,
-  .hipo-control,
-  .hiper-control,
-  .rango-control,
-  .hipo-footer-card,
-  .hiper-footer-card,
-  .rango-box,
-  .hipo-header,
-  .hiper-header,
-  .rango-header,
-  .hiper-header--compacto,
-  .rango-header--compacto,
-  .hiper-tasa-principal,
-  .hiper-conducta-lateral,
-  .rango-tasa-principal,
-  .rango-conducta-lateral,
-  .rango-resumen-principal,
-  .rango-alerta-card {
-    border-radius: 16px;
+  .hipo-header-simple__estado,
+  .hiper-header-simple__estado {
+    justify-content: center;
+    width: 100%;
+    min-height: 36px;
+    text-align: center;
+    font-size: 0.72rem;
   }
 
-  .hiper-tasa-principal__valor,
-  .rango-tasa-principal__valor {
-    font-size: 1.95rem;
+  .hipo-header-simple__situacion,
+  .hiper-header-simple__situacion {
+    max-width: 100%;
+    text-align: center;
+    font-size: 0.74rem;
   }
 
-  .hiper-conducta-lateral__text,
-  .rango-conducta-lateral__text,
-  .rango-resumen-principal__text {
-    font-size: 0.96rem;
+  .hipo-hero__content {
+    font-size: 1.05rem;
+    line-height: 1.08;
+  }
+
+  .hiper-conducta-lateral__label,
+  .hiper-tasa-principal__label {
+    font-size: 0.62rem;
+  }
+
+  .hiper-conducta-lateral__text {
+    font-size: 1.08rem;
+    line-height: 1.08;
+  }
+
+  .hiper-conducta-lateral__subtext,
+  .hiper-tasa-principal__meta {
+    font-size: 0.78rem;
+  }
+
+  .hiper-tasa-principal__valor {
+    font-size: 2.2rem;
+    gap: 6px;
+  }
+
+  .hiper-tasa-principal__valor span {
+    font-size: 0.82rem;
+  }
+
+  .rango-conducta-lateral__text {
+    font-size: 0.98rem;
+    line-height: 1.1;
   }
 
   .hipo-control__value,
@@ -876,23 +1073,59 @@
     font-size: 0.92rem;
   }
 
-  .resultado-base--hipo .hipo-hero__content {
-    font-size: 1.14rem;
+  .hipo-footer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rango-header,
+  .rango-header--compacto {
+    grid-template-columns: 1fr;
+  }
+
+  .rango-header__main,
+  .rango-header__estado {
+    min-height: auto;
+  }
+
+  .rango-box__text,
+  .hipo-footer-card__text,
+  .hiper-control__comment,
+  .rango-control__comment {
+    font-size: 0.74rem;
   }
 }
 
-.resultado-base {
-  margin-bottom: 72px !important;
-}
+@media (max-width: 420px) {
+  .resultado-base {
+    padding: 10px;
+    gap: 8px;
+    border-radius: 18px;
+  }
 
-.panel-result {
-  margin-bottom: 32px !important;
-  overflow: hidden;
-}
+  .hipo-hero,
+  .hiper-conducta-lateral,
+  .hiper-tasa-principal,
+  .rango-tasa-principal,
+  .rango-conducta-lateral,
+  .hipo-control,
+  .hiper-control,
+  .rango-control,
+  .rango-box,
+  .hipo-footer-card {
+    padding: 12px;
+    border-radius: 16px;
+  }
 
-.hiper-layout,
-.hiper-layout--sostenida,
-.rango-layout--infusion,
-.rango-layout--simple {
-  overflow: visible;
+  .hipo-header-simple,
+  .hiper-header-simple,
+  .rango-header,
+  .rango-header--compacto {
+    padding: 8px 10px;
+  }
+
+  .hiper-rango-minimo {
+    width: 100%;
+    border-radius: 16px;
+    justify-content: center;
+  }
 }
