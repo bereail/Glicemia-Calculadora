@@ -43,8 +43,22 @@
               </div>
             {% endif %}
           </div>
+
+          <div class="rango-proximo-card">
+            <div class="rango-proximo-card__label">Próximo control</div>
+
+            <div class="rango-proximo-card__value">
+              {{ resultado.proximo_control|default:"Controlar glicemia nuevamente en 1 hora" }}
+            </div>
+
+            {% if resultado.comentario_control %}
+              <div class="rango-proximo-card__comment">
+                {{ resultado.comentario_control }}
+              </div>
+            {% endif %}
+          </div>
         {% else %}
-          <div class="rango-conducta-lateral rango-conducta-lateral--full {% if resultado.en_objetivo_con_alerta %}rango-conducta-lateral--alerta{% else %}rango-conducta-lateral--ok-simple{% endif %}">
+          <div class="rango-conducta-lateral rango-conducta-lateral--full {% if resultado.en_objetivo_con_alerta or resultado.fuera_objetivo %}rango-conducta-lateral--alerta{% else %}rango-conducta-lateral--ok-simple{% endif %}">
             <div class="rango-conducta-lateral__label">Conducta actual</div>
 
             <div class="rango-conducta-lateral__text">

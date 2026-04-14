@@ -1,50 +1,72 @@
 <section class="resultado-base resultado-base--hipo">
 
-  <div class="hipo-header">
-    <div class="hipo-header__estado">
-      <div class="hipo-header__label">Estado</div>
-      <div class="hipo-header__estado-value">
-        {{ resultado.estado|default:"Hipoglucemia" }}
+  <div class="hiper-layout hipo-layout">
+    <!-- 1. HEADER -->
+    <div class="hiper-bloque hiper-bloque--header">
+      <div class="hipo-header">
+        <div class="hipo-header__estado">
+          <div class="hipo-header__label">Estado</div>
+          <div class="hipo-header__estado-value">
+            {{ resultado.estado|default:"Hipoglucemia" }}
+          </div>
+        </div>
+
+        <div class="hipo-header__main">
+          <div class="hipo-header__label">Situación actual</div>
+          <h2 class="hipo-header__title">
+            {{ resultado.resumen_objetivo|default:"Fuera de rango objetivo" }}
+          </h2>
+        </div>
       </div>
     </div>
 
-    <div class="hipo-header__main">
-      <div class="hipo-header__label">Situación actual</div>
-      <h2 class="hipo-header__title">
-        {{ resultado.resumen_objetivo|default:"Fuera de rango objetivo" }}
-      </h2>
-    </div>
-  </div>
+    <!-- 2. FILA PRINCIPAL -->
+    <div class="hiper-bloque hiper-bloque--fila-principal">
+      <div class="hiper-fila-principal hipo-fila-principal">
+        {% if resultado.conducta %}
+          <div class="hipo-hero">
+            <div class="hipo-hero__eyebrow">Conducta inmediata</div>
+            <div class="hipo-hero__content">
+              {{ resultado.conducta|safe }}
+            </div>
+          </div>
+        {% endif %}
 
-  {% if resultado.conducta %}
-    <div class="hipo-hero">
-      <div class="hipo-hero__eyebrow">Conducta inmediata</div>
-      <div class="hipo-hero__content">
-        {{ resultado.conducta|safe }}
+        {% if resultado.proximo_control %}
+          <div class="hiper-proximo-card hipo-proximo-card">
+            <div class="hiper-proximo-card__label">Próximo control</div>
+            <div class="hiper-proximo-card__value">
+              {{ resultado.proximo_control }}
+            </div>
+
+            {% if resultado.comentario_control %}
+              <div class="hiper-proximo-card__comment">
+                {{ resultado.comentario_control }}
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
       </div>
     </div>
-  {% endif %}
 
-  {% if resultado.proximo_control %}
-    <div class="hipo-control">
-      <div class="hipo-control__label">Próximo control</div>
-      <div class="hipo-control__value">{{ resultado.proximo_control }}</div>
+    <!-- 3. OBSERVACIONES -->
+    <div class="hiper-bloque hiper-bloque--control">
+      <div class="hiper-observaciones-card hipo-observaciones-card">
+        <div class="hiper-observaciones-card__label">Observaciones</div>
+
+        {% if resultado.observacion %}
+          <div class="hiper-observaciones-card__item">
+            <span class="hiper-observaciones-card__item-label">Conducta inmediata:</span>
+            <span class="hiper-observaciones-card__item-text">{{ resultado.observacion }}</span>
+          </div>
+        {% endif %}
+        {% if resultado.texto_rango_objetivo %}
+          <div class="hiper-observaciones-card__item">
+            <span class="hiper-observaciones-card__item-label">Rango objetivo utilizado:</span>
+            <span class="hiper-observaciones-card__item-text">{{ resultado.texto_rango_objetivo }}</span>
+          </div>
+        {% endif %}
+      </div>
     </div>
-  {% endif %}
-
-  <div class="hipo-footer-grid">
-    {% if resultado.texto_rango_objetivo %}
-      <div class="hipo-footer-card">
-        <div class="hipo-footer-card__label">Rango objetivo utilizado</div>
-        <div class="hipo-footer-card__text">{{ resultado.texto_rango_objetivo }}</div>
-      </div>
-    {% endif %}
-
-    {% if resultado.observacion %}
-      <div class="hipo-footer-card">
-        <div class="hipo-footer-card__label">Observación</div>
-        <div class="hipo-footer-card__text">{{ resultado.observacion }}</div>
-      </div>
-    {% endif %}
   </div>
 </section>

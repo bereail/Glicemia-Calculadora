@@ -270,8 +270,7 @@ def evaluar_hiperglucemia(
             resultado["mensaje"] = "Hiperglucemia persistente severa."
             resultado["resumen_objetivo"] = "Fuera de rango objetivo"
             resultado["conducta"] = (
-                'Dar aviso médico y continuar con '
-                '<span class="link-algoritmo" data-algoritmo="2">Algoritmo 2</span>.')
+                'Dar aviso médico y continuar con Algoritmo 2.')
             resultado["requiere_recontrol"] = True
             resultado["algoritmo_sugerido"] = "Algoritmo 2"
             resultado["tasa_algoritmo"] = obtener_tasa_algoritmo_2(actual)
@@ -303,8 +302,7 @@ def evaluar_hiperglucemia(
             )
             resultado["mensaje"] = "Hiperglucemia persistente fuera del rango objetivo."
             resultado["resumen_objetivo"] = "Fuera de rango objetivo"
-            resultado["conducta"] = ('Dar aviso médico y continuar con '
-                '<span class="link-algoritmo" data-algoritmo="2">Algoritmo 2</span>.')
+            resultado["conducta"] = ('Dar aviso médico y continuar con Algoritmo 2')
             resultado["requiere_recontrol"] = True
             resultado["algoritmo_sugerido"] = "Algoritmo 2"
             resultado["tasa_algoritmo"] = obtener_tasa_algoritmo_2(actual)
@@ -322,8 +320,7 @@ def evaluar_hiperglucemia(
             resultado["subestado"] = "Mismo escalón fuera de objetivo pese a ajuste previo"
             resultado["mensaje"] = "Probable fallo del Algoritmo 1."
             resultado["resumen_objetivo"] = "Fuera de rango objetivo"
-            resultado["conducta"] = ( 'Dar aviso médico y continuar con '
-             '<span class="link-algoritmo" data-algoritmo="2">Algoritmo 2</span>.')
+            resultado["conducta"] = ( 'Dar aviso médico y continuar con Algoritmo 2.')
             resultado["requiere_recontrol"] = True
             resultado["algoritmo_sugerido"] = "Algoritmo 2"
             resultado["tasa_algoritmo"] = obtener_tasa_algoritmo_2(actual)

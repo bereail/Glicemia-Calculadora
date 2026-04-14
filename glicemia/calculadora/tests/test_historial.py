@@ -1,6 +1,6 @@
-from django.contrib.auth.models import Group, User
 from django.test import TestCase
 from django.urls import reverse
+from django.contrib.auth.models import User, Group
 
 from calculadora.models import MedicionGlucemia
 
@@ -19,17 +19,16 @@ class HistorialViewTest(TestCase):
 
         MedicionGlucemia.objects.create(
             usuario=self.user,
-            glicemia=150,
+            glucemia=150,
             modo="inicio",
             infusion_activa=True,
-            glicemia_previa=140,
+            glucemia_previa=140,
             estado="En objetivo",
             clase="ok",
             conducta="Mantener conducta actual",
             mensaje="Glucemia dentro del rango objetivo.",
             proximo_control="Cada 6 horas si permanece estable",
             observacion="Continuar monitoreo",
-            tendencia="Ascenso",
             algoritmo_usado="Inicio / Reinicio (Algoritmo 1)",
             velocidad_sugerida="1",
             bolo_ui="",

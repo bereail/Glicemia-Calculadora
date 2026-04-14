@@ -1,158 +1,180 @@
 {% extends "calculadora/base.html" %}
+{% load static %}
 
 {% block title %}Historial de mediciones{% endblock %}
 
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'calculadora/css/historial.css' %}?v=20260414-1">
+{% endblock %}
+
 {% block content %}
+<div class="app-shell">
+  <div class="historial-shell">
 
-<div class="card">
-  <div class="page-title">Historial de mediciones</div>
+    <!-- FILTROS -->
+    <section class="card historial-filtros">
+      <div class="historial-filtros__header">
+        <h1 class="historial-page-title">Historial de mediciones</h1>
+        <p class="historial-filtros__subtitle">
+          Filtrá por usuario, estado y período para analizar la evolución de las mediciones.
+        </p>
+      </div>
 
-  <form method="get" class="filters-bar">
-    <div class="filter-group">
-      <label for="usuario" class="label">Usuario</label>
-      <select name="usuario" id="usuario">
-        <option value="">Todos los usuarios</option>
-        {% for u in usuarios %}
-          <option value="{{ u }}" {% if usuario_seleccionado == u %}selected{% endif %}>
-            {{ u }}
-          </option>
-        {% endfor %}
-      </select>
-    </div>
+      <form method="get" class="historial-filtros__grid">
+        <div class="historial-filtros__field">
+          <label for="usuario" class="label">Usuario</label>
+          <select name="usuario" id="usuario">
+            <option value="">Todos los usuarios</option>
+            {% for u in usuarios %}
+              <option value="{{ u }}" {% if usuario_seleccionado == u %}selected{% endif %}>
+                {{ u }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
 
-    <div class="filter-group">
-      <label for="estado" class="label">Estado</label>
-      <select name="estado" id="estado">
-        <option value="">Todos los estados</option>
-        {% for e in estados %}
-          <option value="{{ e }}" {% if estado_seleccionado == e %}selected{% endif %}>
-            {{ e }}
-          </option>
-        {% endfor %}
-      </select>
-    </div>
+        <div class="historial-filtros__field">
+          <label for="estado" class="label">Estado</label>
+          <select name="estado" id="estado">
+            <option value="">Todos los estados</option>
+            {% for e in estados %}
+              <option value="{{ e }}" {% if estado_seleccionado == e %}selected{% endif %}>
+                {{ e }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
 
-    <div class="filter-group">
-      <label for="periodo" class="label">Período</label>
-      <select name="periodo" id="periodo">
-        <option value="" {% if not periodo_seleccionado %}selected{% endif %}>Completo</option>
-        <option value="semanal" {% if periodo_seleccionado == "semanal" %}selected{% endif %}>Semanal</option>
-        <option value="mensual" {% if periodo_seleccionado == "mensual" %}selected{% endif %}>Mensual</option>
-      </select>
-    </div>
+        <div class="historial-filtros__field">
+          <label for="periodo" class="label">Período</label>
+          <select name="periodo" id="periodo">
+            <option value="" {% if not periodo_seleccionado %}selected{% endif %}>Completo</option>
+            <option value="semanal" {% if periodo_seleccionado == "semanal" %}selected{% endif %}>Semanal</option>
+            <option value="mensual" {% if periodo_seleccionado == "mensual" %}selected{% endif %}>Mensual</option>
+          </select>
+        </div>
 
-    <div class="filter-actions">
-      <button type="submit" class="btn primary">Filtrar</button>
-      <a href="{% url 'historial' %}" class="btn">Limpiar</a>
-    </div>
-  </form>
-</div>
+        <div class="historial-filtros__actions">
+          <button type="submit" class="btn primary">Filtrar</button>
+          <a href="{% url 'historial' %}" class="btn">Limpiar</a>
+        </div>
+      </form>
+    </section>
 
-<div class="summary-grid" style="margin-top: 16px;">
-  <div class="summary-card metric-card metric-card-total">
-    <div class="summary-label">Total</div>
-    <div class="summary-value">{{ total }}</div>
-    <div class="summary-subtext">Mediciones encontradas</div>
-  </div>
+    <!-- MÉTRICAS -->
+    <section class="historial-metricas">
+      <article class="historial-metrica historial-metrica--total">
+        <p class="historial-metrica__label">Total</p>
+        <p class="historial-metrica__value">{{ total }}</p>
+        <p class="historial-metrica__desc">Mediciones encontradas</p>
+      </article>
 
-  <div class="summary-card metric-card metric-card-hypo">
-    <div class="summary-label">Hipoglucemias</div>
-    <div class="summary-value">{{ hipoglucemias }}</div>
-    <div class="summary-subtext">Valores críticos bajos</div>
-  </div>
+      <article class="historial-metrica historial-metrica--hipo">
+        <p class="historial-metrica__label">Hipoglucemias</p>
+        <p class="historial-metrica__value">{{ hipoglucemias }}</p>
+        <p class="historial-metrica__desc">Valores críticos bajos</p>
+      </article>
 
-  <div class="summary-card metric-card metric-card-ok">
-    <div class="summary-label">En objetivo</div>
-    <div class="summary-value">{{ en_objetivo }}</div>
-    <div class="summary-subtext">Dentro del rango esperado</div>
-  </div>
+      <article class="historial-metrica historial-metrica--ok">
+        <p class="historial-metrica__label">En objetivo</p>
+        <p class="historial-metrica__value">{{ en_objetivo }}</p>
+        <p class="historial-metrica__desc">Dentro del rango esperado</p>
+      </article>
 
-  <div class="summary-card metric-card metric-card-hyper">
-    <div class="summary-label">Hiperglucemias</div>
-    <div class="summary-value">{{ hiperglucemias }}</div>
-    <div class="summary-subtext">Valores por encima del objetivo</div>
-  </div>
-</div>
+      <article class="historial-metrica historial-metrica--hiper">
+        <p class="historial-metrica__label">Hiperglucemias</p>
+        <p class="historial-metrica__value">{{ hiperglucemias }}</p>
+        <p class="historial-metrica__desc">Valores por encima del objetivo</p>
+      </article>
+    </section>
 
-<div class="card" style="margin-top: 16px;">
-  <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px;">
-    <div class="page-title" style="font-size:16px;">Exportar reporte</div>
+    <!-- TABLA / EXPORTACIÓN -->
+    <section class="card historial-tabla-panel">
+      <div class="historial-tabla-panel__top">
+        <div>
+          <h2 class="historial-tabla-panel__title">Exportar reporte</h2>
+          <p class="historial-tabla-panel__subtitle">
+            Descargá el historial filtrado en Excel o PDF.
+          </p>
+        </div>
 
-    <div style="display:flex; gap:10px; flex-wrap:wrap;">
-      <a href="{% url 'exportar_historial_excel' %}?periodo={{ periodo_seleccionado }}&usuario={{ usuario_seleccionado }}&estado={{ estado_seleccionado }}" class="btn">
-        Exportar Excel
-      </a>
+        <div class="historial-export-actions">
+          <a href="{% url 'exportar_historial_excel' %}?periodo={{ periodo_seleccionado }}&usuario={{ usuario_seleccionado }}&estado={{ estado_seleccionado }}" class="btn">
+            Exportar Excel
+          </a>
 
-      <a href="{% url 'exportar_historial_pdf' %}?periodo={{ periodo_seleccionado }}&usuario={{ usuario_seleccionado }}&estado={{ estado_seleccionado }}" class="btn">
-        Exportar PDF
-      </a>
-    </div>
-  </div>
+          <a href="{% url 'exportar_historial_pdf' %}?periodo={{ periodo_seleccionado }}&usuario={{ usuario_seleccionado }}&estado={{ estado_seleccionado }}" class="btn">
+            Exportar PDF
+          </a>
+        </div>
+      </div>
 
-  <div class="table-wrapper">
-    <table class="table history-table">
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Usuario</th>
-          <th>Glucemia</th>
-          <th>Modo</th>
-          <th>Estado</th>
-          <th>Conducta</th>
-          <th>Tendencia</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for m in mediciones %}
-        <tr>
-          <td class="cell-date">{{ m.fecha_hora|date:"d/m/Y H:i" }}</td>
-          <td>{{ m.usuario.username }}</td>
-          <td class="cell-glucose">
-            {{ m.glicemia }} <span style="opacity:0.65; font-weight:500;">mg/dL</span>
-          </td>
-          <td>{{ m.get_modo_display }}</td>
-          <td>
-            {% if m.estado == "En objetivo" %}
-              <span class="status-pill status-pill-ok">{{ m.estado }}</span>
-            {% elif m.estado == "Hipoglucemia" %}
-              <span class="status-pill status-pill-hypo">{{ m.estado }}</span>
-            {% elif m.estado == "Hiperglucemia" %}
-              <span class="status-pill status-pill-hyper">{{ m.estado }}</span>
-            {% else %}
-              <span class="status-pill">{{ m.estado }}</span>
-            {% endif %}
-          </td>
-          <td class="cell-conduct">{{ m.conducta }}</td>
-          <td>{{ m.tendencia|default:"—" }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="7" class="empty-row">No hay mediciones registradas.</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+      <div class="historial-table-wrap">
+        <table class="historial-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Usuario</th>
+              <th>Glucemia</th>
+              <th>Modo</th>
+              <th>Estado</th>
+              <th>Conducta</th>
+              <th>Tendencia</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in mediciones %}
+            <tr>
+              <td class="historial-table__fecha">{{ m.fecha_hora|date:"d/m/Y H:i" }}</td>
+              <td class="historial-table__usuario">{{ m.usuario.username }}</td>
+              <td class="historial-table__glucemia">
+                {{ m.glicemia }} <span class="historial-table__unit">mg/dL</span>
+              </td>
+              <td class="historial-table__modo">{{ m.get_modo_display }}</td>
+              <td>
+                {% if m.estado == "En objetivo" or m.estado == "Objetivo con Infusión" or m.estado == "Objetivo con alerta" %}
+                  <span class="status-pill status-pill-ok">{{ m.estado }}</span>
+                {% elif m.estado == "Hipoglucemia" %}
+                  <span class="status-pill status-pill-hypo">{{ m.estado }}</span>
+                {% elif "Hiperglucemia" in m.estado %}
+                  <span class="status-pill status-pill-hyper">{{ m.estado }}</span>
+                {% else %}
+                  <span class="status-pill status-pill-neutral">{{ m.estado }}</span>
+                {% endif %}
+              </td>
+              <td class="historial-table__conducta">{{ m.conducta|safe }}</td>
+              <td class="historial-table__tendencia">{{ m.tendencia|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="historial-empty">No hay mediciones registradas.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
 
-  {% if mediciones.paginator.num_pages > 1 %}
-    <div class="pagination">
-      {% if mediciones.has_previous %}
-        <a href="?page={{ mediciones.previous_page_number }}{% if usuario_seleccionado %}&usuario={{ usuario_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if clase_seleccionada %}&clase={{ clase_seleccionada }}{% endif %}{% if periodo_seleccionado %}&periodo={{ periodo_seleccionado }}{% endif %}" class="btn">
-          ← Anterior
-        </a>
+      {% if mediciones.paginator.num_pages > 1 %}
+        <div class="pagination">
+          {% if mediciones.has_previous %}
+            <a href="?page={{ mediciones.previous_page_number }}{% if usuario_seleccionado %}&usuario={{ usuario_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if clase_seleccionada %}&clase={{ clase_seleccionada }}{% endif %}{% if periodo_seleccionado %}&periodo={{ periodo_seleccionado }}{% endif %}" class="btn">
+              ← Anterior
+            </a>
+          {% endif %}
+
+          <span class="page-info">
+            Página {{ mediciones.number }} de {{ mediciones.paginator.num_pages }}
+          </span>
+
+          {% if mediciones.has_next %}
+            <a href="?page={{ mediciones.next_page_number }}{% if usuario_seleccionado %}&usuario={{ usuario_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if clase_seleccionada %}&clase={{ clase_seleccionada }}{% endif %}{% if periodo_seleccionado %}&periodo={{ periodo_seleccionado }}{% endif %}" class="btn">
+              Siguiente →
+            </a>
+          {% endif %}
+        </div>
       {% endif %}
+    </section>
 
-      <span class="page-info">
-        Página {{ mediciones.number }} de {{ mediciones.paginator.num_pages }}
-      </span>
-
-      {% if mediciones.has_next %}
-        <a href="?page={{ mediciones.next_page_number }}{% if usuario_seleccionado %}&usuario={{ usuario_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if clase_seleccionada %}&clase={{ clase_seleccionada }}{% endif %}{% if periodo_seleccionado %}&periodo={{ periodo_seleccionado }}{% endif %}" class="btn">
-          Siguiente →
-        </a>
-      {% endif %}
-    </div>
-  {% endif %}
+  </div>
 </div>
-
 {% endblock %}

@@ -262,7 +262,7 @@ def historial(request):
     en_rango = mediciones_qs.filter(clase="en_rango").count()
     hiperglucemias = mediciones_qs.filter(clase="hiperglucemia").count()
 
-    paginator = Paginator(mediciones_qs, 10)
+    paginator = Paginator(mediciones_qs, 5)
     page_number = request.GET.get("page")
     mediciones = paginator.get_page(page_number)
 
