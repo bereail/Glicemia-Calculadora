@@ -64,41 +64,25 @@
             <div class="glicemia-secuencia__title">Secuencia de evaluación</div>
 
             <div class="glicemia-secuencia__steps">
-              <span id="step-anterior" class="glicemia-secuencia__step glicemia-secuencia__step--muted">
-                Anterior (1)
-              </span>
-
-              <span id="arrow-anterior-previa" class="glicemia-secuencia__arrow">→</span>
-
-              <span id="step-previa" class="glicemia-secuencia__step">
-                Previa (2)
-              </span>
-
-              <span id="arrow-previa-actual" class="glicemia-secuencia__arrow">→</span>
-
-              <span id="step-actual" class="glicemia-secuencia__step glicemia-secuencia__step--active">
-                Actual (3)
-              </span>
+              <span class="glicemia-secuencia__step glicemia-secuencia__step--muted">Anterior (1)</span>
+              <span class="glicemia-secuencia__arrow">→</span>
+              <span class="glicemia-secuencia__step">Previa (2)</span>
+              <span class="glicemia-secuencia__arrow">→</span>
+              <span class="glicemia-secuencia__step glicemia-secuencia__step--active">Actual (3)</span>
             </div>
           </div>
 
           <div id="previas_box" class="hidden">
             <div class="field-group">
               <label for="id_glicemia_previa">
-                Glicemia previa <span id="label_previa_hint"></span>
+                Glicemia previa
               </label>
               {{ form.glicemia_previa }}
-              {% if form.glicemia_previa.errors %}
-                <div class="field-error">{{ form.glicemia_previa.errors }}</div>
-              {% endif %}
             </div>
 
             <div id="anterior_container" class="field-group hidden">
               <label for="id_tercera_medicion">Glicemia anterior</label>
               {{ form.tercera_medicion }}
-              {% if form.tercera_medicion.errors %}
-                <div class="field-error">{{ form.tercera_medicion.errors }}</div>
-              {% endif %}
             </div>
           </div>
 
@@ -112,28 +96,127 @@
       {% include "calculadora/partials/tabla_algoritmos.html" %}
     </section>
 
-    {% if resultado %}
+  </div>
+</div>
+
+<!-- =======================
+     MODAL RESULTADO
+======================= -->
+{% if resultado %}
+<div id="modal-resultado" class="modal-resultado" aria-hidden="false">
+  <div class="modal-resultado__backdrop" data-close-resultado></div>
+
+  <div class="modal-resultado__dialog" role="dialog" aria-modal="true">
+
+    <button type="button" class="modal-resultado__close" id="cerrar-modal-resultado">
+      ×
+    </button>
+
+    <div class="modal-resultado__header">
+      <p class="modal-resultado__eyebrow">Resultado</p>
+      <h2>Resultado de la evaluación</h2>
+    </div>
+
+    <div class="modal-resultado__body">
+
+      <!-- ✅ RESUMEN (BIEN UBICADO) -->
+      <div class="resumen-entrada">
+        <div class="resumen-entrada__header">Datos evaluados</div>
+
+        <div class="resumen-entrada__grid">
+          <div class="resumen-entrada__item">
+            <span class="resumen-entrada__label">Glucemia actual</span>
+            <span class="resumen-entrada__value">
+              {{ form.glicemia_actual.value|default:"—" }} mg/dL
+            </span>
+          </div>
+
+          <div class="resumen-entrada__item">
+            <span class="resumen-entrada__label">Infusión activa</span>
+            <span class="resumen-entrada__value">
+              {% if form.infusion_activa.value == "True" or form.infusion_activa.value == "true" or form.infusion_activa.value == "1" %}
+                Sí
+              {% elif form.infusion_activa.value == "False" or form.infusion_activa.value == "false" or form.infusion_activa.value == "0" %}
+                No
+              {% else %}
+                —
+              {% endif %}
+            </span>
+          </div>
+
+          {% if form.glicemia_previa.value %}
+          <div class="resumen-entrada__item">
+            <span class="resumen-entrada__label">Glucemia previa</span>
+            <span class="resumen-entrada__value">
+              {{ form.glicemia_previa.value }} mg/dL
+            </span>
+          </div>
+          {% endif %}
+
+          {% if form.tercera_medicion.value %}
+          <div class="resumen-entrada__item">
+            <span class="resumen-entrada__label">Glucemia anterior</span>
+            <span class="resumen-entrada__value">
+              {{ form.tercera_medicion.value }} mg/dL
+            </span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- ✅ RESULTADO -->
       {% if resultado.clase_visual == "critico" and "hipogluc" in resultado.estado|lower %}
         {% include "calculadora/partials/resultado_hipo.html" %}
       {% elif resultado.clase_visual == "alerta" %}
         {% include "calculadora/partials/resultado_hiper.html" %}
-      {% elif resultado.clase_visual == "rango" %}
-        {% include "calculadora/partials/resultado_rango.html" %}
       {% else %}
         {% include "calculadora/partials/resultado_rango.html" %}
       {% endif %}
-    {% endif %}
 
+    </div>
   </div>
 </div>
+{% endif %}
+
 {% endblock %}
 
 {% block extra_css %}
-  <link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=2">
-  <link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=2">
-  <link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=4">
+<link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=4">
+<link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=4">
 {% endblock %}
 
 {% block extra_js %}
-  <script src="{% static 'calculadora/js/control_glicemia.js' %}?v=4"></script>
+<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=6"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const modal = document.getElementById("modal-resultado");
+  const cerrar = document.getElementById("cerrar-modal-resultado");
+
+  if (modal) {
+    document.body.classList.add("modal-open");
+  }
+
+  function cerrarModal() {
+    if (!modal) return;
+    modal.style.display = "none";
+    document.body.classList.remove("modal-open");
+  }
+
+  cerrar?.addEventListener("click", cerrarModal);
+
+  document.querySelectorAll("[data-close-resultado]").forEach(el => {
+    el.addEventListener("click", cerrarModal);
+  });
+
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape"){
+      cerrarModal();
+    }
+  });
+
+});
+</script>
 {% endblock %}

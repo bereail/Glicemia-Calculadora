@@ -282,3 +282,57 @@ document.getElementById("form-glicemia")?.addEventListener("keydown", function (
     this.requestSubmit();
   }
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+  const body = document.body;
+
+  const modalResultado = document.getElementById("modal-resultado");
+  const cerrarModalResultado = document.getElementById("cerrar-modal-resultado");
+
+  function abrirModalResultado() {
+    if (!modalResultado) return;
+    modalResultado.classList.remove("hidden");
+    modalResultado.setAttribute("aria-hidden", "false");
+    body.classList.add("modal-open");
+  }
+
+  function cerrarModalResultadoFn() {
+    if (!modalResultado) return;
+    modalResultado.classList.add("hidden");
+    modalResultado.setAttribute("aria-hidden", "true");
+    body.classList.remove("modal-open");
+  }
+
+  if (cerrarModalResultado) {
+    cerrarModalResultado.addEventListener("click", cerrarModalResultadoFn);
+  }
+
+  document.querySelectorAll('[data-close-modal="resultado"]').forEach((el) => {
+    el.addEventListener("click", cerrarModalResultadoFn);
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && modalResultado && !modalResultado.classList.contains("hidden")) {
+      cerrarModalResultadoFn();
+    }
+  });
+
+  // abrir automáticamente si el backend devolvió resultado
+  const bodyResultado = modalResultado?.querySelector(".modal-resultado__body");
+  if (bodyResultado && bodyResultado.textContent.trim() !== "") {
+    abrirModalResultado();
+  }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById("form-control-glicemia");
+
+  if (form) {
+    form.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && e.target.tagName !== "TEXTAREA") {
+        e.preventDefault();
+        form.requestSubmit();
+      }
+    });
+  }
+});

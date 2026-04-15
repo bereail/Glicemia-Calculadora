@@ -1,0 +1,7 @@
+{% if resultado.estado == "Hipoglucemia" %}
+  {% include "calculadora/partials/resultado_hipo.html" %}
+{% elif "persistente" in resultado.estado|lower or "sostenida" in resultado.estado|lower or "hiperglucemia" in resultado.estado|lower %}
+  {% include "calculadora/partials/resultado_hiper.html" %}
+{% else %}
+  {% include "calculadora/partials/resultado_rango.html" %}
+{% endif %}

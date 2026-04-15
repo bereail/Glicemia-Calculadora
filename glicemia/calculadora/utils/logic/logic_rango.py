@@ -6,7 +6,12 @@ from ..constants import (
     UMBRAL_HIPER,
     UMBRAL_HIPO,
 )
-from ..helpers import _a_bool, _a_decimal, _resultado_base
+from ..helpers import (
+    _a_bool,
+    _a_decimal,
+    _resultado_base,
+    calcular_proximo_control,
+)
 from .logic_hiper import obtener_tasa_algoritmo_1
 
 
@@ -39,6 +44,14 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
     resultado["tasa"] = None
     resultado["mostrar_tasa"] = False
 
+    def _asignar_control(valor):
+        control = calcular_proximo_control(
+            glicemia=valor,
+            insulinizado=infusion_activa,
+        )
+        resultado["proximo_control"] = control["proximo_control"]
+        resultado["comentario_control"] = control["comentario_control"]
+
     # =========================================================
     # SIN INFUSIÓN ACTIVA
     # =========================================================
@@ -48,7 +61,7 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
 
         resultado["texto_rango_objetivo"] = "Paciente no insulinizado: 70 a 180 mg/dL"
 
-        # 70 a 90 -> alerta por límite inferior
+        # 70 a 90
         if UMBRAL_HIPO <= actual <= Decimal("90"):
             resultado["estado"] = "Objetivo con alerta"
             resultado["subestado"] = "Cercano a hipoglucemia"
@@ -58,37 +71,34 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
             resultado["conducta_extra"] = "Reforzar control por cercanía a hipoglucemia."
             resultado["alerta_borde_hipo"] = True
             resultado["alerta_rango"] = "Cercano a hipoglucemia"
-            resultado["proximo_control"] = "Controlar glucemia nuevamente en 1 hora"
+            resultado["proximo_control"] = "Controlar glucemia nuevamente en 6 horas"
             resultado["observacion"] = f"Cercanía al límite inferior ({limite_inferior} mg/dL)."
             resultado["ui_variant"] = "warning"
             resultado["en_objetivo"] = True
             resultado["en_objetivo_con_alerta"] = True
             return resultado
 
-        # 91 a 160 -> rango limpio
+        # 91 a 160
         if Decimal("91") <= actual <= Decimal("160"):
             resultado["estado"] = "En Objetivo"
-            resultado["subestado"] = None
             resultado["resumen_objetivo"] = "Dentro de rango"
             resultado["mensaje"] = "Glucemia dentro del objetivo."
             resultado["conducta"] = "Mantener conducta actual y continuar monitoreo."
-            resultado["alerta_rango"] = ""
-            resultado["proximo_control"] = "Controlar glucemia nuevamente en 1 hora"
-            resultado["observacion"] = ""
+            resultado["proximo_control"] = "Controlar glucemia nuevamente en 6 horas"
             resultado["ui_variant"] = "success"
             resultado["en_objetivo"] = True
             return resultado
 
-        # 161 a 179 -> alerta por límite superior
+        # 161 a 179
         if Decimal("161") <= actual < UMBRAL_HIPER:
             resultado["estado"] = "Objetivo con alerta"
             resultado["subestado"] = "Cercano a hiperglucemia"
             resultado["resumen_objetivo"] = "Dentro de rango"
             resultado["mensaje"] = "Valor dentro del objetivo, pero cercano al límite superior."
             resultado["conducta"] = "Vigilar evolución clínica."
-            resultado["conducta_extra"] = "Controlar tendencia por cercanía a hiperglucemia."
+            resultado["conducta_extra"] = "Controlar tendencia."
             resultado["alerta_rango"] = "Cercano a hiperglucemia"
-            resultado["proximo_control"] = "Controlar glucemia nuevamente en 1 hora"
+            resultado["proximo_control"] = "Controlar glucemia nuevamente en 6 horas"
             resultado["observacion"] = f"Cercanía al límite superior ({limite_superior} mg/dL)."
             resultado["ui_variant"] = "warning"
             resultado["en_objetivo"] = True
@@ -106,66 +116,51 @@ def evaluar_rango_70_180(actual, previa=None, infusion_activa=False):
         resultado["tasa"] = obtener_tasa_algoritmo_1(actual)
         resultado["mostrar_tasa"] = True
 
-        # 70 a 139 -> por debajo de objetivo
+        # 70 a 139
         if UMBRAL_HIPO <= actual < OBJETIVO_MIN_INFUSION:
             resultado["estado"] = "Debajo de Objetivo con Infusión"
-            resultado["subestado"] = "Valor bajo para paciente con infusión activa"
             resultado["resumen_objetivo"] = "Por debajo del rango objetivo"
-            resultado["mensaje"] = "Valor por debajo del objetivo en paciente con infusión activa."
-            resultado["conducta"] = "Evaluar riesgo de hipoglucemia y reevaluar conducta."
+            resultado["mensaje"] = "Valor bajo para paciente con infusión activa."
+            resultado["conducta"] = "Evaluar riesgo de hipoglucemia."
             resultado["alerta_borde_hipo"] = True
             resultado["alerta_rango"] = "Por debajo del objetivo"
             resultado["requiere_recontrol"] = True
-            resultado["proximo_control"] = "Controlar glucemia nuevamente en 1 hora"
+            _asignar_control(actual)
             resultado["observacion"] = f"Por debajo del límite inferior ({limite_inferior} mg/dL)."
             resultado["ui_variant"] = "warning"
             resultado["fuera_objetivo"] = True
             return resultado
 
-        # 140 a 150 -> alerta por límite inferior
-        if OBJETIVO_MIN_INFUSION <= actual <= Decimal("150"):
-            resultado["estado"] = "Glucemia En Objetivo"
-            resultado["subestado"] = "Cercano al límite inferior"
-            resultado["resumen_objetivo"] = "Dentro de rango"
-            resultado["mensaje"] = "Valor dentro del objetivo, pero cercano al límite inferior."
-            resultado["conducta"] = "Mantener monitoreo estrecho."
-            resultado["conducta_extra"] = "Vigilar tendencia por proximidad al límite inferior."
-            resultado["alerta_rango"] = "Cercano al límite inferior"
-            resultado["proximo_control"] = "Controlar glucemia nuevamente en 1 hora"
-            resultado["observacion"] = f"Cercanía al límite inferior ({limite_inferior} mg/dL)."
-            resultado["ui_variant"] = "warning"
-            resultado["en_objetivo"] = True
-            resultado["en_objetivo_con_alerta"] = True
-            return resultado
+        # 140 a 200 (todo el rango usa protocolo real)
+      # 140 a 200 (EN OBJETIVO → SIEMPRE 6 HORAS)
+    if OBJETIVO_MIN_INFUSION <= actual <= OBJETIVO_MAX_INFUSION:
+        resultado["estado"] = "Glucemia en Objetivo"
+        resultado["resumen_objetivo"] = "Dentro de rango"
+        resultado["mensaje"] = "Valor dentro del objetivo para paciente con infusión activa."
+        resultado["conducta"] = "Mantener conducta actual y continuar monitoreo."
 
-        # 151 a 189 -> rango limpio
-        if Decimal("151") <= actual <= Decimal("189"):
-            resultado["estado"] = "Glucemia En Objetivo"
-            resultado["subestado"] = None
-            resultado["resumen_objetivo"] = "Dentro de rango"
-            resultado["mensaje"] = "Valor dentro del objetivo para paciente con infusión activa."
-            resultado["conducta"] = "Mantener conducta actual y continuar monitoreo."
-            resultado["alerta_rango"] = ""
-            resultado["proximo_control"] = "Controlar glucemia nuevamente en 1 hora"
-            resultado["observacion"] = ""
+        # ALERTAS visuales
+        if actual <= Decimal("150"):
+            resultado["subestado"] = "Cercano al límite inferior"
+            resultado["alerta_rango"] = "Cercano al límite inferior"
+            resultado["ui_variant"] = "warning"
+            resultado["en_objetivo_con_alerta"] = True
+
+        elif actual >= Decimal("190"):
+            resultado["subestado"] = "Cercano al límite superior"
+            resultado["alerta_rango"] = "Cercano al límite superior"
+            resultado["ui_variant"] = "warning"
+            resultado["en_objetivo_con_alerta"] = True
+
+        else:
             resultado["ui_variant"] = "success"
             resultado["en_objetivo"] = True
-            return resultado
 
-        # 190 a 200 -> alerta por límite superior
-        if Decimal("190") <= actual <= OBJETIVO_MAX_INFUSION:
-            resultado["estado"] = " Glucemia En Objetivo"
-            resultado["subestado"] = "Cercano al límite superior"
-            resultado["resumen_objetivo"] = "Dentro de rango"
-            resultado["mensaje"] = "Valor dentro del objetivo, pero cercano al límite superior."
-            resultado["conducta"] = "Vigilar tendencia y mantener monitoreo."
-            resultado["conducta_extra"] = "Controlar evolución por proximidad al límite superior."
-            resultado["alerta_rango"] = "Cercano al límite superior"
-            resultado["proximo_control"] = "Controlar glucemia nuevamente en 1 hora"
-            resultado["observacion"] = f"Cercanía al límite superior ({limite_superior} mg/dL)."
-            resultado["ui_variant"] = "warning"
-            resultado["en_objetivo"] = True
-            resultado["en_objetivo_con_alerta"] = True
-            return resultado
+        # 🔥 CONTROL FIJO (REGLA TUYA)
+        resultado["proximo_control"] = "Controlar glucemia nuevamente en 6 horas"
+        resultado["comentario_control"] = (
+            "Paciente en rango objetivo. Continuar monitoreo cada 6 horas."
+        )
 
+        return resultado
     return None
