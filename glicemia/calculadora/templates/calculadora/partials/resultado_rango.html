@@ -1,122 +1,96 @@
-<section class="resultado-base resultado-base--rango {% if resultado.ui_variant == 'success' %}resultado-base--rango-ok{% elif resultado.en_objetivo_con_alerta or resultado.fuera_objetivo %}resultado-base--rango-alerta{% endif %} {% if resultado.tasa %}resultado-base--rango-infusion{% endif %}">
+<section class="resultado-base resultado-base--rango {% if resultado.ui_variant == 'success' %}resultado-base--rango-ok{% elif resultado.en_objetivo_con_alerta or resultado.fuera_objetivo %}resultado-base--rango-alerta{% endif %} {% if resultado.mostrar_tasa %}resultado-base--rango-infusion{% endif %}">
 
-  <div class="resultado-base__top">
-    <span class="resultado-base__chip">Resultado</span>
-  </div>
-
-  <div class="rango-layout {% if resultado.tasa %}rango-layout--infusion{% else %}rango-layout--simple{% endif %}">
+  <div class="rango-layout {% if resultado.mostrar_tasa %}rango-layout--infusion{% else %}rango-layout--simple{% endif %}">
 
     <!-- 1. HEADER -->
     <div class="rango-bloque rango-bloque--header">
-      <div class="rango-header rango-header--compacto">
+      <div class="rango-header rango-header--compacto rango-header--con-conducta">
+
         <div class="rango-header__estado {% if resultado.ui_variant == 'success' %}rango-header__estado--ok{% elif resultado.en_objetivo_con_alerta or resultado.fuera_objetivo %}rango-header__estado--alerta{% endif %}">
-          <div class="rango-header__label">Estado</div>
+          <div class="rango-header__label">
+            <span class="ui-icon">{% if resultado.ui_variant == 'success' %}✓{% else %}⚠{% endif %}</span>
+            Estado
+          </div>
           <div class="rango-header__estado-value">
             {{ resultado.estado|default:"En objetivo" }}
           </div>
         </div>
 
         <div class="rango-header__main">
-          <div class="rango-header__label">Situación actual</div>
+          <div class="rango-header__label">
+            <span class="ui-icon">◉</span>
+            Situación actual
+          </div>
           <div class="rango-header__title">
             {{ resultado.resumen_objetivo|default:"Dentro de rango" }}
           </div>
         </div>
+
+        <div class="rango-header__conducta-resumen {% if resultado.ui_variant == 'success' %}rango-header__conducta-resumen--ok{% else %}rango-header__conducta-resumen--alerta{% endif %}">
+          <div class="rango-header__label">
+            <span class="ui-icon">✚</span>
+            Conducta inmediata
+          </div>
+          <div class="rango-header__conducta-resumen-value">
+            {{ resultado.conducta|default:"Mantener conducta actual y continuar monitoreo." }}
+          </div>
+        </div>
+
       </div>
     </div>
 
     <!-- 2. FILA PRINCIPAL -->
     <div class="rango-bloque rango-bloque--fila-principal">
-      <div class="rango-fila-principal {% if resultado.tasa %}rango-fila-principal--infusion{% else %}rango-fila-principal--single{% endif %}">
+      <div class="rango-fila-principal {% if resultado.mostrar_tasa %}rango-fila-principal--infusion{% else %}rango-fila-principal--single{% endif %}">
 
-        {% if resultado.tasa %}
-          <div class="rango-tasa-principal">
-            <div class="rango-tasa-principal__label">Tasa de infusión</div>
+        {% if resultado.mostrar_tasa %}
+          <div class="rango-hero rango-hero--terapia {% if resultado.ui_variant == 'success' %}rango-hero--terapia-ok{% else %}rango-hero--terapia-alerta{% endif %}">
+            <div class="rango-hero__eyebrow">
+              <span class="ui-icon">💉</span>
+              Terapia
+            </div>
 
-            <div class="rango-tasa-principal__valor">
-              {{ resultado.tasa }} <span>UI/h</span>
+            <div class="rango-hero__grid">
+              <div class="rango-hero__bloque">
+                <div class="rango-hero__label">Bolo inicial</div>
+                <div class="rango-hero__valor">
+                  {{ resultado.bolo_calculado|default:"--" }} UI
+                </div>
+              </div>
+
+              <div class="rango-hero__bloque">
+                <div class="rango-hero__label">Tasa de infusión</div>
+                <div class="rango-hero__valor">
+                  {{ resultado.tasa|default:"--" }} UI/h
+                </div>
+              </div>
             </div>
 
             {% if resultado.calculo_texto %}
-              <div class="rango-tasa-principal__meta">
+              <div class="rango-hero__meta">
                 {{ resultado.calculo_texto }}
               </div>
             {% endif %}
           </div>
-
-          <div class="rango-proximo-card">
-            <div class="rango-proximo-card__label">Próximo control</div>
-
-            <div class="rango-proximo-card__value">
-              {{ resultado.proximo_control|default:"Controlar glicemia nuevamente en 1 hora" }}
-            </div>
-
-            {% if resultado.comentario_control %}
-              <div class="rango-proximo-card__comment">
-                {{ resultado.comentario_control }}
-              </div>
-            {% endif %}
-          </div>
-        {% else %}
-          <div class="rango-conducta-lateral rango-conducta-lateral--full {% if resultado.en_objetivo_con_alerta or resultado.fuera_objetivo %}rango-conducta-lateral--alerta{% else %}rango-conducta-lateral--ok-simple{% endif %}">
-            <div class="rango-conducta-lateral__label">Conducta actual</div>
-
-            <div class="rango-conducta-lateral__text">
-              {{ resultado.conducta|default:"Mantener conducta actual y continuar monitoreo." }}
-            </div>
-
-            {% if resultado.observacion %}
-              <div class="rango-conducta-lateral__subtext">
-                {{ resultado.observacion }}
-              </div>
-            {% endif %}
-          </div>
         {% endif %}
 
-      </div>
-    </div>
+        <div class="rango-proximo-card {% if resultado.ui_variant == 'success' %}rango-proximo-card--ok{% else %}rango-proximo-card--alerta{% endif %}">
+          <div class="rango-proximo-card__label">
+            <span class="ui-icon">🕒</span>
+            Próximo control
+          </div>
 
-    <!-- 3. OBSERVACIONES -->
-    <div class="rango-bloque rango-bloque--observaciones">
-      <div class="rango-observaciones-card {% if resultado.ui_variant == 'success' %}rango-observaciones-card--ok{% elif resultado.en_objetivo_con_alerta or resultado.fuera_objetivo %}rango-observaciones-card--alerta{% endif %}">
-        <div class="rango-observaciones-card__label">Observaciones</div>
+          <div class="rango-proximo-card__value">
+            {{ resultado.proximo_control|default:"Controlar glucemia nuevamente en 1 hora" }}
+          </div>
 
-        <div class="rango-observaciones-card__item">
-          <span class="rango-observaciones-card__item-label">Conducta actual:</span>
-          <span class="rango-observaciones-card__item-text">
-            {{ resultado.conducta|default:"Mantener conducta actual y continuar monitoreo." }}
-          </span>
-        </div>
-
-        <div class="rango-observaciones-card__item">
-          <span class="rango-observaciones-card__item-label">Próximo control:</span>
-          <span class="rango-observaciones-card__item-text">
-            {{ resultado.proximo_control|default:"Controlar glicemia nuevamente en 1 hora" }}
-          </span>
-        </div>
-
-        {% if resultado.comentario_control %}
-          <div class="rango-observaciones-card__item">
-            <span class="rango-observaciones-card__item-text">
+          {% if resultado.comentario_control %}
+            <div class="rango-proximo-card__comment">
               {{ resultado.comentario_control }}
-            </span>
-          </div>
-        {% endif %}
-
-        <div class="rango-observaciones-card__item">
-          <span class="rango-observaciones-card__item-label">Rango objetivo utilizado:</span>
-          <span class="rango-observaciones-card__item-text">
-            {{ resultado.texto_rango_objetivo|default:"Paciente no insulinizado: 70 a 180 mg/dL" }}
-          </span>
+            </div>
+          {% endif %}
         </div>
 
-        {% if resultado.observacion and resultado.observacion != resultado.alerta_rango %}
-          <div class="rango-observaciones-card__item">
-            <span class="rango-observaciones-card__item-text">
-              {{ resultado.observacion }}
-            </span>
-          </div>
-        {% endif %}
       </div>
     </div>
 

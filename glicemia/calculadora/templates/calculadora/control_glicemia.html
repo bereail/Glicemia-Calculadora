@@ -9,7 +9,7 @@
 
     <section class="hero">
       <div class="hero__text">
-        <h1>Control de glicemia - Protocolo UCI</h1>
+        <h1>Control de glicemia e infusión de insulina - UCI</h1>
         <div class="alerta-protocolo">
           Aplicable solo a pacientes UCI con Terapia Nutricional Médica, sin Cetoacidosis Diabética ni estado Hiperosmolar no Cetósico
         </div>
@@ -37,10 +37,6 @@
           {% if form.glicemia_actual.errors %}
             <div class="field-error">{{ form.glicemia_actual.errors }}</div>
           {% endif %}
-        </div>
-
-        <div id="hipo_helper_box" class="field-helper field-helper--warning hidden">
-          La glicemia actual es ≤ 70 mg/dL. Se prioriza manejo de hipoglucemia.
         </div>
 
         <div id="bloque_contexto" class="hidden">

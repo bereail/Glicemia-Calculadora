@@ -1,96 +1,97 @@
 <section class="resultado-base resultado-base--hiper resultado-base--hiper-sostenida {% if resultado.es_critica %}resultado-base--hiper-critica{% endif %}">
-
-
   <div class="hiper-layout hiper-layout--sostenida">
 
-    <!-- 1. ESTADO + SITUACION ACTUAL -->
+    <!-- 1. HEADER -->
     <div class="hiper-bloque hiper-bloque--header">
-      <div class="hiper-header hiper-header--compacto">
+      <div class="hiper-header hiper-header--compacto hiper-header--con-conducta">
+        
         <div class="hiper-header__estado">
-          <div class="hiper-header__label">Estado</div>
+          <div class="hiper-header__label">
+            <span class="ui-icon">⚠</span>
+            Estado
+          </div>
           <div class="hiper-header__estado-value">
             {{ resultado.estado|default:"Hiperglucemia sostenida" }}
           </div>
         </div>
 
         <div class="hiper-header__main">
-          <div class="hiper-header__label">Situación actual</div>
+          <div class="hiper-header__label">
+            <span class="ui-icon">◉</span>
+            Situación actual
+          </div>
           <h2 class="hiper-header__title">
             {{ resultado.resumen_objetivo|default:"Fuera de rango objetivo" }}
           </h2>
         </div>
+
+        <div class="hiper-header__conducta-resumen">
+          <div class="hiper-header__label">
+            <span class="ui-icon">✚</span>
+            Conducta inmediata
+          </div>
+          <div class="hiper-header__conducta-resumen-value">
+            {{ resultado.conducta|default:"Continuar conducta indicada."|safe }}
+          </div>
+        </div>
+
       </div>
     </div>
 
-    <!-- 2 y 3. FILA PRINCIPAL: TASA + PRÓXIMO CONTROL -->
+    <!-- 2. FILA PRINCIPAL -->
     <div class="hiper-bloque hiper-bloque--fila-principal">
       <div class="hiper-fila-principal hiper-fila-principal--sostenida">
 
-        {% if resultado.tasa_calculada %}
-          <div class="hiper-tasa-principal">
-            <div class="hiper-tasa-principal__label">Tasa de infusión</div>
+        <!-- TERAPIA -->
+        <div class="hiper-hero hiper-hero--terapia">
+          <div class="hiper-hero__eyebrow">
+            <span class="ui-icon">💉</span>
+            Terapia
+          </div>
 
-            <div class="hiper-tasa-principal__valor">
-              {{ resultado.tasa_calculada }} <span>UI/h</span>
+          <div class="hiper-hero__grid">
+
+            <div class="hiper-hero__bloque">
+              <div class="hiper-hero__label">Bolo inicial</div>
+              <div class="hiper-hero__valor">
+                {{ resultado.bolo_calculado|default:"--" }} UI
+              </div>
             </div>
 
-            {% if resultado.calculo_texto %}
-              <div class="hiper-tasa-principal__meta">
-                {{ resultado.calculo_texto }}
+            <div class="hiper-hero__bloque">
+              <div class="hiper-hero__label">Tasa de infusión</div>
+              <div class="hiper-hero__valor">
+                {{ resultado.tasa_calculada|default:"--" }} UI/h
               </div>
-            {% endif %}
-
-            {% if resultado.bolo_calculado %}
-              <div class="hiper-tasa-principal__meta">
-                {{ resultado.bolo_calculado }}
-              </div>
-            {% endif %}
-          </div>
-        {% endif %}
-
-        {% if resultado.proximo_control %}
-          <div class="hiper-proximo-card">
-            <div class="hiper-proximo-card__label">Próximo control</div>
-
-            <div class="hiper-proximo-card__value">
-              {{ resultado.proximo_control }}
             </div>
 
-            {% if resultado.comentario_control %}
-              <div class="hiper-proximo-card__comment">
-                {{ resultado.comentario_control }}
-              </div>
-            {% endif %}
           </div>
-        {% endif %}
 
-      </div>
-    </div>
+          {% if resultado.calculo_texto %}
+            <div class="hiper-hero__meta">
+              {{ resultado.calculo_texto }}
+            </div>
+          {% endif %}
+        </div>
 
-    <!-- 4. OBSERVACIONES -->
-    <div class="hiper-bloque hiper-bloque--observaciones">
-      <div class="hiper-observaciones-card">
-        <div class="hiper-observaciones-card__label">Observaciones</div>
-
-        {% if resultado.conducta %}
-          <div class="hiper-observaciones-card__item">
-            <span class="hiper-observaciones-card__item-label">Conducta inmediata:</span>
-            <span class="hiper-observaciones-card__item-text">{{ resultado.conducta|safe }}</span>
+        <!-- PROXIMO CONTROL -->
+        <div class="hiper-proximo-card">
+          <div class="hiper-proximo-card__label">
+            <span class="ui-icon">🕒</span>
+            Próximo control
           </div>
-        {% endif %}
 
-        {% if resultado.subestado %}
-          <div class="hiper-observaciones-card__item">
-            <span class="hiper-observaciones-card__item-text">{{ resultado.subestado }}</span>
+          <div class="hiper-proximo-card__value">
+            {{ resultado.proximo_control|default:"Controlar según protocolo indicado" }}
           </div>
-        {% endif %}
 
-        {% if resultado.texto_rango_objetivo %}
-          <div class="hiper-observaciones-card__item">
-            <span class="hiper-observaciones-card__item-label">Rango objetivo utilizado:</span>
-            <span class="hiper-observaciones-card__item-text">{{ resultado.texto_rango_objetivo }}</span>
-          </div>
-        {% endif %}
+          {% if resultado.comentario_control %}
+            <div class="hiper-proximo-card__comment">
+              {{ resultado.comentario_control }}
+            </div>
+          {% endif %}
+        </div>
+
       </div>
     </div>
 

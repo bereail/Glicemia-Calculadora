@@ -146,7 +146,7 @@ def calcular_proximo_control(glicemia, horas_desde_inicio=None, estable=False):
 
     if glicemia >= Decimal("400"):
         return {
-            "proximo_control": "Controlar glicemia nuevamente en 1 hora",
+            "proximo_control": "Controlar glucemia nuevamente en 1 hora",
             "comentario_control": (
                 "Hasta alcanzar objetivo >140 y <200 mg/dL. " + comentario_fijo
             ),
@@ -154,7 +154,7 @@ def calcular_proximo_control(glicemia, horas_desde_inicio=None, estable=False):
 
     if Decimal("300") <= glicemia < Decimal("400"):
         return {
-            "proximo_control": "Controlar glicemia nuevamente en 2 horas",
+            "proximo_control": "Controlar glucemia nuevamente en 2 horas",
             "comentario_control": comentario_fijo,
         }
 
@@ -165,14 +165,14 @@ def calcular_proximo_control(glicemia, horas_desde_inicio=None, estable=False):
             and estable
         ):
             return {
-                "proximo_control": "Controlar glicemia nuevamente en 6 horas",
+                "proximo_control": "Controlar glucemia nuevamente en 6 horas",
                 "comentario_control": (
                     "Durante las primeras 24 h controlar cada 4 horas; luego cada 6 horas si permanece estable. "
                     + comentario_fijo
                 ),
             }
         return {
-            "proximo_control": "Controlar glicemia nuevamente en 4 horas",
+            "proximo_control": "Controlar glucemia nuevamente en 4 horas",
             "comentario_control": (
                 "Durante las primeras 24 h controlar cada 4 horas; luego cada 6 horas si permanece estable. "
                 + comentario_fijo
@@ -186,14 +186,14 @@ def calcular_proximo_control(glicemia, horas_desde_inicio=None, estable=False):
             and estable
         ):
             return {
-                "proximo_control": "Controlar glicemia nuevamente en 6 horas",
+                "proximo_control": "Controlar glucemia nuevamente en 6 horas",
                 "comentario_control": (
                     "Durante las primeras 24 h controlar cada 4 horas; luego cada 6 horas si permanece estable. "
                     + comentario_fijo
                 ),
             }
         return {
-            "proximo_control": "Controlar glicemia nuevamente en 4 horas",
+            "proximo_control": "Controlar glucemia nuevamente en 4 horas",
             "comentario_control": (
                 "Durante las primeras 24 h controlar cada 4 horas; luego cada 6 horas si permanece estable. "
                 + comentario_fijo
@@ -202,7 +202,7 @@ def calcular_proximo_control(glicemia, horas_desde_inicio=None, estable=False):
 
     if Decimal("70") <= glicemia < Decimal("140"):
         return {
-            "proximo_control": "Controlar glicemia en el próximo horario habitual",
+            "proximo_control": "Controlar glucemia en el próximo horario habitual",
             "comentario_control": comentario_fijo,
         }
 

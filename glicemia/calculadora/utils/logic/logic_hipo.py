@@ -21,19 +21,19 @@ def evaluar_hipoglucemia(actual, previa=None, infusion_activa=False):
         resultado["mensaje"] = "Paciente en hipoglucemia."
         resultado["resumen_objetivo"] = "Fuera de rango objetivo"
         resultado["conducta"] = (
-            "Suspender insulina si está en infusión, administrar 50 ml de dextrosa al 25% "
-            "y controlar glicemia a los 30 minutos."
+            "Suspender insulina, administrar 50 ml de dextrosa al 25% "
         )
         resultado["suspender_insulina"] = infusion_activa
         resultado["administrar_dextrosa"] = True
         resultado["requiere_recontrol"] = True
-        resultado["proximo_control"] = "Controlar glicemia a los 30 minutos"
+        resultado["proximo_control"] = "Controlar glucemia a los 30 minutos"
         resultado["texto_rango_objetivo"] = (
             "Paciente insulinizado: 140 a 200 mg/dL"
             if infusion_activa
             else "Paciente no insulinizado: 70 a 180 mg/dL"
         )
         resultado["observacion"] = "Priorizar corrección inmediata y recontrol según protocolo."
+        "Evaluar dar aviso al médico"
         return resultado
 
     # 2) Recontrol post-hipoglucemia
@@ -53,10 +53,10 @@ def evaluar_hipoglucemia(actual, previa=None, infusion_activa=False):
             resultado["mensaje"] = "Recuperación inicial post-hipoglucemia."
             resultado["resumen_objetivo"] = "Recuperación inicial"
             resultado["conducta"] = (
-                "Mantener insulina suspendida y controlar glicemia cada 1 hora."
+                "Mantener insulina suspendida y controlar glucemia cada 1 hora."
             )
             resultado["suspender_insulina"] = infusion_activa
-            resultado["proximo_control"] = "Controlar glicemia nuevamente en 1 hora"
+            resultado["proximo_control"] = "Controlar glucemia nuevamente en 1 hora"
             resultado["observacion"] = (
                 "Persistir con vigilancia estrecha hasta consolidar recuperación."
             )
@@ -71,7 +71,7 @@ def evaluar_hipoglucemia(actual, previa=None, infusion_activa=False):
                 "Continuar monitoreo cada 1 hora. No reiniciar insulina de inmediato."
             )
             resultado["suspender_insulina"] = infusion_activa
-            resultado["proximo_control"] = "Controlar glicemia nuevamente en 1 hora"
+            resultado["proximo_control"] = "Controlar glucemia nuevamente en 1 hora"
             resultado["observacion"] = (
                 "No reiniciar insulina de inmediato hasta confirmar estabilidad."
             )
