@@ -20,7 +20,6 @@ from .utils.ui.presentation import (
 )
 
 
-
 # =========================================================
 # PERMISOS
 # =========================================================
@@ -113,26 +112,26 @@ def control_glicemia(request):
             infusion_activa = form.cleaned_data.get("infusion_activa")
             hubo_ajuste_insulina = form.cleaned_data.get("hubo_ajuste_insulina")
             tercera_medicion = form.cleaned_data.get("tercera_medicion")
+            algoritmo_activo = form.cleaned_data.get("algoritmo_activo", "1")
 
-            # =========================================================
-            # 1. LÓGICA CLÍNICA
-            # =========================================================
             resultado = evaluar_glucemia_service(
                 actual=actual,
                 previa=previa,
                 infusion_activa=infusion_activa,
                 hubo_ajuste_insulina=hubo_ajuste_insulina,
                 tercera_medicion=tercera_medicion,
+                algoritmo_activo=algoritmo_activo,
             )
 
-            # =========================================================
-            # 2. UI (puede romper flags → lo corregimos después)
-            # =========================================================
             resultado = enriquecer_resultado_ui(
                 resultado=resultado,
                 actual=actual,
                 infusion_activa=_a_bool(infusion_activa),
             )
+
+            # necesario para los templates:
+            # si el paciente ya está insulinizado, ocultar solo "Bolo inicial"
+            resultado["infusion_activa"] = _a_bool(infusion_activa)
 
             estado_lower = str(resultado.get("estado") or "").lower()
 
@@ -141,11 +140,8 @@ def control_glicemia(request):
                 resultado["nivel_visual"] = "critico"
                 resultado["clase_visual"] = "alerta"
             elif "hipergluc" in estado_lower:
-             resultado["clase_visual"] = "alerta"
+                resultado["clase_visual"] = "alerta"
 
-            # =========================================================
-            # 3. GUARDADO
-            # =========================================================
             medicion_guardada = _guardar_medicion(
                 request, form.cleaned_data, resultado
             )
@@ -162,7 +158,6 @@ def control_glicemia(request):
             "medicion_guardada": medicion_guardada,
         },
     )
-
 
 
 def _filtrar_mediciones_desde_request(request):
@@ -196,53 +191,6 @@ def _filtrar_mediciones_desde_request(request):
         mediciones = mediciones.filter(fecha_hora__gte=desde)
 
     return mediciones, usuario, estado, clase, periodo
-
-
-    resultado = None
-    medicion_guardada = None
-
-    if request.method == "POST":
-        form = GlucemiaForm(request.POST)
-
-        if form.is_valid():
-            actual = form.cleaned_data["glicemia_actual"]
-            previa = form.cleaned_data.get("glicemia_previa")
-            infusion_activa = form.cleaned_data.get("infusion_activa")
-            hubo_ajuste_insulina = form.cleaned_data.get("hubo_ajuste_insulina")
-            tercera_medicion = form.cleaned_data.get("tercera_medicion")
-
-            resultado = evaluar_glucemia_service(
-                actual=actual,
-                previa=previa,
-                infusion_activa=infusion_activa,
-                hubo_ajuste_insulina=hubo_ajuste_insulina,
-                tercera_medicion=tercera_medicion,
-            )
-
-            resultado = enriquecer_resultado_ui(
-                resultado=resultado,
-                actual=actual,
-                infusion_activa=_a_bool(infusion_activa),
-            )
-
-            estado_lower = str(resultado.get("estado") or "").lower()
-            if "persistente" in estado_lower or "refractaria" in estado_lower:
-                resultado["es_critico"] = True
-                resultado["nivel_visual"] = "critico"
-
-            medicion_guardada = _guardar_medicion(request, form.cleaned_data, resultado)
-    else:
-        form = GlucemiaForm()
-
-    return render(
-        request,
-        "calculadora/control_glicemia.html",
-        {
-            "form": form,
-            "resultado": resultado,
-            "medicion_guardada": medicion_guardada,
-        },
-    )
 
 
 @login_required

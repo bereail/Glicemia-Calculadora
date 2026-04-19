@@ -9,7 +9,7 @@
 
     <section class="hero">
       <div class="hero__text">
-        <h1>Control de glicemia e infusión de insulina - UCI</h1>
+        <h1>Control de glicemia e infusión de insulina - UCI HEEP</h1>
         <div class="alerta-protocolo">
           Aplicable solo a pacientes UCI con Terapia Nutricional Médica, sin Cetoacidosis Diabética ni estado Hiperosmolar no Cetósico
         </div>
@@ -41,6 +41,7 @@
 
         <div id="bloque_contexto" class="hidden">
 
+          <!-- INFUSIÓN ACTIVA -->
           <div class="field-group">
             <label class="field-label">{{ form.infusion_activa.label }}</label>
             <div class="glicemia-radio-group">
@@ -56,33 +57,46 @@
             {% endif %}
           </div>
 
+          <!-- ALGORITMO EN USO: justo debajo de infusión -->
+          <div id="algoritmo_container" class="field-group hidden">
+            <label class="field-label">{{ form.algoritmo_activo.label }}</label>
+            <div class="glicemia-radio-group">
+              {% for radio in form.algoritmo_activo %}
+                <label class="glicemia-radio-card">
+                  {{ radio.tag }}
+                  <span>{{ radio.choice_label }}</span>
+                </label>
+              {% endfor %}
+            </div>
+            <div class="field-helper">
+              Seleccionar solo si el paciente ya se encuentra en Algoritmo 2.
+            </div>
+            {% if form.algoritmo_activo.errors %}
+              <div class="field-error">{{ form.algoritmo_activo.errors }}</div>
+            {% endif %}
+          </div>
+
+          <!-- HELPER PREVIA -->
           <div id="helper_previa_container" class="field-helper hidden">
             <span id="helper_previa"></span>
           </div>
 
-          <div id="secuencia_mediciones" class="glicemia-secuencia hidden">
-            <div class="glicemia-secuencia__title">Secuencia de evaluación</div>
-
-            <div class="glicemia-secuencia__steps">
-              <span class="glicemia-secuencia__step glicemia-secuencia__step--muted">Anterior (1)</span>
-              <span class="glicemia-secuencia__arrow">→</span>
-              <span class="glicemia-secuencia__step">Previa (2)</span>
-              <span class="glicemia-secuencia__arrow">→</span>
-              <span class="glicemia-secuencia__step glicemia-secuencia__step--active">Actual (3)</span>
-            </div>
-          </div>
-
+          <!-- GLICEMIAS PREVIAS -->
           <div id="previas_box" class="hidden">
             <div class="field-group">
-              <label for="id_glicemia_previa">
-                Glicemia previa
-              </label>
+              <label for="id_glicemia_previa">Glicemia previa</label>
               {{ form.glicemia_previa }}
+              {% if form.glicemia_previa.errors %}
+                <div class="field-error">{{ form.glicemia_previa.errors }}</div>
+              {% endif %}
             </div>
 
             <div id="anterior_container" class="field-group hidden">
               <label for="id_tercera_medicion">Glicemia anterior</label>
               {{ form.tercera_medicion }}
+              {% if form.tercera_medicion.errors %}
+                <div class="field-error">{{ form.tercera_medicion.errors }}</div>
+              {% endif %}
             </div>
           </div>
 
@@ -99,18 +113,12 @@
   </div>
 </div>
 
-<!-- =======================
-     MODAL RESULTADO
-======================= -->
 {% if resultado %}
 <div id="modal-resultado" class="modal-resultado" aria-hidden="false">
   <div class="modal-resultado__backdrop" data-close-resultado></div>
 
   <div class="modal-resultado__dialog" role="dialog" aria-modal="true">
-
-    <button type="button" class="modal-resultado__close" id="cerrar-modal-resultado">
-      ×
-    </button>
+    <button type="button" class="modal-resultado__close" id="cerrar-modal-resultado">×</button>
 
     <div class="modal-resultado__header">
       <p class="modal-resultado__eyebrow">Resultado</p>
@@ -118,8 +126,6 @@
     </div>
 
     <div class="modal-resultado__body">
-
-      <!-- ✅ RESUMEN (BIEN UBICADO) -->
       <div class="resumen-entrada">
         <div class="resumen-entrada__header">Datos evaluados</div>
 
@@ -144,6 +150,15 @@
             </span>
           </div>
 
+          {% if form.algoritmo_activo.value and form.infusion_activa.value == "true" and form.glicemia_actual.value|add:"0" > 200 %}
+          <div class="resumen-entrada__item">
+            <span class="resumen-entrada__label">Algoritmo en uso</span>
+            <span class="resumen-entrada__value">
+              Algoritmo {{ form.algoritmo_activo.value }}
+            </span>
+          </div>
+          {% endif %}
+
           {% if form.glicemia_previa.value %}
           <div class="resumen-entrada__item">
             <span class="resumen-entrada__label">Glucemia previa</span>
@@ -164,7 +179,6 @@
         </div>
       </div>
 
-      <!-- ✅ RESULTADO -->
       {% if resultado.clase_visual == "critico" and "hipogluc" in resultado.estado|lower %}
         {% include "calculadora/partials/resultado_hipo.html" %}
       {% elif resultado.clase_visual == "alerta" %}
@@ -172,51 +186,18 @@
       {% else %}
         {% include "calculadora/partials/resultado_rango.html" %}
       {% endif %}
-
     </div>
   </div>
 </div>
 {% endif %}
-
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=4">
-<link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=4">
-<link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=4">
+<link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=5">
+<link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=5">
+<link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=5">
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=6"></script>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-  const modal = document.getElementById("modal-resultado");
-  const cerrar = document.getElementById("cerrar-modal-resultado");
-
-  if (modal) {
-    document.body.classList.add("modal-open");
-  }
-
-  function cerrarModal() {
-    if (!modal) return;
-    modal.style.display = "none";
-    document.body.classList.remove("modal-open");
-  }
-
-  cerrar?.addEventListener("click", cerrarModal);
-
-  document.querySelectorAll("[data-close-resultado]").forEach(el => {
-    el.addEventListener("click", cerrarModal);
-  });
-
-  document.addEventListener("keydown", function(e){
-    if(e.key === "Escape"){
-      cerrarModal();
-    }
-  });
-
-});
-</script>
+<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=7"></script>
 {% endblock %}

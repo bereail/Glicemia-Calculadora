@@ -5,6 +5,12 @@ SI_NO_CHOICES = [
     ("false", "No"),
 ]
 
+ALGORITMO_CHOICES = [
+    ("1", "Algoritmo 1"),
+    ("2", "Algoritmo 2"),
+]
+
+
 class GlucemiaForm(forms.Form):
     glicemia_actual = forms.IntegerField(
         label="Glicemia actual",
@@ -25,12 +31,10 @@ class GlucemiaForm(forms.Form):
     )
 
     infusion_activa = forms.ChoiceField(
-        label="¿Infusión activa?",
+        label="¿Infusión activa de Insulina?",
         required=False,
         choices=SI_NO_CHOICES,
-        widget=forms.RadioSelect(
-            attrs={"class": "radio-inline"}
-        ),
+        widget=forms.RadioSelect(attrs={"class": "radio-inline"}),
         error_messages={
             "required": "Debés indicar si tiene infusión activa.",
             "invalid_choice": "Seleccioná una opción válida.",
@@ -77,8 +81,19 @@ class GlucemiaForm(forms.Form):
         label="¿Hubo ajuste de insulina?",
         required=False,
         choices=SI_NO_CHOICES,
+        widget=forms.RadioSelect(attrs={"class": "radio-inline"}),
+    )
+
+    algoritmo_activo = forms.ChoiceField(
+        label="¿Algoritmo en uso?",
+        required=False,
+        choices=ALGORITMO_CHOICES,
+        initial="1",
         widget=forms.RadioSelect(
-            attrs={"class": "radio-inline"}
+            attrs={
+                "class": "radio-inline",
+                "id": "id_algoritmo_activo",
+            }
         ),
     )
 
@@ -113,13 +128,18 @@ class GlucemiaForm(forms.Form):
         hubo_ajuste = None if ajuste_raw in (None, "") else ajuste_raw == "true"
         cleaned_data["hubo_ajuste_insulina"] = hubo_ajuste
 
-        if actual is None:
-          return cleaned_data
+        algoritmo_activo = cleaned_data.get("algoritmo_activo") or "1"
+        cleaned_data["algoritmo_activo"] = algoritmo_activo
 
+        if actual is None:
+            return cleaned_data
+
+        # Hipoglucemia: no pedir más contexto
         if actual <= 70:
             cleaned_data["glicemia_previa"] = None
             cleaned_data["tercera_medicion"] = None
             cleaned_data["hubo_ajuste_insulina"] = None
+            cleaned_data["algoritmo_activo"] = "1"
             return cleaned_data
 
         if infusion_activa is None:
@@ -143,5 +163,17 @@ class GlucemiaForm(forms.Form):
                 "glicemia_previa",
                 "La glicemia previa es obligatoria si hay infusión activa.",
             )
+
+        # El algoritmo solo tiene sentido mostrarlo/usarlo si hay infusión y glucemia > 200
+        mostrar_algoritmo = infusion_activa and actual > 200
+
+        if not mostrar_algoritmo:
+            cleaned_data["algoritmo_activo"] = "1"
+
+        # Si está en algoritmo 1 o 2 y quiere evaluar persistencia por 3 mediciones,
+        # necesita tercera medición cuando corresponda
+        if mostrar_algoritmo and previa is not None and actual > 200 and tercera is None:
+            # no bloquea siempre; solo deja el dato disponible para UI/lógica posterior
+            pass
 
         return cleaned_data

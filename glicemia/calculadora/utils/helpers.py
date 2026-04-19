@@ -24,15 +24,9 @@ def _a_bool(valor):
 
 
 def _resultado_base(clase=None):
-    """
-    Estructura única para todos los resultados clínicos.
-    Esto permite que hipo, hiper y rango compartan la misma línea estética
-    y el mismo contrato de datos para la UI.
-    """
     return {
         "mostrar_resultado": False,
         "clase": clase,
-
         "estado": None,
         "subestado": None,
         "resumen_objetivo": None,
@@ -40,34 +34,31 @@ def _resultado_base(clase=None):
         "conducta_extra": None,
         "proximo_control": None,
         "comentario_control": None,
-
         "mensaje": None,
         "observacion": None,
         "texto_rango_objetivo": None,
         "recordatorio_objetivo": None,
-
         "alerta_rango": "",
         "alerta_borde_hipo": False,
         "requiere_recontrol": False,
         "es_critica": False,
-
         "tendencia": None,
         "flecha_tendencia": None,
         "delta": None,
-
         "suspender_insulina": False,
         "administrar_dextrosa": False,
         "evaluar_goteo_mantenimiento": False,
         "reiniciar_insulina": False,
-
         "bolo_inicial": None,
         "tasa_inicial": None,
         "tasa_algoritmo": None,
         "tasa_calculada": None,
         "bolo_calculado": None,
         "calculo_texto": None,
-
         "monitoreo_glucemico": None,
+        "algoritmo_activo": None,
+        "algoritmo_sugerido": None,
+        "clasificacion_protocolo": None,
     }
 
 
@@ -95,7 +86,31 @@ def calcular_bolo_y_tasa_inicial(glicemia):
     return (glicemia / Decimal("100")).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP)
 
 
-def obtener_tasa_algoritmo_inicio(glicemia):
+def obtener_escalon_algoritmo(glucemia) -> str:
+    glucemia = _a_decimal(glucemia)
+
+    if glucemia < Decimal("120"):
+        return "<120"
+    if glucemia <= Decimal("149"):
+        return "120-149"
+    if glucemia <= Decimal("179"):
+        return "150-179"
+    if glucemia <= Decimal("209"):
+        return "180-209"
+    if glucemia <= Decimal("239"):
+        return "210-239"
+    if glucemia <= Decimal("269"):
+        return "240-269"
+    if glucemia <= Decimal("299"):
+        return "270-299"
+    if glucemia <= Decimal("329"):
+        return "300-329"
+    if glucemia <= Decimal("359"):
+        return "330-359"
+    return ">360"
+
+
+def obtener_tasa_algoritmo_1(glicemia):
     glicemia = _a_decimal(glicemia)
 
     if glicemia < Decimal("120"):
@@ -119,6 +134,59 @@ def obtener_tasa_algoritmo_inicio(glicemia):
     return "5 UI/h"
 
 
+def obtener_tasa_algoritmo_2(glicemia):
+    glicemia = _a_decimal(glicemia)
+
+    if glicemia < Decimal("120"):
+        return "Suspender"
+    if glicemia <= Decimal("149"):
+        return "1 UI/h"
+    if glicemia <= Decimal("179"):
+        return "1,5 UI/h"
+    if glicemia <= Decimal("209"):
+        return "2,5 UI/h"
+    if glicemia <= Decimal("239"):
+        return "3 UI/h"
+    if glicemia <= Decimal("269"):
+        return "3,5 UI/h"
+    if glicemia <= Decimal("299"):
+        return "4 UI/h"
+    if glicemia <= Decimal("329"):
+        return "5 UI/h"
+    if glicemia <= Decimal("359"):
+        return "6 UI/h"
+    return "8 UI/h"
+
+
+def obtener_tasa_por_algoritmo(glicemia, algoritmo=1):
+    if int(algoritmo) == 1:
+        return obtener_tasa_algoritmo_1(glicemia)
+    if int(algoritmo) == 2:
+        return obtener_tasa_algoritmo_2(glicemia)
+    raise ValueError("Algoritmo inválido. Debe ser 1 o 2.")
+
+
+def tres_mediciones_mismo_escalon(anterior, previa, actual):
+    if anterior is None or previa is None or actual is None:
+        return False
+
+    e1 = obtener_escalon_algoritmo(anterior)
+    e2 = obtener_escalon_algoritmo(previa)
+    e3 = obtener_escalon_algoritmo(actual)
+
+    return e1 == e2 == e3
+
+
+def dos_ultimas_mayores_360(previa, actual):
+    previa = _a_decimal(previa, permitir_none=True)
+    actual = _a_decimal(actual, permitir_none=True)
+
+    if previa is None or actual is None:
+        return False
+
+    return previa > Decimal("360") and actual > Decimal("360")
+
+
 def _comentario_monitoreo_insulinizado():
     return (
         "En pacientes hipotensos el monitoreo capilar puede ser inapropiado. "
@@ -127,19 +195,12 @@ def _comentario_monitoreo_insulinizado():
 
 
 def _control_4_o_6_horas(horas_desde_inicio=None, estable=False):
-    """
-    Protocolo:
-    - Cada 4 horas durante las primeras 24 h
-    - Luego cada 6 horas si permanece estable
-    """
     estable = _a_bool(estable)
 
     if horas_desde_inicio is not None:
         horas_desde_inicio = _a_decimal(horas_desde_inicio, permitir_none=True)
 
-    primeras_24h = (
-        horas_desde_inicio is None or horas_desde_inicio <= Decimal("24")
-    )
+    primeras_24h = horas_desde_inicio is None or horas_desde_inicio <= Decimal("24")
 
     if primeras_24h or not estable:
         return {
@@ -165,10 +226,6 @@ def calcular_proximo_control_insulinizado(
     horas_desde_inicio=None,
     estable=False,
 ):
-    """
-    Próximo control para pacientes con infusión activa / insulinizados,
-    según protocolo UCI.
-    """
     glicemia = _a_decimal(glicemia)
 
     if glicemia > Decimal("400"):
@@ -240,9 +297,6 @@ def calcular_proximo_control_insulinizado(
 
 
 def calcular_proximo_control_post_hipoglucemia(glicemia):
-    """
-    Próximo control luego de tratamiento de hipoglucemia.
-    """
     glicemia = _a_decimal(glicemia)
 
     if glicemia <= Decimal("70"):
@@ -280,10 +334,6 @@ def calcular_proximo_control_post_hipoglucemia(glicemia):
 
 
 def calcular_proximo_control_no_insulinizado(glicemia):
-    """
-    Próximo control para pacientes sin infusión activa.
-    No fuerza el esquema intensivo del protocolo de insulinización.
-    """
     glicemia = _a_decimal(glicemia)
 
     if glicemia < Decimal("70"):
@@ -334,9 +384,6 @@ def calcular_proximo_control(
     estable=False,
     post_hipoglucemia=False,
 ):
-    """
-    Fachada general para no romper llamadas existentes.
-    """
     if post_hipoglucemia:
         return calcular_proximo_control_post_hipoglucemia(glicemia)
 
@@ -441,7 +488,7 @@ def armar_resultado_insulinizacion(glicemia):
     resultado["tasa_inicial"] = f"{dosis} UI/h"
     resultado["bolo_calculado"] = f"{dosis}"
     resultado["tasa_calculada"] = f"{dosis}"
-    resultado["tasa_algoritmo"] = obtener_tasa_algoritmo_inicio(glicemia)
+    resultado["tasa_algoritmo"] = obtener_tasa_algoritmo_1(glicemia)
     resultado["calculo_texto"] = "Dosis inicial estimada según glucemia actual."
 
     resultado["proximo_control"] = control_info["proximo_control"]

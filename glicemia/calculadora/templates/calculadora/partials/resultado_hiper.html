@@ -43,25 +43,35 @@
       <div class="hiper-fila-principal hiper-fila-principal--sostenida">
 
         <!-- TERAPIA -->
-        <div class="hiper-hero hiper-hero--terapia">
-          <div class="hiper-hero__eyebrow">
-            <span class="ui-icon">💉</span>
-            Terapia
-          </div>
-
+        <div class="hiper-hero__eyebrow">
+        <span class="ui-icon">💉</span>
+        {% if resultado.infusion_activa %}
+          Infusión activa
+        {% else %}
+          Terapia
+        {% endif %}
+      </div>
           <div class="hiper-hero__grid">
 
+            {% if not resultado.infusion_activa %}
             <div class="hiper-hero__bloque">
               <div class="hiper-hero__label">Bolo inicial</div>
               <div class="hiper-hero__valor">
                 {{ resultado.bolo_calculado|default:"--" }} UI
               </div>
             </div>
+            {% endif %}
 
             <div class="hiper-hero__bloque">
               <div class="hiper-hero__label">Tasa de infusión</div>
               <div class="hiper-hero__valor">
-                {{ resultado.tasa_calculada|default:"--" }} UI/h
+                {% if resultado.tasa_calculada %}
+                  {{ resultado.tasa_calculada }} UI/h
+                {% elif resultado.tasa_algoritmo %}
+                  {{ resultado.tasa_algoritmo }}
+                {% else %}
+                  --
+                {% endif %}
               </div>
             </div>
 

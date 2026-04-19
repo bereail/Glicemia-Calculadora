@@ -7,96 +7,12 @@ from ..helpers import (
     _resultado_hiper_base,
     armar_resultado_insulinizacion,
     calcular_proximo_control,
+    dos_ultimas_mayores_360,
+    obtener_tasa_algoritmo_1,
+    obtener_tasa_algoritmo_2,
+    obtener_tasa_por_algoritmo,
+    tres_mediciones_mismo_escalon,
 )
-
-# =========================================================
-# ESCALONES Y ALGORITMOS
-# =========================================================
-
-
-def obtener_escalon_glucemia(glicemia):
-    glicemia = _a_decimal(glicemia)
-
-    if glicemia < Decimal("120"):
-        return "E0"
-    if glicemia <= Decimal("149"):
-        return "E1"
-    if glicemia <= Decimal("179"):
-        return "E2"
-    if glicemia <= Decimal("209"):
-        return "E3"
-    if glicemia <= Decimal("239"):
-        return "E4"
-    if glicemia <= Decimal("269"):
-        return "E5"
-    if glicemia <= Decimal("299"):
-        return "E6"
-    if glicemia <= Decimal("329"):
-        return "E7"
-    if glicemia <= Decimal("359"):
-        return "E8"
-    return "E9"
-
-
-def obtener_tasa_algoritmo_1(glicemia):
-    tabla = {
-        "E0": "Suspender",
-        "E1": "0,5 UI/h",
-        "E2": "1 UI/h",
-        "E3": "1,5 UI/h",
-        "E4": "2 UI/h",
-        "E5": "2,5 UI/h",
-        "E6": "3 UI/h",
-        "E7": "3,5 UI/h",
-        "E8": "4 UI/h",
-        "E9": "5 UI/h",
-    }
-    return tabla[obtener_escalon_glucemia(glicemia)]
-
-
-def obtener_tasa_algoritmo_2(glicemia):
-    tabla = {
-        "E0": "Suspender",
-        "E1": "1 UI/h",
-        "E2": "1,5 UI/h",
-        "E3": "2,5 UI/h",
-        "E4": "3 UI/h",
-        "E5": "3,5 UI/h",
-        "E6": "4 UI/h",
-        "E7": "5 UI/h",
-        "E8": "6 UI/h",
-        "E9": "8 UI/h",
-    }
-    return tabla[obtener_escalon_glucemia(glicemia)]
-
-
-def obtener_tasa_por_algoritmo(glicemia, algoritmo=1):
-    if algoritmo == 1:
-        return obtener_tasa_algoritmo_1(glicemia)
-    if algoritmo == 2:
-        return obtener_tasa_algoritmo_2(glicemia)
-    raise ValueError("Algoritmo inválido. Debe ser 1 o 2.")
-
-
-def estan_en_mismo_escalon(*valores):
-    escalones = [obtener_escalon_glucemia(v) for v in valores if v is not None]
-    if len(escalones) < 2:
-        return False
-    return len(set(escalones)) == 1
-
-
-def _numero_escalon(valor):
-    escalon = obtener_escalon_glucemia(valor)
-    return int(escalon.replace("E", ""))
-
-
-def estan_en_escalon_persistencia(*valores):
-    valores_validos = [v for v in valores if v is not None]
-    if len(valores_validos) < 3:
-        return False
-
-    numeros = [_numero_escalon(v) for v in valores_validos]
-    return max(numeros) - min(numeros) <= 1
 
 
 def _marcar_visual(resultado, *, es_critico=False, nivel_visual="alerta"):
@@ -105,7 +21,7 @@ def _marcar_visual(resultado, *, es_critico=False, nivel_visual="alerta"):
     return resultado
 
 
-def es_hiperglucemia_persistente(
+def es_hiperglucemia_persistente_algoritmo_1(
     actual, previa=None, anterior=None, infusion_activa=False
 ):
     if not _a_bool(infusion_activa):
@@ -115,48 +31,39 @@ def es_hiperglucemia_persistente(
     previa = _a_decimal(previa, permitir_none=True)
     anterior = _a_decimal(anterior, permitir_none=True)
 
-    if previa is not None and actual >= Decimal("360") and previa >= Decimal("360"):
-        return True
+    # 🔴 NUEVA REGLA: 2 ≥ 360 = PERSISTENTE
+    if previa is not None:
+        if actual >= Decimal("360") and previa >= Decimal("360"):
+            return True
 
-    if (
-        previa is not None
-        and anterior is not None
-        and actual > UMBRAL_ALERTA_ALTA
-        and actual < Decimal("360")
-        and previa > UMBRAL_ALERTA_ALTA
-        and previa < Decimal("360")
-        and anterior > UMBRAL_ALERTA_ALTA
-        and anterior < Decimal("360")
-        and estan_en_escalon_persistencia(actual, previa, anterior)
-    ):
-        return True
+    # 🔵 REGLA ORIGINAL (3 mediciones)
+    if actual <= Decimal("200"):
+        return False
 
-    return False
+    if previa is None or anterior is None:
+        return False
+
+    return (
+        actual > Decimal("200")
+        and previa > Decimal("200")
+        and anterior > Decimal("200")
+        and tres_mediciones_mismo_escalon(anterior, previa, actual)
+    )
 
 
-def es_fallo_algoritmo_1(
-    actual, previa=None, infusion_activa=False, hubo_ajuste_insulina=False
+def es_hiperglucemia_refractaria_algoritmo_2(
+    actual, previa=None, infusion_activa=False, algoritmo_activo=1
 ):
     if not _a_bool(infusion_activa):
         return False
 
-    if not _a_bool(hubo_ajuste_insulina):
+    if int(algoritmo_activo) != 2:
         return False
 
     actual = _a_decimal(actual)
     previa = _a_decimal(previa, permitir_none=True)
 
-    if previa is None:
-        return False
-
-    fuera_objetivo_actual = actual < Decimal("140") or actual > Decimal("200")
-    fuera_objetivo_previa = previa < Decimal("140") or previa > Decimal("200")
-
-    return (
-        fuera_objetivo_actual
-        and fuera_objetivo_previa
-        and estan_en_mismo_escalon(actual, previa)
-    )
+    return dos_ultimas_mayores_360(previa, actual)
 
 
 def sugerir_algoritmo(
@@ -164,9 +71,17 @@ def sugerir_algoritmo(
     previa=None,
     anterior=None,
     infusion_activa=False,
-    hubo_ajuste_insulina=False,
+    algoritmo_activo=1,
 ):
-    if es_hiperglucemia_persistente(
+    if es_hiperglucemia_refractaria_algoritmo_2(
+        actual=actual,
+        previa=previa,
+        infusion_activa=infusion_activa,
+        algoritmo_activo=algoritmo_activo,
+    ):
+        return 2
+
+    if es_hiperglucemia_persistente_algoritmo_1(
         actual=actual,
         previa=previa,
         anterior=anterior,
@@ -174,15 +89,7 @@ def sugerir_algoritmo(
     ):
         return 2
 
-    if es_fallo_algoritmo_1(
-        actual=actual,
-        previa=previa,
-        infusion_activa=infusion_activa,
-        hubo_ajuste_insulina=hubo_ajuste_insulina,
-    ):
-        return 2
-
-    return 1
+    return int(algoritmo_activo)
 
 
 def evaluar_hiperglucemia(
@@ -191,12 +98,14 @@ def evaluar_hiperglucemia(
     infusion_activa=False,
     hubo_ajuste_insulina=False,
     tercera_medicion=None,
+    algoritmo_activo=1,
 ):
     actual = _a_decimal(actual)
     previa = _a_decimal(previa, permitir_none=True)
     infusion_activa = _a_bool(infusion_activa)
     hubo_ajuste_insulina = _a_bool(hubo_ajuste_insulina)
     tercera_medicion = _a_decimal(tercera_medicion, permitir_none=True)
+    algoritmo_activo = int(algoritmo_activo or 1)
 
     if not infusion_activa and actual < UMBRAL_HIPER:
         return None
@@ -206,16 +115,17 @@ def evaluar_hiperglucemia(
 
     resultado = _resultado_hiper_base()
     resultado["mostrar_resultado"] = True
-    resultado["es_critico"] = False
+    resultado["es_critica"] = False
     resultado["nivel_visual"] = "alerta"
     resultado["texto_rango_objetivo"] = (
         "Paciente insulinizado: 140 a 200 mg/dL"
         if infusion_activa
         else "Paciente no insulinizado: 70 a 180 mg/dL"
     )
+    resultado["algoritmo_activo"] = f"Algoritmo {algoritmo_activo}"
 
-    def _asignar_control(valor):
-        control = calcular_proximo_control(valor)
+    def _asignar_control(valor, insulinizado=False):
+        control = calcular_proximo_control(valor, insulinizado=insulinizado)
         resultado["proximo_control"] = control["proximo_control"]
         resultado["comentario_control"] = control["comentario_control"]
 
@@ -250,103 +160,117 @@ def evaluar_hiperglucemia(
         return _marcar_visual(resultado, es_critico=False, nivel_visual="alerta")
 
     # ======================================================
-    # CON INFUSIÓN ACTIVA
+    # CON INFUSIÓN ACTIVA Y FUERA DE OBJETIVO > 200
     # ======================================================
     algoritmo_sugerido = sugerir_algoritmo(
         actual=actual,
         previa=previa,
         anterior=tercera_medicion,
         infusion_activa=infusion_activa,
-        hubo_ajuste_insulina=hubo_ajuste_insulina,
+        algoritmo_activo=algoritmo_activo,
     )
 
     resultado["algoritmo_sugerido"] = f"Algoritmo {algoritmo_sugerido}"
-    resultado["tasa_algoritmo"] = obtener_tasa_por_algoritmo(actual, algoritmo_sugerido)
+    resultado["tasa_algoritmo"] = obtener_tasa_por_algoritmo(actual, algoritmo_activo)
 
-    if actual >= Decimal("360"):
-        if previa is not None and previa >= Decimal("360"):
-            resultado["estado"] = "Hiperglucemia Persistente"
-            resultado["subestado"] = "2 controles consecutivos ≥ 360 mg/dL con infusión activa"
-            resultado["mensaje"] = "Hiperglucemia persistente severa."
-            resultado["resumen_objetivo"] = "Fuera de rango objetivo"
-            resultado["conducta"] = (
-                'Dar aviso médico y continuar con Algoritmo 2.')
-            resultado["requiere_recontrol"] = True
-            resultado["algoritmo_sugerido"] = "Algoritmo 2"
-            resultado["tasa_algoritmo"] = obtener_tasa_algoritmo_2(actual)
-            resultado["observacion"] = "Persistencia severa con infusión activa."
-            _asignar_control(actual)
-            return _marcar_visual(resultado, es_critico=True, nivel_visual="critico")
-
-        resultado["estado"] = "Hiperglucemia Sostenida"
-        resultado["subestado"] = "Actual ≥ 360 mg/dL con infusión activa"
-        resultado["mensaje"] = "Hiperglucemia sostenida."
+    # ------------------------------------------------------
+    # ALGORITMO 2 + >360 en 2 últimas = REFRACTARIA
+    # ------------------------------------------------------
+    if es_hiperglucemia_refractaria_algoritmo_2(
+        actual=actual,
+        previa=previa,
+        infusion_activa=infusion_activa,
+        algoritmo_activo=algoritmo_activo,
+    ):
+        resultado["estado"] = "Hiperglucemia Refractaria"
+        resultado["subestado"] = (
+            "Dos mediciones consecutivas > 360 mg/dL durante Algoritmo 2"
+        )
+        resultado["mensaje"] = "Hiperglucemia refractaria."
         resultado["resumen_objetivo"] = "Fuera de rango objetivo"
-        resultado["conducta"] = "Obtener glicemia previa para confirmar persistencia."
+        resultado["conducta"] = (
+            "Dar aviso médico de guardia para definir conducta individualizada."
+        )
         resultado["requiere_recontrol"] = True
-        resultado["observacion"] = "Se necesita confirmar persistencia con una medición previa."
-        _asignar_control(actual)
-        return _marcar_visual(resultado, es_critico=False, nivel_visual="alerta")
+        resultado["algoritmo_activo"] = "Algoritmo 2"
+        resultado["algoritmo_sugerido"] = "Algoritmo 2"
+        resultado["tasa_algoritmo"] = obtener_tasa_algoritmo_2(actual)
+        resultado["clasificacion_protocolo"] = "HGR"
+        resultado["observacion"] = (
+            "Fallo del Algoritmo 2 en último escalón con glucemias > 360 mg/dL."
+        )
+        _asignar_control(actual, insulinizado=True)
+        return _marcar_visual(resultado, es_critico=True, nivel_visual="critico")
 
-    if actual > UMBRAL_ALERTA_ALTA and actual < Decimal("360"):
-        if es_hiperglucemia_persistente(
-            actual=actual,
-            previa=previa,
-            anterior=tercera_medicion,
-            infusion_activa=infusion_activa,
-        ):
-            resultado["estado"] = "Hiperglucemia Persistente"
-            resultado["subestado"] = (
-                "Tres controles consecutivos > 200 mg/dL y < 360 mg/dL "
-                "en el mismo escalón o en escalones contiguos"
-            )
-            resultado["mensaje"] = "Hiperglucemia persistente fuera del rango objetivo."
+    # ------------------------------------------------------
+    # ALGORITMO 1 + 3 mediciones >200 en mismo escalón = PERSISTENTE
+    # ------------------------------------------------------
+    if algoritmo_activo == 1 and es_hiperglucemia_persistente_algoritmo_1(
+        actual=actual,
+        previa=previa,
+        anterior=tercera_medicion,
+        infusion_activa=infusion_activa,
+    ):
+        resultado["estado"] = "Hiperglucemia Persistente"
+        resultado["subestado"] = (
+            "Tres mediciones consecutivas > 200 mg/dL en el mismo escalón durante Algoritmo 1"
+        )
+        resultado["mensaje"] = "Hiperglucemia persistente fuera del rango objetivo."
+        resultado["resumen_objetivo"] = "Fuera de rango objetivo"
+        resultado["conducta"] = "Dar aviso médico y continuar con Algoritmo 2."
+        resultado["requiere_recontrol"] = True
+        resultado["algoritmo_sugerido"] = "Algoritmo 2"
+        resultado["tasa_algoritmo"] = obtener_tasa_algoritmo_2(actual)
+        resultado["clasificacion_protocolo"] = "HGP"
+        resultado["observacion"] = (
+            "Fallo del Algoritmo 1: persistencia fuera de objetivo en el mismo escalón."
+        )
+        _asignar_control(actual, insulinizado=True)
+        return _marcar_visual(resultado, es_critico=True, nivel_visual="critico")
+
+    # ------------------------------------------------------
+    # >360 pero sin criterio completo aún
+    # ------------------------------------------------------
+    if actual > Decimal("360"):
+        if previa is None:
+            resultado["estado"] = "Hiperglucemia Marcada"
+            resultado["subestado"] = "Actual > 360 mg/dL con infusión activa"
+            resultado["mensaje"] = "Hiperglucemia marcada."
             resultado["resumen_objetivo"] = "Fuera de rango objetivo"
-            resultado["conducta"] = ('Dar aviso médico y continuar con Algoritmo 2')
+            resultado["conducta"] = "Obtener glicemia previa para evaluar evolución."
             resultado["requiere_recontrol"] = True
-            resultado["algoritmo_sugerido"] = "Algoritmo 2"
-            resultado["tasa_algoritmo"] = obtener_tasa_algoritmo_2(actual)
-            resultado["observacion"] = "Persistencia confirmada por criterios de escalón."
-            _asignar_control(actual)
-            return _marcar_visual(resultado, es_critico=True, nivel_visual="critico")
+            resultado["observacion"] = "Aún no hay segunda medición para definir conducta."
+            _asignar_control(actual, insulinizado=True)
+            return _marcar_visual(resultado, es_critico=False, nivel_visual="alerta")
 
-        if es_fallo_algoritmo_1(
-            actual=actual,
-            previa=previa,
-            infusion_activa=infusion_activa,
-            hubo_ajuste_insulina=hubo_ajuste_insulina,
-        ):
-            resultado["estado"] = "Hiperglucemia Refractaria"
-            resultado["subestado"] = "Mismo escalón fuera de objetivo pese a ajuste previo"
-            resultado["mensaje"] = "Probable fallo del Algoritmo 1."
-            resultado["resumen_objetivo"] = "Fuera de rango objetivo"
-            resultado["conducta"] = ( 'Dar aviso médico y continuar con Algoritmo 2.')
-            resultado["requiere_recontrol"] = True
-            resultado["algoritmo_sugerido"] = "Algoritmo 2"
-            resultado["tasa_algoritmo"] = obtener_tasa_algoritmo_2(actual)
-            resultado["observacion"] = "Persistencia fuera de objetivo pese a ajuste previo."
-            _asignar_control(actual)
-            return _marcar_visual(resultado, es_critico=True, nivel_visual="critico")
+        resultado["estado"] = "Hiperglucemia Severa"
+        resultado["subestado"] = "Glucemia > 360 mg/dL con infusión activa"
+        resultado["mensaje"] = "Hiperglucemia severa fuera del rango objetivo."
+        resultado["resumen_objetivo"] = "Fuera de rango objetivo"
+        resultado["conducta"] = "Requiere seguimiento estrecho y reevaluación inmediata."
+        resultado["requiere_recontrol"] = True
+        resultado["observacion"] = "Si repite > 360 mg/dL en Algoritmo 2, considerar refractaria."
+        _asignar_control(actual, insulinizado=True)
+        return _marcar_visual(resultado, es_critico=True, nivel_visual="critico")
 
-        if (
-            previa is not None
-            and previa > UMBRAL_ALERTA_ALTA
-            and previa < Decimal("360")
-        ):
-            resultado["estado"] = "Hiperglucemia"
+    # ------------------------------------------------------
+    # >200 y <360 con infusión activa
+    # ------------------------------------------------------
+    if actual > UMBRAL_ALERTA_ALTA and actual <= Decimal("360"):
+        if previa is not None and tercera_medicion is None:
+            resultado["estado"] = "Hiperglucemia Fuera de Objetivo"
             resultado["subestado"] = (
-                "Dos controles consecutivos > 200 mg/dL, aún sin criterio de persistencia"
+                "Dos mediciones consecutivas > 200 mg/dL con infusión activa"
             )
             resultado["mensaje"] = "Hiperglucemia fuera del rango objetivo."
             resultado["resumen_objetivo"] = "Fuera de rango objetivo"
-            resultado["conducta"] = "Obtener tercera medición para evaluar persistencia por escalón."
+            resultado["conducta"] = "Obtener tercera medición para evaluar persistencia."
             resultado["requiere_recontrol"] = True
             resultado["proximo_control"] = "Obtener tercera medición"
             resultado["comentario_control"] = (
-                "Evaluar si las 3 mediciones permanecen > 200 mg/dL y < 360 mg/dL "
-                "en el mismo escalón o en escalones contiguos."
+                "Evaluar si las 3 mediciones permanecen > 200 mg/dL en el mismo escalón."
             )
-            resultado["observacion"] = "Aún no cumple criterios completos de persistencia."
+            resultado["observacion"] = "Aún no cumple criterios completos de hiperglucemia persistente."
             return _marcar_visual(resultado, es_critico=False, nivel_visual="alerta")
 
         resultado["estado"] = "Hiperglucemia Marcada"
@@ -356,7 +280,7 @@ def evaluar_hiperglucemia(
         resultado["conducta"] = "Requiere recontrol y evaluación de tendencia."
         resultado["requiere_recontrol"] = True
         resultado["observacion"] = "Valor fuera de rango con necesidad de seguimiento cercano."
-        _asignar_control(actual)
+        _asignar_control(actual, insulinizado=True)
         return _marcar_visual(resultado, es_critico=False, nivel_visual="alerta")
 
     return None

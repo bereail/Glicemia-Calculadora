@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const previasBox = document.getElementById("previas_box");
   const anteriorContainer = document.getElementById("anterior_container");
+  const algoritmoContainer = document.getElementById("algoritmo_container");
 
   const labelPreviaHint = document.getElementById("label_previa_hint");
 
@@ -20,7 +21,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const arrowAnteriorPrevia = document.getElementById("arrow-anterior-previa");
   const arrowPreviaActual = document.getElementById("arrow-previa-actual");
 
-  // TABLA DE ALGORITMOS
   const btnTablaAlgoritmos = document.getElementById("btn-tabla-algoritmos");
   const modalTabla = document.getElementById("modal-tabla");
   const cerrarModalTabla = document.getElementById("cerrar-modal-tabla");
@@ -49,6 +49,15 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!el) return;
     el.classList.add("hidden");
     el.style.display = "none";
+  }
+
+  function seleccionarAlgoritmo1PorDefecto() {
+    const algoritmo1 = document.querySelector(
+      'input[name="algoritmo_activo"][value="1"]'
+    );
+    if (algoritmo1) {
+      algoritmo1.checked = true;
+    }
   }
 
   function abrirModalTabla() {
@@ -166,7 +175,9 @@ document.addEventListener("DOMContentLoaded", function () {
       ocultar(helperPreviaContainer);
       ocultar(previasBox);
       ocultar(anteriorContainer);
+      ocultar(algoritmoContainer);
       ocultar(secuenciaMediciones);
+      seleccionarAlgoritmo1PorDefecto();
       return;
     }
 
@@ -176,7 +187,9 @@ document.addEventListener("DOMContentLoaded", function () {
       ocultar(helperPreviaContainer);
       ocultar(previasBox);
       ocultar(anteriorContainer);
+      ocultar(algoritmoContainer);
       ocultar(secuenciaMediciones);
+      seleccionarAlgoritmo1PorDefecto();
       return;
     }
 
@@ -187,7 +200,9 @@ document.addEventListener("DOMContentLoaded", function () {
       ocultar(helperPreviaContainer);
       ocultar(previasBox);
       ocultar(anteriorContainer);
+      ocultar(algoritmoContainer);
       ocultar(secuenciaMediciones);
+      seleccionarAlgoritmo1PorDefecto();
       return;
     }
 
@@ -200,6 +215,13 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       if (labelPreviaHint) {
         labelPreviaHint.textContent = "(obligatoria)";
+      }
+
+      if (actual > 200) {
+        mostrar(algoritmoContainer);
+      } else {
+        ocultar(algoritmoContainer);
+        seleccionarAlgoritmo1PorDefecto();
       }
 
       if (actual > 200 && actual < 360) {
@@ -220,7 +242,9 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       ocultar(anteriorContainer);
+      ocultar(algoritmoContainer);
       ocultar(secuenciaMediciones);
+      seleccionarAlgoritmo1PorDefecto();
       secuenciaDosMediciones(false);
     }
   }
@@ -249,30 +273,6 @@ document.addEventListener("DOMContentLoaded", function () {
   actualizarFormulario();
 });
 
-document.addEventListener("click", function (e) {
-  const link = e.target.closest(".link-algoritmo");
-  if (!link) return;
-
-  const algoritmo = link.dataset.algoritmo;
-  const modal = document.getElementById("modal-algoritmo");
-  const img = document.getElementById("img-algoritmo");
-
-  if (!modal || !img) return;
-
-  img.src = `/static/calculadora/img/algoritmo_${algoritmo}.png`;
-  img.alt = `Algoritmo ${algoritmo}`;
-  modal.classList.add("active");
-});
-
-document.addEventListener("click", function (e) {
-  if (e.target.matches("#modal-algoritmo, #cerrar-modal-algoritmo")) {
-    const modal = document.getElementById("modal-algoritmo");
-    if (modal) {
-      modal.classList.remove("active");
-    }
-  }
-});
-
 document.getElementById("form-glicemia")?.addEventListener("keydown", function (e) {
   if (e.key === "Enter") {
     const tag = document.activeElement.tagName.toLowerCase();
@@ -285,7 +285,6 @@ document.getElementById("form-glicemia")?.addEventListener("keydown", function (
 
 document.addEventListener("DOMContentLoaded", function () {
   const body = document.body;
-
   const modalResultado = document.getElementById("modal-resultado");
   const cerrarModalResultado = document.getElementById("cerrar-modal-resultado");
 
@@ -307,7 +306,7 @@ document.addEventListener("DOMContentLoaded", function () {
     cerrarModalResultado.addEventListener("click", cerrarModalResultadoFn);
   }
 
-  document.querySelectorAll('[data-close-modal="resultado"]').forEach((el) => {
+  document.querySelectorAll("[data-close-resultado]").forEach((el) => {
     el.addEventListener("click", cerrarModalResultadoFn);
   });
 
@@ -317,22 +316,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // abrir automáticamente si el backend devolvió resultado
   const bodyResultado = modalResultado?.querySelector(".modal-resultado__body");
   if (bodyResultado && bodyResultado.textContent.trim() !== "") {
     abrirModalResultado();
-  }
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-  const form = document.getElementById("form-control-glicemia");
-
-  if (form) {
-    form.addEventListener("keydown", function (e) {
-      if (e.key === "Enter" && e.target.tagName !== "TEXTAREA") {
-        e.preventDefault();
-        form.requestSubmit();
-      }
-    });
   }
 });

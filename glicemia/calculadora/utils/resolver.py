@@ -10,6 +10,7 @@ def resolver_glucemia(
     infusion_activa=False,
     hubo_ajuste_insulina=False,
     tercera_medicion=None,
+    algoritmo_activo=1,
     horas_desde_inicio=None,
     estable=False,
 ):
@@ -19,8 +20,8 @@ def resolver_glucemia(
     hubo_ajuste_insulina = _a_bool(hubo_ajuste_insulina)
     estable = _a_bool(estable)
     tercera_medicion = _a_decimal(tercera_medicion, permitir_none=True)
+    algoritmo_activo = int(algoritmo_activo or 1)
 
-    # 1) Hipoglucemia
     resultado = evaluar_hipoglucemia(
         actual=actual,
         previa=previa,
@@ -29,7 +30,6 @@ def resolver_glucemia(
     if resultado is not None:
         return _aplicar_tendencia(resultado, actual, previa)
 
-    # 2) Rango / objetivo
     resultado = evaluar_rango_70_180(
         actual=actual,
         previa=previa,
@@ -38,18 +38,17 @@ def resolver_glucemia(
     if resultado is not None:
         return _aplicar_tendencia(resultado, actual, previa)
 
-    # 3) Hiperglucemia
     resultado = evaluar_hiperglucemia(
         actual=actual,
         previa=previa,
         infusion_activa=infusion_activa,
         hubo_ajuste_insulina=hubo_ajuste_insulina,
         tercera_medicion=tercera_medicion,
+        algoritmo_activo=algoritmo_activo,
     )
     if resultado is not None:
         return _aplicar_tendencia(resultado, actual, previa)
 
-    # 4) Fallback
     resultado = _resultado_base()
     resultado["estado"] = "Sin Clasificación"
     resultado["subestado"] = "No se pudo clasificar el caso"
@@ -65,6 +64,7 @@ def resolver_flujo_glucemia(
     previa=None,
     hubo_ajuste_insulina=False,
     tercera_medicion=None,
+    algoritmo_activo=1,
     horas_desde_inicio=None,
     estable=False,
 ):
@@ -74,6 +74,7 @@ def resolver_flujo_glucemia(
         infusion_activa=insulinizado,
         hubo_ajuste_insulina=hubo_ajuste_insulina,
         tercera_medicion=tercera_medicion,
+        algoritmo_activo=algoritmo_activo,
         horas_desde_inicio=horas_desde_inicio,
         estable=estable,
     )
