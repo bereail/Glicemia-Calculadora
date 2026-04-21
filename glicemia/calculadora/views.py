@@ -23,7 +23,6 @@ from .utils.ui.presentation import (
 # =========================================================
 # PERMISOS
 # =========================================================
-
 def tiene_acceso_home(user):
     return user.is_authenticated and (
         user.is_superuser
@@ -35,7 +34,6 @@ def tiene_acceso_home(user):
 # =========================================================
 # GUARDADO
 # =========================================================
-
 def _guardar_medicion(request, cleaned_data, resultado):
     if not request.user.is_authenticated:
         return None
@@ -59,6 +57,8 @@ def _guardar_medicion(request, cleaned_data, resultado):
             else None
         ),
         modo=cleaned_data.get("modo") or "seguimiento",
+        horas_desde_inicio=cleaned_data.get("horas_desde_inicio"),
+        estable=_a_bool(cleaned_data.get("estable")),
         estado=texto_seguro(resultado.get("estado")),
         subestado=texto_seguro(resultado.get("subestado")),
         clase=clase,
@@ -80,6 +80,10 @@ def _guardar_medicion(request, cleaned_data, resultado):
         bolo_ui=texto_seguro(resultado.get("bolo_inicial")),
         tasa_inicial_ui_h=texto_seguro(resultado.get("tasa_inicial")),
         tasa_algoritmo=texto_seguro(resultado.get("tasa_algoritmo")),
+        escalon_algoritmo=texto_seguro(resultado.get("escalon_algoritmo")),
+        escalamiento_clinico=texto_seguro(
+            resultado.get("escalamiento_clinico") or "normal"
+        ),
         requiere_recontrol=bool(resultado.get("requiere_recontrol")),
         suspender_insulina=bool(resultado.get("suspender_insulina")),
         administrar_dextrosa=bool(resultado.get("administrar_dextrosa")),
@@ -96,7 +100,6 @@ def _guardar_medicion(request, cleaned_data, resultado):
 # =========================================================
 # VIEW PRINCIPAL
 # =========================================================
-
 @login_required
 @user_passes_test(tiene_acceso_home, login_url="/login/")
 def control_glicemia(request):
@@ -113,6 +116,8 @@ def control_glicemia(request):
             hubo_ajuste_insulina = form.cleaned_data.get("hubo_ajuste_insulina")
             tercera_medicion = form.cleaned_data.get("tercera_medicion")
             algoritmo_activo = form.cleaned_data.get("algoritmo_activo", "1")
+            horas_desde_inicio = form.cleaned_data.get("horas_desde_inicio")
+            estable = form.cleaned_data.get("estable")
 
             resultado = evaluar_glucemia_service(
                 actual=actual,
@@ -121,6 +126,8 @@ def control_glicemia(request):
                 hubo_ajuste_insulina=hubo_ajuste_insulina,
                 tercera_medicion=tercera_medicion,
                 algoritmo_activo=algoritmo_activo,
+                horas_desde_inicio=horas_desde_inicio,
+                estable=estable,
             )
 
             resultado = enriquecer_resultado_ui(
@@ -129,8 +136,6 @@ def control_glicemia(request):
                 infusion_activa=_a_bool(infusion_activa),
             )
 
-            # necesario para los templates:
-            # si el paciente ya está insulinizado, ocultar solo "Bolo inicial"
             resultado["infusion_activa"] = _a_bool(infusion_activa)
 
             estado_lower = str(resultado.get("estado") or "").lower()
@@ -363,7 +368,13 @@ def exportar_historial_pdf(request):
     from reportlab.lib.pagesizes import A4, landscape
     from reportlab.lib.styles import getSampleStyleSheet
     from reportlab.lib.units import mm
-    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    from reportlab.platypus import (
+        Paragraph,
+        SimpleDocTemplate,
+        Spacer,
+        Table,
+        TableStyle,
+    )
 
     mediciones, usuario, estado, clase, periodo = _filtrar_mediciones_desde_request(
         request
@@ -419,7 +430,10 @@ def exportar_historial_pdf(request):
 
     table = Table(
         data,
-        colWidths=[28 * mm, 28 * mm, 18 * mm, 18 * mm, 18 * mm, 34 * mm, 24 * mm, 60 * mm, 24 * mm],
+        colWidths=[
+            28 * mm, 28 * mm, 18 * mm, 18 * mm, 18 * mm,
+            34 * mm, 24 * mm, 60 * mm, 24 * mm
+        ],
     )
 
     table.setStyle(

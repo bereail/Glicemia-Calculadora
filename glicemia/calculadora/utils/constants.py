@@ -1,16 +1,22 @@
 from decimal import Decimal
 
+# Hipoglucemia
 UMBRAL_HIPO = Decimal("70")
-LIMITE_ZONA_INTERMEDIA = Decimal("120")
 
-# Objetivo en paciente con infusión activa
+# Suspensión de infusión
+LIMITE_SUSPENDER_INFUSION = Decimal("120")
+
+# Objetivo con infusión activa
 OBJETIVO_MIN_INFUSION = Decimal("140")
 OBJETIVO_MAX_INFUSION = Decimal("200")
 
-# Hiperglucemia sin infusión
+# Hiperglucemia sin infusión / inicio de insulinización
 UMBRAL_HIPER = Decimal("180")
 
-# Cortes de alerta / severidad
-UMBRAL_ALERTA_ALTA = Decimal("200")
-UMBRAL_MUY_ALTA = Decimal("300")
-UMBRAL_SEVERA = Decimal("400")
+# Fuera de objetivo alto en insulinizado
+UMBRAL_FUERA_OBJETIVO_ALTO = Decimal("200")
+
+# Umbrales de severidad / control
+UMBRAL_CONTROL_2H = Decimal("300")
+UMBRAL_REFRACTARIA = Decimal("360")
+UMBRAL_CONTROL_1H = Decimal("400")

@@ -4,12 +4,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const hipoHelperBox = document.getElementById("hipo_helper_box");
   const bloqueContexto = document.getElementById("bloque_contexto");
+
   const helperPreviaContainer = document.getElementById("helper_previa_container");
   const helperPrevia = document.getElementById("helper_previa");
 
   const previasBox = document.getElementById("previas_box");
   const anteriorContainer = document.getElementById("anterior_container");
   const algoritmoContainer = document.getElementById("algoritmo_container");
+  const ajusteInsulinaContainer = document.getElementById("ajuste_insulina_container");
+  const horasDesdeInicioContainer = document.getElementById("horas_desde_inicio_container");
+  const estableContainer = document.getElementById("estable_container");
+
+  const glicemiaPreviaInput = document.getElementById("id_glicemia_previa");
+  const terceraMedicionInput = document.getElementById("id_tercera_medicion");
+  const horasDesdeInicioInput = document.getElementById("id_horas_desde_inicio");
 
   const labelPreviaHint = document.getElementById("label_previa_hint");
 
@@ -17,25 +25,55 @@ document.addEventListener("DOMContentLoaded", function () {
   const stepAnterior = document.getElementById("step-anterior");
   const stepPrevia = document.getElementById("step-previa");
   const stepActual = document.getElementById("step-actual");
-
   const arrowAnteriorPrevia = document.getElementById("arrow-anterior-previa");
   const arrowPreviaActual = document.getElementById("arrow-previa-actual");
 
   const btnTablaAlgoritmos = document.getElementById("btn-tabla-algoritmos");
   const modalTabla = document.getElementById("modal-tabla");
-  const cerrarModalTabla = document.getElementById("cerrar-modal-tabla");
+  const cerrarModalTablaBackdrop = document.getElementById("cerrar-modal-tabla");
   const btnCerrarTabla = document.getElementById("btn-cerrar-tabla");
 
-  function obtenerActual() {
+  const modalResultado = document.getElementById("modal-resultado");
+  const cerrarModalResultado = document.getElementById("cerrar-modal-resultado");
+
+  const ctx = {
+    hipoHelperBox,
+    bloqueContextoSecundario: bloqueContexto,
+    helperPreviaContainer,
+    helperPrevia,
+    previasBox,
+    anteriorContainer,
+    algoritmoContainer,
+    ajusteInsulinaContainer,
+    horasDesdeInicioContainer,
+    estableContainer,
+    secuenciaMediciones,
+    glicemiaPrevia: glicemiaPreviaInput,
+    terceraMedicionInput,
+    horasDesdeInicioInput,
+
+    getActualValue,
+    getInfusionActiva,
+    mostrar,
+    ocultar,
+    seleccionarAlgoritmo1PorDefecto,
+    resetearFlujoAvanzado,
+    secuenciaDosMediciones,
+    secuenciaTresMediciones,
+    limpiarRadios,
+    limpiarInput,
+  };
+
+  function getActualValue() {
     const valor = parseFloat(inputActual?.value);
     return Number.isFinite(valor) ? valor : null;
   }
 
-  function infusionActiva() {
+  function getInfusionActiva() {
     const checked = document.querySelector('input[name="infusion_activa"]:checked');
     if (!checked) return null;
 
-    const valor = checked.value.toLowerCase();
+    const valor = String(checked.value).trim().toLowerCase();
     return valor === "true" || valor === "1" || valor === "si" || valor === "sí";
   }
 
@@ -49,6 +87,16 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!el) return;
     el.classList.add("hidden");
     el.style.display = "none";
+  }
+
+  function limpiarInput(input) {
+    if (input) input.value = "";
+  }
+
+  function limpiarRadios(name) {
+    document.querySelectorAll(`input[name="${name}"]`).forEach((radio) => {
+      radio.checked = false;
+    });
   }
 
   function seleccionarAlgoritmo1PorDefecto() {
@@ -67,10 +115,24 @@ document.addEventListener("DOMContentLoaded", function () {
     document.body.classList.add("modal-open");
   }
 
-  function cerrarModal() {
+  function cerrarModalTabla() {
     if (!modalTabla) return;
     modalTabla.classList.add("hidden");
     modalTabla.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  }
+
+  function abrirModalResultado() {
+    if (!modalResultado) return;
+    modalResultado.classList.remove("hidden");
+    modalResultado.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+  }
+
+  function cerrarModalResultadoFn() {
+    if (!modalResultado) return;
+    modalResultado.classList.add("hidden");
+    modalResultado.setAttribute("aria-hidden", "true");
     document.body.classList.remove("modal-open");
   }
 
@@ -163,9 +225,26 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  function resetearFlujoAvanzado() {
+    ocultar(previasBox);
+    ocultar(anteriorContainer);
+    ocultar(algoritmoContainer);
+    ocultar(ajusteInsulinaContainer);
+    ocultar(horasDesdeInicioContainer);
+    ocultar(estableContainer);
+    ocultar(secuenciaMediciones);
+
+    limpiarInput(glicemiaPreviaInput);
+    limpiarInput(terceraMedicionInput);
+    limpiarInput(horasDesdeInicioInput);
+    limpiarRadios("hubo_ajuste_insulina");
+    limpiarRadios("estable");
+    seleccionarAlgoritmo1PorDefecto();
+  }
+
   function actualizarFormulario() {
-    const actual = obtenerActual();
-    const infusion = infusionActiva();
+    const actual = getActualValue();
+    const infusion = getInfusionActiva();
 
     resetSecuencia();
 
@@ -173,23 +252,15 @@ document.addEventListener("DOMContentLoaded", function () {
       ocultar(hipoHelperBox);
       ocultar(bloqueContexto);
       ocultar(helperPreviaContainer);
-      ocultar(previasBox);
-      ocultar(anteriorContainer);
-      ocultar(algoritmoContainer);
-      ocultar(secuenciaMediciones);
-      seleccionarAlgoritmo1PorDefecto();
+      resetearFlujoAvanzado();
       return;
     }
 
-    if (actual <= 70) {
+    if (window.GlicemiaHipo?.esHipoglucemiaActual(ctx)) {
       mostrar(hipoHelperBox);
       ocultar(bloqueContexto);
-      ocultar(helperPreviaContainer);
-      ocultar(previasBox);
-      ocultar(anteriorContainer);
-      ocultar(algoritmoContainer);
-      ocultar(secuenciaMediciones);
-      seleccionarAlgoritmo1PorDefecto();
+      window.GlicemiaHipo.aplicarModoHipoglucemia(ctx);
+      window.GlicemiaHipo.actualizarHelperHipoglucemia(ctx);
       return;
     }
 
@@ -198,11 +269,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (infusion === null) {
       ocultar(helperPreviaContainer);
-      ocultar(previasBox);
-      ocultar(anteriorContainer);
-      ocultar(algoritmoContainer);
-      ocultar(secuenciaMediciones);
-      seleccionarAlgoritmo1PorDefecto();
+      resetearFlujoAvanzado();
       return;
     }
 
@@ -211,97 +278,72 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (infusion) {
       if (helperPrevia) {
-        helperPrevia.textContent = "La glicemia previa es obligatoria para evaluar tendencia.";
+        helperPrevia.textContent =
+          "Con infusión activa, la glicemia previa es obligatoria para evaluar tendencia.";
       }
+
       if (labelPreviaHint) {
         labelPreviaHint.textContent = "(obligatoria)";
       }
 
-      if (actual > 200) {
-        mostrar(algoritmoContainer);
+      if (window.GlicemiaHiper) {
+        window.GlicemiaHiper.aplicarModoHiperglucemia(ctx);
       } else {
-        ocultar(algoritmoContainer);
-        seleccionarAlgoritmo1PorDefecto();
+        // fallback mínimo
+        if (actual >= 120) mostrar(algoritmoContainer);
+        if (actual > 200 && actual < 360) {
+          mostrar(secuenciaMediciones);
+          mostrar(anteriorContainer);
+          secuenciaTresMediciones();
+        } else {
+          ocultar(secuenciaMediciones);
+          ocultar(anteriorContainer);
+          secuenciaDosMediciones(true);
+        }
       }
 
-      if (actual > 200 && actual < 360) {
-        mostrar(secuenciaMediciones);
-        mostrar(anteriorContainer);
-        secuenciaTresMediciones();
-      } else {
-        ocultar(secuenciaMediciones);
-        ocultar(anteriorContainer);
-        secuenciaDosMediciones(true);
-      }
-    } else {
-      if (helperPrevia) {
-        helperPrevia.textContent = "La glicemia previa ayuda a evaluar tendencia.";
-      }
-      if (labelPreviaHint) {
-        labelPreviaHint.textContent = "(opcional)";
-      }
-
-      ocultar(anteriorContainer);
-      ocultar(algoritmoContainer);
-      ocultar(secuenciaMediciones);
-      seleccionarAlgoritmo1PorDefecto();
-      secuenciaDosMediciones(false);
+      return;
     }
+
+    // Sin infusión
+    if (helperPrevia) {
+      helperPrevia.textContent = "La glicemia previa ayuda a evaluar tendencia.";
+    }
+
+    if (labelPreviaHint) {
+      labelPreviaHint.textContent = "(opcional)";
+    }
+
+    ocultar(anteriorContainer);
+    ocultar(algoritmoContainer);
+    ocultar(ajusteInsulinaContainer);
+    ocultar(horasDesdeInicioContainer);
+    ocultar(estableContainer);
+    ocultar(secuenciaMediciones);
+
+    limpiarInput(terceraMedicionInput);
+    limpiarInput(horasDesdeInicioInput);
+    limpiarRadios("hubo_ajuste_insulina");
+    limpiarRadios("estable");
+    seleccionarAlgoritmo1PorDefecto();
+
+    secuenciaDosMediciones(false);
   }
 
+  // Modal tabla
   if (btnTablaAlgoritmos) {
     btnTablaAlgoritmos.addEventListener("click", abrirModalTabla);
   }
 
-  if (cerrarModalTabla) {
-    cerrarModalTabla.addEventListener("click", cerrarModal);
+  if (cerrarModalTablaBackdrop) {
+    cerrarModalTablaBackdrop.addEventListener("click", cerrarModalTabla);
   }
 
   if (btnCerrarTabla) {
-    btnCerrarTabla.addEventListener("click", cerrarModal);
+    btnCerrarTabla.addEventListener("click", cerrarModalTabla);
   }
 
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape") {
-      cerrarModal();
-    }
-  });
-
-  inputActual?.addEventListener("input", actualizarFormulario);
-  radiosInfusion.forEach((r) => r.addEventListener("change", actualizarFormulario));
-
-  actualizarFormulario();
-});
-
-document.getElementById("form-glicemia")?.addEventListener("keydown", function (e) {
-  if (e.key === "Enter") {
-    const tag = document.activeElement.tagName.toLowerCase();
-    if (tag === "textarea") return;
-
-    e.preventDefault();
-    this.requestSubmit();
-  }
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-  const body = document.body;
-  const modalResultado = document.getElementById("modal-resultado");
-  const cerrarModalResultado = document.getElementById("cerrar-modal-resultado");
-
-  function abrirModalResultado() {
-    if (!modalResultado) return;
-    modalResultado.classList.remove("hidden");
-    modalResultado.setAttribute("aria-hidden", "false");
-    body.classList.add("modal-open");
-  }
-
-  function cerrarModalResultadoFn() {
-    if (!modalResultado) return;
-    modalResultado.classList.add("hidden");
-    modalResultado.setAttribute("aria-hidden", "true");
-    body.classList.remove("modal-open");
-  }
-
+  // Modal resultado
   if (cerrarModalResultado) {
     cerrarModalResultado.addEventListener("click", cerrarModalResultadoFn);
   }
@@ -311,13 +353,38 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && modalResultado && !modalResultado.classList.contains("hidden")) {
-      cerrarModalResultadoFn();
+    if (e.key === "Escape") {
+      if (modalTabla && !modalTabla.classList.contains("hidden")) {
+        cerrarModalTabla();
+      }
+
+      if (modalResultado && !modalResultado.classList.contains("hidden")) {
+        cerrarModalResultadoFn();
+      }
     }
   });
 
+  // Enter envía formulario
+  document.getElementById("form-glicemia")?.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      const tag = document.activeElement.tagName.toLowerCase();
+      if (tag === "textarea") return;
+      e.preventDefault();
+      this.requestSubmit();
+    }
+  });
+
+  // Eventos
+  inputActual?.addEventListener("input", actualizarFormulario);
+  radiosInfusion.forEach((radio) => {
+    radio.addEventListener("change", actualizarFormulario);
+  });
+
+  // Abrir modal resultado si hay contenido
   const bodyResultado = modalResultado?.querySelector(".modal-resultado__body");
   if (bodyResultado && bodyResultado.textContent.trim() !== "") {
     abrirModalResultado();
   }
+
+  actualizarFormulario();
 });

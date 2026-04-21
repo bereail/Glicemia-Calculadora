@@ -31,7 +31,7 @@ class GlucemiaForm(forms.Form):
     )
 
     infusion_activa = forms.ChoiceField(
-        label="¿Infusión activa de Insulina?",
+        label="¿Infusión activa de insulina?",
         required=False,
         choices=SI_NO_CHOICES,
         widget=forms.RadioSelect(attrs={"class": "radio-inline"}),
@@ -78,7 +78,7 @@ class GlucemiaForm(forms.Form):
     )
 
     hubo_ajuste_insulina = forms.ChoiceField(
-        label="¿Hubo ajuste de insulina?",
+        label="¿Hubo ajuste de +0,5 UI/h?",
         required=False,
         choices=SI_NO_CHOICES,
         widget=forms.RadioSelect(attrs={"class": "radio-inline"}),
@@ -113,6 +113,31 @@ class GlucemiaForm(forms.Form):
         ),
     )
 
+    horas_desde_inicio = forms.IntegerField(
+        label="Horas desde inicio de insulinización",
+        required=False,
+        min_value=0,
+        max_value=999,
+        widget=forms.NumberInput(
+            attrs={
+                "class": "input-control",
+                "placeholder": "Ej: 26",
+                "id": "id_horas_desde_inicio",
+                "inputmode": "numeric",
+                "min": "0",
+                "max": "999",
+                "step": "1",
+            }
+        ),
+    )
+
+    estable = forms.ChoiceField(
+        label="¿Permanece estable?",
+        required=False,
+        choices=SI_NO_CHOICES,
+        widget=forms.RadioSelect(attrs={"class": "radio-inline"}),
+    )
+
     def clean(self):
         cleaned_data = super().clean()
 
@@ -128,18 +153,24 @@ class GlucemiaForm(forms.Form):
         hubo_ajuste = None if ajuste_raw in (None, "") else ajuste_raw == "true"
         cleaned_data["hubo_ajuste_insulina"] = hubo_ajuste
 
+        estable_raw = cleaned_data.get("estable")
+        estable = None if estable_raw in (None, "") else estable_raw == "true"
+        cleaned_data["estable"] = estable
+
         algoritmo_activo = cleaned_data.get("algoritmo_activo") or "1"
         cleaned_data["algoritmo_activo"] = algoritmo_activo
 
         if actual is None:
             return cleaned_data
 
-        # Hipoglucemia: no pedir más contexto
-        if actual <= 70:
+        # Hipoglucemia: no pedir más contexto para clasificar
+        if actual < 70:
             cleaned_data["glicemia_previa"] = None
             cleaned_data["tercera_medicion"] = None
             cleaned_data["hubo_ajuste_insulina"] = None
             cleaned_data["algoritmo_activo"] = "1"
+            cleaned_data["horas_desde_inicio"] = None
+            cleaned_data["estable"] = None
             return cleaned_data
 
         if infusion_activa is None:
@@ -158,22 +189,23 @@ class GlucemiaForm(forms.Form):
                 "El ajuste de insulina solo aplica si hay infusión activa.",
             )
 
+        # Si hay infusión, la previa es obligatoria
         if infusion_activa and previa is None:
             self.add_error(
                 "glicemia_previa",
                 "La glicemia previa es obligatoria si hay infusión activa.",
             )
 
-        # El algoritmo solo tiene sentido mostrarlo/usarlo si hay infusión y glucemia > 200
-        mostrar_algoritmo = infusion_activa and actual > 200
-
-        if not mostrar_algoritmo:
+        # Si no hay infusión, limpiar campos que no aplican clínicamente
+        if not infusion_activa:
+            cleaned_data["hubo_ajuste_insulina"] = None
             cleaned_data["algoritmo_activo"] = "1"
+            cleaned_data["horas_desde_inicio"] = None
+            cleaned_data["estable"] = None
 
-        # Si está en algoritmo 1 o 2 y quiere evaluar persistencia por 3 mediciones,
-        # necesita tercera medición cuando corresponda
-        if mostrar_algoritmo and previa is not None and actual > 200 and tercera is None:
-            # no bloquea siempre; solo deja el dato disponible para UI/lógica posterior
-            pass
+        # El algoritmo se usa clínicamente con infusión activa.
+        # Para cálculo de tasa, recién importa desde 120 mg/dL.
+        if infusion_activa and actual < 120:
+            cleaned_data["algoritmo_activo"] = "1"
 
         return cleaned_data

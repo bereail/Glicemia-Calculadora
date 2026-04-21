@@ -30,7 +30,7 @@
             Conducta inmediata
           </div>
           <div class="hipo-header__conducta-resumen-value">
-            Suspender insulina
+            {{ resultado.conducta|default:"Suspender insulina y corregir según protocolo." }}
           </div>
         </div>
       </div>
@@ -48,12 +48,18 @@
 
           <div class="hipo-hero__content">
             <div class="hipo-hero__item">
-              Administrar 50 ml de dextrosa al 25%
+              {{ resultado.conducta|default:"Suspender insulina y administrar dextrosa." }}
             </div>
 
+            {% if resultado.conducta_extra %}
             <div class="hipo-hero__subitem">
-              Evaluar avisar al médico
+              {{ resultado.conducta_extra }}
             </div>
+            {% elif resultado.observacion %}
+            <div class="hipo-hero__subitem">
+              {{ resultado.observacion }}
+            </div>
+            {% endif %}
           </div>
         </div>
 

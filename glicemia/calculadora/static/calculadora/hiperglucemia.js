@@ -1,73 +1,84 @@
-window.GlicemiaHipo = (function () {
-  function esHipoglucemiaActual(ctx) {
+window.GlicemiaHiper = (function () {
+  function requiereAlgoritmo(ctx) {
     const actual = ctx.getActualValue();
-    return !isNaN(actual) && actual <= 70;
+    const infusion = ctx.getInfusionActiva();
+    return infusion === true && Number.isFinite(actual) && actual >= 120;
   }
 
-  function aplicarModoHipoglucemia(ctx) {
-    // Ocultar flujo de hiperglucemia persistente
-    ctx.resetearFlujoHiperglucemiaPersistente();
+  function requiereTerceraMedicion(ctx) {
+    const actual = ctx.getActualValue();
+    const infusion = ctx.getInfusionActiva();
+    return infusion === true && Number.isFinite(actual) && actual > 200 && actual < 360;
+  }
 
-    // La previa queda opcional; si está vacía, se oculta para no cargar pantalla
-    const previaTieneValor =
-      ctx.glucemiaPrevia && ctx.glucemiaPrevia.value.trim() !== "";
-    if (!previaTieneValor) {
-      ctx.ocultarPrevia();
+  function requiereAjuste(ctx) {
+    const actual = ctx.getActualValue();
+    const infusion = ctx.getInfusionActiva();
+    return infusion === true && Number.isFinite(actual) && actual > 200;
+  }
+
+  function requiereContextoControl(ctx) {
+    const actual = ctx.getActualValue();
+    const infusion = ctx.getInfusionActiva();
+    return infusion === true && Number.isFinite(actual) && actual >= 140;
+  }
+
+  function aplicarModoHiperglucemia(ctx) {
+    const actual = ctx.getActualValue();
+    const infusion = ctx.getInfusionActiva();
+
+    if (infusion !== true || !Number.isFinite(actual)) {
+      return;
     }
-  }
 
-  function actualizarHelperHipoglucemia(ctx) {
-    if (!ctx.helperPrevia) return;
+    ctx.mostrar(ctx.helperPreviaContainer);
+    ctx.mostrar(ctx.previasBox);
 
-    const actual = ctx.getActualValue();
-
-    if (isNaN(actual)) return;
-
-    if (actual <= 70) {
+    if (ctx.helperPrevia) {
       ctx.helperPrevia.textContent =
-        "Hipoglucemia: la glicemia previa e infusión quedan opcionales para este flujo.";
-      ctx.helperPrevia.classList.remove("helper-warning");
+        "Con infusión activa, la glicemia previa es obligatoria para evaluar tendencia.";
+    }
+
+    if (requiereAlgoritmo(ctx)) {
+      ctx.mostrar(ctx.algoritmoContainer);
+    } else {
+      ctx.ocultar(ctx.algoritmoContainer);
+      ctx.seleccionarAlgoritmo1PorDefecto();
+    }
+
+    if (requiereTerceraMedicion(ctx)) {
+      ctx.mostrar(ctx.secuenciaMediciones);
+      ctx.mostrar(ctx.anteriorContainer);
+      ctx.secuenciaTresMediciones();
+    } else {
+      ctx.ocultar(ctx.secuenciaMediciones);
+      ctx.ocultar(ctx.anteriorContainer);
+      ctx.secuenciaDosMediciones(true);
+    }
+
+    if (requiereAjuste(ctx)) {
+      ctx.mostrar(ctx.ajusteInsulinaContainer);
+    } else {
+      ctx.ocultar(ctx.ajusteInsulinaContainer);
+      ctx.limpiarRadios("hubo_ajuste_insulina");
+    }
+
+    if (requiereContextoControl(ctx)) {
+      ctx.mostrar(ctx.horasDesdeInicioContainer);
+      ctx.mostrar(ctx.estableContainer);
+    } else {
+      ctx.ocultar(ctx.horasDesdeInicioContainer);
+      ctx.ocultar(ctx.estableContainer);
+      ctx.limpiarInput(ctx.horasDesdeInicioInput);
+      ctx.limpiarRadios("estable");
     }
   }
 
   return {
-    esHipoglucemiaActual,
-    aplicarModoHipoglucemia,
-    actualizarHelperHipoglucemia,
+    requiereAlgoritmo,
+    requiereTerceraMedicion,
+    requiereAjuste,
+    requiereContextoControl,
+    aplicarModoHiperglucemia,
   };
 })();
-
-document.addEventListener("DOMContentLoaded", function () {
-  const btnAbrirTabla = document.getElementById("btn-tabla-algoritmos");
-  const modalTabla = document.getElementById("modal-tabla");
-  const btnCerrarTabla = document.getElementById("btn-cerrar-tabla");
-  const backdropTabla = document.getElementById("cerrar-modal-tabla");
-
-  if (btnAbrirTabla && modalTabla) {
-    btnAbrirTabla.addEventListener("click", function () {
-      modalTabla.classList.remove("hidden");
-      modalTabla.setAttribute("aria-hidden", "false");
-    });
-  }
-
-  function cerrarModalTabla() {
-    if (modalTabla) {
-      modalTabla.classList.add("hidden");
-      modalTabla.setAttribute("aria-hidden", "true");
-    }
-  }
-
-  if (btnCerrarTabla) {
-    btnCerrarTabla.addEventListener("click", cerrarModalTabla);
-  }
-
-  if (backdropTabla) {
-    backdropTabla.addEventListener("click", cerrarModalTabla);
-  }
-
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape") {
-      cerrarModalTabla();
-    }
-  });
-});

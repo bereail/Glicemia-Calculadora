@@ -20,6 +20,18 @@ class MedicionGlucemia(models.Model):
         ("sin_clasificacion", "Sin clasificación"),
     ]
 
+    ESCALAMIENTO_CHOICES = [
+        ("normal", "Normal"),
+        ("persistente", "Hiperglucemia persistente"),
+        ("refractaria", "Hiperglucemia refractaria"),
+    ]
+
+    ALGORITMO_CHOICES = [
+        ("", "Sin algoritmo"),
+        ("Algoritmo 1", "Algoritmo 1"),
+        ("Algoritmo 2", "Algoritmo 2"),
+    ]
+
     usuario = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -33,16 +45,25 @@ class MedicionGlucemia(models.Model):
     # -----------------------------
     glicemia_actual = models.PositiveIntegerField()
     glicemia_previa = models.PositiveIntegerField(null=True, blank=True)
+    tercera_medicion = models.PositiveIntegerField(null=True, blank=True)
 
     infusion_activa = models.BooleanField(default=False)
     hubo_ajuste_insulina = models.BooleanField(default=False)
-
-    tercera_medicion = models.PositiveIntegerField(null=True, blank=True)
 
     modo = models.CharField(
         max_length=20,
         choices=MODO_CHOICES,
         default="seguimiento",
+    )
+
+    horas_desde_inicio = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Horas desde el inicio o reinicio de la insulinización EV.",
+    )
+    estable = models.BooleanField(
+        default=False,
+        help_text="Indica si el paciente permanece estable para espaciar controles.",
     )
 
     # -----------------------------
@@ -72,11 +93,28 @@ class MedicionGlucemia(models.Model):
     # -----------------------------
     # DATOS TERAPÉUTICOS / ALGORITMO
     # -----------------------------
-    algoritmo_usado = models.CharField(max_length=100, blank=True)
+    algoritmo_usado = models.CharField(
+        max_length=20,
+        choices=ALGORITMO_CHOICES,
+        blank=True,
+        default="",
+    )
     velocidad_sugerida = models.CharField(max_length=30, blank=True)
     bolo_ui = models.CharField(max_length=30, blank=True)
     tasa_inicial_ui_h = models.CharField(max_length=30, blank=True)
     tasa_algoritmo = models.CharField(max_length=30, blank=True)
+
+    escalon_algoritmo = models.CharField(
+        max_length=30,
+        blank=True,
+        help_text="Ej.: 120-149, 150-179, 180-209, >360, etc.",
+    )
+
+    escalamiento_clinico = models.CharField(
+        max_length=20,
+        choices=ESCALAMIENTO_CHOICES,
+        default="normal",
+    )
 
     # -----------------------------
     # FLAGS CLÍNICOS

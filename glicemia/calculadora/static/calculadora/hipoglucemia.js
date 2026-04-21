@@ -1,18 +1,28 @@
 window.GlicemiaHipo = (function () {
   function esHipoglucemiaActual(ctx) {
     const actual = ctx.getActualValue();
-    return !isNaN(actual) && actual <= 70;
+    return Number.isFinite(actual) && actual < 70;
   }
 
   function aplicarModoHipoglucemia(ctx) {
-    // Ocultar flujo de hiperglucemia persistente
-    ctx.resetearFlujoHiperglucemiaPersistente();
+    ctx.resetearFlujoAvanzado();
 
-    // La previa queda opcional; si está vacía, se oculta para no cargar pantalla
-    const previaTieneValor =
-      ctx.glucemiaPrevia && ctx.glucemiaPrevia.value.trim() !== "";
-    if (!previaTieneValor) {
-      ctx.ocultarPrevia();
+    ctx.ocultar(ctx.bloqueContextoSecundario);
+    ctx.ocultar(ctx.helperPreviaContainer);
+    ctx.ocultar(ctx.previasBox);
+    ctx.ocultar(ctx.anteriorContainer);
+    ctx.ocultar(ctx.algoritmoContainer);
+    ctx.ocultar(ctx.ajusteInsulinaContainer);
+    ctx.ocultar(ctx.horasDesdeInicioContainer);
+    ctx.ocultar(ctx.estableContainer);
+    ctx.ocultar(ctx.secuenciaMediciones);
+
+    ctx.seleccionarAlgoritmo1PorDefecto();
+
+    if (ctx.helperPrevia) {
+      ctx.helperPrevia.textContent =
+        "Hipoglucemia: la glicemia previa y la infusión quedan opcionales para este flujo.";
+      ctx.helperPrevia.classList.remove("helper-warning");
     }
   }
 
@@ -20,12 +30,11 @@ window.GlicemiaHipo = (function () {
     if (!ctx.helperPrevia) return;
 
     const actual = ctx.getActualValue();
+    if (!Number.isFinite(actual)) return;
 
-    if (isNaN(actual)) return;
-
-    if (actual <= 70) {
+    if (actual < 70) {
       ctx.helperPrevia.textContent =
-        "Hipoglucemia: la glicemia previa e infusión quedan opcionales para este flujo.";
+        "Hipoglucemia: la glicemia previa y la infusión quedan opcionales para este flujo.";
       ctx.helperPrevia.classList.remove("helper-warning");
     }
   }

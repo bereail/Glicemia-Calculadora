@@ -57,7 +57,7 @@
             {% endif %}
           </div>
 
-          <!-- ALGORITMO EN USO: justo debajo de infusión -->
+          <!-- ALGORITMO -->
           <div id="algoritmo_container" class="field-group hidden">
             <label class="field-label">{{ form.algoritmo_activo.label }}</label>
             <div class="glicemia-radio-group">
@@ -69,7 +69,7 @@
               {% endfor %}
             </div>
             <div class="field-helper">
-              Seleccionar solo si el paciente ya se encuentra en Algoritmo 2.
+              Usar cuando el paciente tenga infusión activa y la glucemia sea igual o mayor a 120 mg/dL.
             </div>
             {% if form.algoritmo_activo.errors %}
               <div class="field-error">{{ form.algoritmo_activo.errors }}</div>
@@ -98,6 +98,47 @@
                 <div class="field-error">{{ form.tercera_medicion.errors }}</div>
               {% endif %}
             </div>
+          </div>
+
+          <!-- AJUSTE -->
+          <div id="ajuste_insulina_container" class="field-group hidden">
+            <label class="field-label">{{ form.hubo_ajuste_insulina.label }}</label>
+            <div class="glicemia-radio-group">
+              {% for radio in form.hubo_ajuste_insulina %}
+                <label class="glicemia-radio-card">
+                  {{ radio.tag }}
+                  <span>{{ radio.choice_label }}</span>
+                </label>
+              {% endfor %}
+            </div>
+            {% if form.hubo_ajuste_insulina.errors %}
+              <div class="field-error">{{ form.hubo_ajuste_insulina.errors }}</div>
+            {% endif %}
+          </div>
+
+          <!-- HORAS DESDE INICIO -->
+          <div id="horas_desde_inicio_container" class="field-group hidden">
+            <label for="id_horas_desde_inicio">{{ form.horas_desde_inicio.label }}</label>
+            {{ form.horas_desde_inicio }}
+            {% if form.horas_desde_inicio.errors %}
+              <div class="field-error">{{ form.horas_desde_inicio.errors }}</div>
+            {% endif %}
+          </div>
+
+          <!-- ESTABLE -->
+          <div id="estable_container" class="field-group hidden">
+            <label class="field-label">{{ form.estable.label }}</label>
+            <div class="glicemia-radio-group">
+              {% for radio in form.estable %}
+                <label class="glicemia-radio-card">
+                  {{ radio.tag }}
+                  <span>{{ radio.choice_label }}</span>
+                </label>
+              {% endfor %}
+            </div>
+            {% if form.estable.errors %}
+              <div class="field-error">{{ form.estable.errors }}</div>
+            {% endif %}
           </div>
 
         </div>
@@ -150,7 +191,7 @@
             </span>
           </div>
 
-          {% if form.algoritmo_activo.value and form.infusion_activa.value == "true" and form.glicemia_actual.value|add:"0" > 200 %}
+          {% if form.algoritmo_activo.value and form.infusion_activa.value == "true" and form.glicemia_actual.value|add:"0" >= 120 %}
           <div class="resumen-entrada__item">
             <span class="resumen-entrada__label">Algoritmo en uso</span>
             <span class="resumen-entrada__value">
@@ -176,16 +217,34 @@
             </span>
           </div>
           {% endif %}
+
+          {% if form.horas_desde_inicio.value %}
+          <div class="resumen-entrada__item">
+            <span class="resumen-entrada__label">Horas desde inicio</span>
+            <span class="resumen-entrada__value">
+              {{ form.horas_desde_inicio.value }} h
+            </span>
+          </div>
+          {% endif %}
+
+          {% if form.estable.value == "true" %}
+          <div class="resumen-entrada__item">
+            <span class="resumen-entrada__label">Estable</span>
+            <span class="resumen-entrada__value">Sí</span>
+          </div>
+          {% endif %}
         </div>
       </div>
 
-      {% if resultado.clase_visual == "critico" and "hipogluc" in resultado.estado|lower %}
-        {% include "calculadora/partials/resultado_hipo.html" %}
-      {% elif resultado.clase_visual == "alerta" %}
-        {% include "calculadora/partials/resultado_hiper.html" %}
-      {% else %}
-        {% include "calculadora/partials/resultado_rango.html" %}
-      {% endif %}
+      {% with estado_lower=resultado.estado|lower %}
+        {% if "hipogluc" in estado_lower or "post-hipogluc" in estado_lower or "rebote" in estado_lower %}
+          {% include "calculadora/partials/resultado_hipo.html" %}
+        {% elif "hipergluc" in estado_lower %}
+          {% include "calculadora/partials/resultado_hiper.html" %}
+        {% else %}
+          {% include "calculadora/partials/resultado_rango.html" %}
+        {% endif %}
+      {% endwith %}
     </div>
   </div>
 </div>
@@ -193,11 +252,11 @@
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=5">
-<link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=5">
-<link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=5">
+<link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=20260420-1">
+<link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=20260420-1">
+<link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=20260420-1">
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=7"></script>
+<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=20260420-1"></script>
 {% endblock %}

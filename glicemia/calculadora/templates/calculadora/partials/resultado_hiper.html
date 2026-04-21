@@ -1,4 +1,4 @@
-<section class="resultado-base resultado-base--hiper resultado-base--hiper-sostenida {% if resultado.es_critica %}resultado-base--hiper-critica{% endif %}">
+<section class="resultado-base resultado-base--hiper resultado-base--hiper-sostenida {% if resultado.es_critica or resultado.es_critico %}resultado-base--hiper-critica{% endif %}">
   <div class="hiper-layout hiper-layout--sostenida">
 
     <!-- 1. HEADER -->
@@ -11,7 +11,7 @@
             Estado
           </div>
           <div class="hiper-header__estado-value">
-            {{ resultado.estado|default:"Hiperglucemia sostenida" }}
+            {{ resultado.estado|default:"Hiperglucemia" }}
           </div>
         </div>
 
@@ -31,7 +31,7 @@
             Conducta inmediata
           </div>
           <div class="hiper-header__conducta-resumen-value">
-            {{ resultado.conducta|default:"Continuar conducta indicada."|safe }}
+            {{ resultado.conducta|default:"Continuar conducta indicada." }}
           </div>
         </div>
 
@@ -54,11 +54,11 @@
           </div>
 
           <div class="hiper-hero__grid">
-            {% if not resultado.infusion_activa %}
+            {% if not resultado.infusion_activa and resultado.bolo_calculado %}
               <div class="hiper-hero__bloque">
                 <div class="hiper-hero__label">Bolo inicial</div>
                 <div class="hiper-hero__valor">
-                  {{ resultado.bolo_calculado|default:"--" }} UI
+                  {{ resultado.bolo_calculado }} UI
                 </div>
               </div>
             {% endif %}
@@ -66,7 +66,9 @@
             <div class="hiper-hero__bloque">
               <div class="hiper-hero__label">Tasa de infusión</div>
               <div class="hiper-hero__valor">
-                {% if resultado.tasa_calculada %}
+                {% if resultado.tasa %}
+                  {{ resultado.tasa }}
+                {% elif resultado.tasa_calculada %}
                   {{ resultado.tasa_calculada }} UI/h
                 {% elif resultado.tasa_algoritmo %}
                   {{ resultado.tasa_algoritmo }}
@@ -80,6 +82,17 @@
           {% if resultado.calculo_texto %}
             <div class="hiper-hero__meta">
               {{ resultado.calculo_texto }}
+            </div>
+          {% endif %}
+
+          {% if resultado.algoritmo_activo or resultado.algoritmo_sugerido %}
+            <div class="hiper-hero__meta">
+              {% if resultado.algoritmo_activo %}
+                En uso: {{ resultado.algoritmo_activo }}.
+              {% endif %}
+              {% if resultado.algoritmo_sugerido and resultado.algoritmo_sugerido != resultado.algoritmo_activo %}
+                Sugerido: {{ resultado.algoritmo_sugerido }}.
+              {% endif %}
             </div>
           {% endif %}
         </div>
