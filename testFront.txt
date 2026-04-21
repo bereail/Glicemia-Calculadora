@@ -1,0 +1,130 @@
+BLOQUE 1 — HIPOGlucemia (CRÍTICO)
+🔴 Caso 1
+Actual: 65
+Infusión: NO
+👉 Esperado:
+Estado: Hipoglucemia
+Conducta: suspender + dextrosa
+Próximo control: 30 min
+NO debe pedir nada más
+🔴 Caso 2 (post hipo)
+Previa: 60
+Actual: 85
+Infusión: NO
+👉 Esperado:
+Estado: Recontrol post-hipo
+Conducta: control frecuente (no normal)
+⚠️ Esto es clave: no debe tratarlo como “rango normal”
+🧪 BLOQUE 2 — SIN INFUSIÓN
+🟡 Caso 3 (alerta baja)
+Actual: 75
+Infusión: NO
+👉 Esperado:
+En rango con alerta
+Mensaje: cercano a hipoglucemia
+🟢 Caso 4 (rango limpio)
+Actual: 120
+👉 Esperado:
+En rango
+Sin alertas
+🟡 Caso 5 (alerta alta)
+Actual: 175
+👉 Esperado:
+En rango con alerta (cercano a hiper)
+🟠 Caso 6 (hiper aislada)
+Actual: 190
+👉 Esperado:
+Hiperglucemia aislada
+NO insulinizar
+🔴 Caso 7 (inicio insulinización)
+Previa: 200
+Actual: 210
+👉 Esperado:
+“Iniciar insulinización”
+Bolo = 2.1
+Tasa = 2.1
+Mostrar: Algoritmo 1
+
+👉 Esto es FUNDAMENTAL según protocolo:
+
+≥180 en 2 controles consecutivos → iniciar insulina
+
+🧪 BLOQUE 3 — CON INFUSIÓN
+🔴 Caso 8 (bajo con infusión)
+Actual: 110
+Infusión: SI
+👉 Esperado:
+Fuera de objetivo por debajo
+Conducta: suspender infusión
+🟡 Caso 9 (casi bajo)
+Actual: 130
+Infusión: SI
+👉 Esperado:
+Fuera de objetivo
+Suspender infusión
+🟢 Caso 10 (objetivo)
+Actual: 160
+Infusión: SI
+👉 Esperado:
+En rango objetivo
+Mantener
+🧪 BLOQUE 4 — HIPER CON INFUSIÓN (ALGORITMO)
+🟠 Caso 11
+Actual: 220
+Infusión: SI
+Algoritmo: 1
+👉 Esperado:
+Calcular tasa según tabla
+Mostrar algoritmo
+🔴 Caso 12 (misma escalón)
+Anterior: 230
+Previa: 230
+Actual: 230
+👉 Esperado:
+Detectar:
+✔ mismo escalón
+✔ fuera de rango
+Acción: +0.5 UI/h
+
+👉 Esto viene directo de tu lógica:
+
+2 controles en mismo escalón → aumentar 0.5
+
+🧪 BLOQUE 5 — HIPER PERSISTENTE
+🔴 Caso 13
+Valores: 250 / 250 / 250
+Infusión: SI
+👉 Esperado:
+Estado: Hiperglucemia persistente
+Acción:
+Aviso médico
+Pasar a Algoritmo 2
+🧪 BLOQUE 6 — REFRACTARIA
+🔴 Caso 14
+Valores: 370 / 370
+Último escalón
+👉 Esperado:
+Estado: Refractaria
+Acción:
+Aviso médico urgente
+🧪 BLOQUE 7 — PRÓXIMO CONTROL (MUY IMPORTANTE)
+🔴 Caso 15
+Actual: 420
+👉 Esperado:
+Próximo control: 1 hora
+🟠 Caso 16
+Actual: 350
+👉 Esperado:
+Próximo control: 2 horas
+🟡 Caso 17
+Actual: 250
+👉 Esperado:
+Próximo control: 4 horas
+🟢 Caso 18
+Actual: 160
+Estable: SI
+
+24h
+👉 Esperado:
+
+Próximo control: 6 horas
