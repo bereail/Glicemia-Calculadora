@@ -52,7 +52,11 @@ def es_hiperglucemia_persistente_algoritmo_1(
 
 
 def es_hiperglucemia_refractaria_algoritmo_2(
-    actual, previa=None, infusion_activa=False, algoritmo_activo=1
+    actual,
+    previa=None,
+    anterior=None,
+    infusion_activa=False,
+    algoritmo_activo=1,
 ):
     if not _a_bool(infusion_activa):
         return False
@@ -62,8 +66,24 @@ def es_hiperglucemia_refractaria_algoritmo_2(
 
     actual = _a_decimal(actual)
     previa = _a_decimal(previa, permitir_none=True)
+    anterior = _a_decimal(anterior, permitir_none=True)
 
-    return dos_ultimas_mayores_360(previa, actual)
+    # Regla 1: dos consecutivas > 360 = refractaria
+    if dos_ultimas_mayores_360(previa, actual):
+        return True
+
+    # Regla 2: tres > 200 en el mismo escalón = refractaria
+    if (
+        actual > Decimal("200")
+        and previa is not None
+        and anterior is not None
+        and previa > Decimal("200")
+        and anterior > Decimal("200")
+        and tres_mediciones_mismo_escalon(anterior, previa, actual)
+    ):
+        return True
+
+    return False
 
 
 def sugerir_algoritmo(
@@ -76,6 +96,7 @@ def sugerir_algoritmo(
     if es_hiperglucemia_refractaria_algoritmo_2(
         actual=actual,
         previa=previa,
+        anterior=anterior,
         infusion_activa=infusion_activa,
         algoritmo_activo=algoritmo_activo,
     ):
@@ -179,6 +200,7 @@ def evaluar_hiperglucemia(
     if es_hiperglucemia_refractaria_algoritmo_2(
         actual=actual,
         previa=previa,
+        anterior=tercera_medicion,
         infusion_activa=infusion_activa,
         algoritmo_activo=algoritmo_activo,
     ):
@@ -231,9 +253,9 @@ def evaluar_hiperglucemia(
     # ------------------------------------------------------
     # >360 pero sin criterio completo aún
     # ------------------------------------------------------
-    if actual > Decimal("360"):
+    if actual >= Decimal("360"):
         if previa is None:
-            resultado["estado"] = "Hiperglucemia Marcada"
+            resultado["estado"] = "Hiperglucemia Persistente"
             resultado["subestado"] = "Actual > 360 mg/dL con infusión activa"
             resultado["mensaje"] = "Hiperglucemia marcada."
             resultado["resumen_objetivo"] = "Fuera de rango objetivo"
