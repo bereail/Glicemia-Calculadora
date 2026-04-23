@@ -217,8 +217,9 @@ document.addEventListener("DOMContentLoaded", function () {
         labelPreviaHint.textContent = "(obligatoria)";
       }
 
-      if (actual > 120) {
+      if (infusion === true && actual > 120) {
         mostrar(algoritmoContainer);
+        seleccionarAlgoritmo1PorDefecto()
       } else {
         ocultar(algoritmoContainer);
         //seleccionarAlgoritmo1PorDefecto();

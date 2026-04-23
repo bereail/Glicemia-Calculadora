@@ -7,11 +7,11 @@ from ..helpers import (
     _resultado_hiper_base,
     armar_resultado_insulinizacion,
     calcular_proximo_control,
+    dos_mediciones_mismo_escalon,
     dos_ultimas_mayores_360,
     obtener_tasa_por_algoritmo,
     tres_mediciones_mismo_escalon,
 )
-
 
 def _marcar_visual(resultado, *, es_critico=False, nivel_visual="alerta"):
     resultado["es_critico"] = es_critico
@@ -314,7 +314,42 @@ def evaluar_hiperglucemia(
     # ------------------------------------------------------
     # >200 y <360 con infusión activa
     # ------------------------------------------------------
+    # ------------------------------------------------------
+# >200 y <360 con infusión activa
+# ------------------------------------------------------
     if actual > UMBRAL_ALERTA_ALTA and actual <= Decimal("360"):
+        if (
+            previa is not None
+            and tercera_medicion is None
+            and previa > Decimal("200")
+            and dos_mediciones_mismo_escalon(previa, actual)
+        ):
+            resultado["estado"] = "Hiperglucemia Fuera de Objetivo"
+            resultado["subestado"] = (
+                "Dos mediciones consecutivas > 200 mg/dL en el mismo escalón con infusión activa"
+            )
+            resultado["mensaje"] = "Hiperglucemia fuera del rango objetivo."
+            resultado["resumen_objetivo"] = "Fuera de rango objetivo"
+            resultado["conducta"] = (
+                "Aumentar la tasa de infusión en 0,5 UI/h por dos controles consecutivos "
+                "en el mismo escalón y fuera del rango objetivo."
+            )
+            resultado["requiere_recontrol"] = True
+
+            tasa_base = obtener_tasa_por_algoritmo(actual, algoritmo_activo)["tasa"]
+            if tasa_base is not None:
+                tasa_ajustada = tasa_base + Decimal("0.5")
+                resultado["tasa_algoritmo"] = f"{tasa_ajustada} UI/h"
+
+            _asignar_control(actual, insulinizado=True)
+            resultado["comentario_control"] = (
+                "Si no se modifica la glucemia tras este ajuste, considerar fallo del Algoritmo 1 (HGP)."
+            )
+            resultado["observacion"] = (
+                "Aún no cumple criterios completos de hiperglucemia persistente."
+            )
+            return _marcar_visual(resultado, es_critico=False, nivel_visual="alerta")
+
         if previa is not None and tercera_medicion is None:
             resultado["estado"] = "Hiperglucemia Fuera de Objetivo"
             resultado["subestado"] = (
@@ -328,7 +363,9 @@ def evaluar_hiperglucemia(
             resultado["comentario_control"] = (
                 "Evaluar si las 3 mediciones permanecen > 200 mg/dL en el mismo escalón."
             )
-            resultado["observacion"] = "Aún no cumple criterios completos de hiperglucemia persistente."
+            resultado["observacion"] = (
+                "Aún no cumple criterios completos de hiperglucemia persistente."
+            )
             return _marcar_visual(resultado, es_critico=False, nivel_visual="alerta")
 
         resultado["estado"] = "Hiperglucemia Marcada"

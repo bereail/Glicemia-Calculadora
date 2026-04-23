@@ -189,6 +189,16 @@ def tres_mediciones_mismo_escalon(anterior, previa, actual):
     return e1 == e2 == e3
 
 
+def dos_mediciones_mismo_escalon(previa, actual):
+    if previa is None or actual is None:
+        return False
+
+    e1 = obtener_escalon_algoritmo(previa)
+    e2 = obtener_escalon_algoritmo(actual)
+
+    return e1 == e2
+
+
 def dos_ultimas_mayores_360(previa, actual):
     previa = _a_decimal(previa, permitir_none=True)
     actual = _a_decimal(actual, permitir_none=True)
@@ -197,8 +207,6 @@ def dos_ultimas_mayores_360(previa, actual):
         return False
 
     return previa >= Decimal("360") and actual >= Decimal("360")
-
-
 
 def _comentario_monitoreo_insulinizado():
     return (
