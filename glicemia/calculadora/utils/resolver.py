@@ -31,9 +31,12 @@ def resolver_glucemia(
         return _aplicar_tendencia(resultado, actual, previa)
 
     resultado = evaluar_rango_70_180(
-        actual=actual,
-        previa=previa,
-        infusion_activa=infusion_activa,
+    actual=actual,
+    previa=previa,
+    infusion_activa=infusion_activa,
+    algoritmo_activo=algoritmo_activo,
+    horas_desde_inicio=horas_desde_inicio,
+    estable=estable,
     )
     if resultado is not None:
         return _aplicar_tendencia(resultado, actual, previa)
@@ -45,6 +48,8 @@ def resolver_glucemia(
         hubo_ajuste_insulina=hubo_ajuste_insulina,
         tercera_medicion=tercera_medicion,
         algoritmo_activo=algoritmo_activo,
+        horas_desde_inicio=horas_desde_inicio,
+        estable=estable,
     )
     if resultado is not None:
         return _aplicar_tendencia(resultado, actual, previa)

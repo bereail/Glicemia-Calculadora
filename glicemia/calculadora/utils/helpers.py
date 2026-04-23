@@ -1,5 +1,20 @@
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 
+from .constants import (
+    TABLA_ALGORITMO_1,
+    TABLA_ALGORITMO_2,
+    UMBRAL_HIPO,
+    LIMITE_ZONA_INTERMEDIA,
+    OBJETIVO_MIN_INFUSION,
+    OBJETIVO_MAX_INFUSION,
+    UMBRAL_HIPER,
+    UMBRAL_ALERTA_ALTA,
+    UMBRAL_MUY_ALTA,
+    UMBRAL_REFRACTARIA,
+    UMBRAL_SEVERA,
+    UMBRAL_REINICIO_POST_HIPO,
+)
+
 
 def _a_decimal(valor, permitir_none=False):
     if valor in (None, ""):
@@ -83,7 +98,10 @@ def _resultado_rango_base():
 
 def calcular_bolo_y_tasa_inicial(glicemia):
     glicemia = _a_decimal(glicemia)
-    return (glicemia / Decimal("100")).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP)
+    return (glicemia / Decimal("100")).quantize(
+        Decimal("0.1"),
+        rounding=ROUND_HALF_UP,
+    )
 
 
 def obtener_escalon_algoritmo(glucemia) -> str:
@@ -110,60 +128,54 @@ def obtener_escalon_algoritmo(glucemia) -> str:
     return ">360"
 
 
-def obtener_tasa_algoritmo_1(glicemia):
+def _buscar_tasa_en_tabla(glicemia, tabla):
     glicemia = _a_decimal(glicemia)
 
-    if glicemia < Decimal("120"):
-        return "Suspender"
-    if glicemia <= Decimal("149"):
-        return "0,5 UI/h"
-    if glicemia <= Decimal("179"):
-        return "1 UI/h"
-    if glicemia <= Decimal("209"):
-        return "1,5 UI/h"
-    if glicemia <= Decimal("239"):
-        return "2 UI/h"
-    if glicemia <= Decimal("269"):
-        return "2,5 UI/h"
-    if glicemia <= Decimal("299"):
-        return "3 UI/h"
-    if glicemia <= Decimal("329"):
-        return "3,5 UI/h"
-    if glicemia <= Decimal("359"):
-        return "4 UI/h"
-    return "5 UI/h"
+    for fila in tabla:
+        minimo = fila["min"]
+        maximo = fila["max"]
+
+        cumple_min = minimo is None or glicemia >= minimo
+        cumple_max = maximo is None or glicemia <= maximo
+
+        if cumple_min and cumple_max:
+            return fila
+
+    return None
+
+
+def obtener_tasa_algoritmo_1(glicemia):
+    fila = _buscar_tasa_en_tabla(glicemia, TABLA_ALGORITMO_1)
+    return fila["texto"] if fila else "--"
 
 
 def obtener_tasa_algoritmo_2(glicemia):
-    glicemia = _a_decimal(glicemia)
-
-    if glicemia < Decimal("120"):
-        return "Suspender"
-    if glicemia <= Decimal("149"):
-        return "1 UI/h"
-    if glicemia <= Decimal("179"):
-        return "1,5 UI/h"
-    if glicemia <= Decimal("209"):
-        return "2,5 UI/h"
-    if glicemia <= Decimal("239"):
-        return "3 UI/h"
-    if glicemia <= Decimal("269"):
-        return "3,5 UI/h"
-    if glicemia <= Decimal("299"):
-        return "4 UI/h"
-    if glicemia <= Decimal("329"):
-        return "5 UI/h"
-    if glicemia <= Decimal("359"):
-        return "6 UI/h"
-    return "8 UI/h"
+    fila = _buscar_tasa_en_tabla(glicemia, TABLA_ALGORITMO_2)
+    return fila["texto"] if fila else "--"
 
 
 def obtener_tasa_por_algoritmo(glicemia, algoritmo=1):
-    if int(algoritmo) == 1:
-        return obtener_tasa_algoritmo_1(glicemia)
-    if int(algoritmo) == 2:
-        return obtener_tasa_algoritmo_2(glicemia)
-    raise ValueError("Algoritmo inválido. Debe ser 1 o 2.")
+    algoritmo = int(algoritmo)
+
+    if algoritmo == 1:
+        fila = _buscar_tasa_en_tabla(glicemia, TABLA_ALGORITMO_1)
+    elif algoritmo == 2:
+        fila = _buscar_tasa_en_tabla(glicemia, TABLA_ALGORITMO_2)
+    else:
+        raise ValueError("Algoritmo inválido. Debe ser 1 o 2.")
+
+    if not fila:
+        return {
+            "tasa": None,
+            "texto": "--",
+            "suspender": False,
+        }
+
+    return {
+        "tasa": fila["tasa"],
+        "texto": fila["texto"],
+        "suspender": fila["tasa"] is None,
+    }
 
 
 def tres_mediciones_mismo_escalon(anterior, previa, actual):
@@ -184,7 +196,8 @@ def dos_ultimas_mayores_360(previa, actual):
     if previa is None or actual is None:
         return False
 
-    return previa > Decimal("360") and actual > Decimal("360")
+    return previa >= Decimal("360") and actual >= Decimal("360")
+
 
 
 def _comentario_monitoreo_insulinizado():
@@ -327,7 +340,7 @@ def calcular_proximo_control_post_hipoglucemia(glicemia):
     return {
         "proximo_control": "Controlar glucemia nuevamente según algoritmo de insulinización",
         "comentario_control": (
-            "La infusión puede reinstaurarse cuando la glucemia sea > 180 mg/dL, "
+            f"La infusión puede reinstaurarse cuando la glucemia sea > {UMBRAL_REINICIO_POST_HIPO} mg/dL, "
             "siempre en Algoritmo 1."
         ),
     }
@@ -474,6 +487,7 @@ def armar_resultado_insulinizacion(glicemia):
         glicemia,
         insulinizado=True,
     )
+    tasa_algoritmo = obtener_tasa_por_algoritmo(glicemia, algoritmo=1)
 
     resultado["estado"] = "Hiperglucemia Sostenida"
     resultado["subestado"] = "Dos controles consecutivos ≥ 180 mg/dL"
@@ -488,7 +502,7 @@ def armar_resultado_insulinizacion(glicemia):
     resultado["tasa_inicial"] = f"{dosis} UI/h"
     resultado["bolo_calculado"] = f"{dosis}"
     resultado["tasa_calculada"] = f"{dosis}"
-    resultado["tasa_algoritmo"] = obtener_tasa_algoritmo_1(glicemia)
+    resultado["tasa_algoritmo"] = tasa_algoritmo["texto"]
     resultado["calculo_texto"] = "Dosis inicial estimada según glucemia actual."
 
     resultado["proximo_control"] = control_info["proximo_control"]

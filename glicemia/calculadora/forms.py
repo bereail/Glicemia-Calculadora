@@ -167,7 +167,8 @@ class GlucemiaForm(forms.Form):
         # El algoritmo solo tiene sentido mostrarlo/usarlo si hay infusión y glucemia > 200
         mostrar_algoritmo = infusion_activa and actual > 200
 
-        if not mostrar_algoritmo:
+        # SOLO mantener default si viene vacío
+        if not cleaned_data.get("algoritmo_activo"):
             cleaned_data["algoritmo_activo"] = "1"
 
         # Si está en algoritmo 1 o 2 y quiere evaluar persistencia por 3 mediciones,

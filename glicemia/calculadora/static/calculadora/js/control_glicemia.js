@@ -177,7 +177,7 @@ document.addEventListener("DOMContentLoaded", function () {
       ocultar(anteriorContainer);
       ocultar(algoritmoContainer);
       ocultar(secuenciaMediciones);
-      seleccionarAlgoritmo1PorDefecto();
+      //seleccionarAlgoritmo1PorDefecto();
       return;
     }
 
@@ -189,7 +189,7 @@ document.addEventListener("DOMContentLoaded", function () {
       ocultar(anteriorContainer);
       ocultar(algoritmoContainer);
       ocultar(secuenciaMediciones);
-      seleccionarAlgoritmo1PorDefecto();
+      //seleccionarAlgoritmo1PorDefecto();
       return;
     }
 
@@ -202,7 +202,7 @@ document.addEventListener("DOMContentLoaded", function () {
       ocultar(anteriorContainer);
       ocultar(algoritmoContainer);
       ocultar(secuenciaMediciones);
-      seleccionarAlgoritmo1PorDefecto();
+      //seleccionarAlgoritmo1PorDefecto();
       return;
     }
 
@@ -217,11 +217,11 @@ document.addEventListener("DOMContentLoaded", function () {
         labelPreviaHint.textContent = "(obligatoria)";
       }
 
-      if (actual > 200) {
+      if (actual > 120) {
         mostrar(algoritmoContainer);
       } else {
         ocultar(algoritmoContainer);
-        seleccionarAlgoritmo1PorDefecto();
+        //seleccionarAlgoritmo1PorDefecto();
       }
 
       if (actual > 200 && actual < 360) {
@@ -233,7 +233,7 @@ document.addEventListener("DOMContentLoaded", function () {
         ocultar(anteriorContainer);
         secuenciaDosMediciones(true);
       }
-    } else {
+          } else {
       if (helperPrevia) {
         helperPrevia.textContent = "La glicemia previa ayuda a evaluar tendencia.";
       }
@@ -244,7 +244,7 @@ document.addEventListener("DOMContentLoaded", function () {
       ocultar(anteriorContainer);
       ocultar(algoritmoContainer);
       ocultar(secuenciaMediciones);
-      seleccionarAlgoritmo1PorDefecto();
+      //seleccionarAlgoritmo1PorDefecto();
       secuenciaDosMediciones(false);
     }
   }

@@ -150,15 +150,14 @@
             </span>
           </div>
 
-          {% if form.algoritmo_activo.value and form.infusion_activa.value == "true" and form.glicemia_actual.value|add:"0" > 200 %}
-          <div class="resumen-entrada__item">
-            <span class="resumen-entrada__label">Algoritmo en uso</span>
-            <span class="resumen-entrada__value">
-              Algoritmo {{ form.algoritmo_activo.value }}
-            </span>
-          </div>
-          {% endif %}
-
+          {% if resultado.infusion_activa and resultado.algoritmo_activo %}
+      <div class="resumen-entrada__item">
+        <span class="resumen-entrada__label">Algoritmo en uso</span>
+        <span class="resumen-entrada__value">
+          {{ resultado.algoritmo_activo }}
+        </span>
+      </div>
+      {% endif %}
           {% if form.glicemia_previa.value %}
           <div class="resumen-entrada__item">
             <span class="resumen-entrada__label">Glucemia previa</span>
