@@ -210,10 +210,22 @@ def dos_ultimas_mayores_360(previa, actual):
 
 def _comentario_monitoreo_insulinizado():
     return (
-        "En pacientes hipotensos el monitoreo capilar puede ser inapropiado. "
-        "Evaluar muestra venosa."
+        ""
     )
 
+
+# Comportamiento esperado según la lógica actual:
+#
+# 🔴 Casos críticos (HGP / HGR / >360 mg/dL):
+#     → Control cada ~2 horas
+#
+# 🟡 Ajuste por mismo escalón (>200 mg/dL en mismo escalón):
+#     → Control cada ~4 horas
+#
+# 🟠 Sin criterio completo (no mismo escalón o falta de medición):
+#     → No se asigna tiempo fijo
+#     → Se indica: "Obtener nueva / tercera medición"
+#
 
 def _control_4_o_6_horas(horas_desde_inicio=None, estable=False):
     estable = _a_bool(estable)
@@ -253,8 +265,7 @@ def calcular_proximo_control_insulinizado(
         return {
             "proximo_control": "Controlar glucemia nuevamente en 1 hora",
             "comentario_control": (
-                "Mantener controles horarios hasta alcanzar rango objetivo "
-                "140 a 200 mg/dL. "
+                ""
                 + _comentario_monitoreo_insulinizado()
             ),
         }
@@ -281,8 +292,7 @@ def calcular_proximo_control_insulinizado(
         return {
             "proximo_control": "Controlar glucemia nuevamente en 2 horas",
             "comentario_control": (
-                "Glucemia por debajo del rango objetivo para paciente insulinizado. "
-                "Vigilar descenso y reevaluar ajuste de infusión. "
+                " "
                 + _comentario_monitoreo_insulinizado()
             ),
         }
@@ -291,8 +301,7 @@ def calcular_proximo_control_insulinizado(
         return {
             "proximo_control": "Controlar glucemia nuevamente en 1 hora",
             "comentario_control": (
-                "Si la infusión está activa, debe permanecer suspendida y "
-                "recontrolar cada hora hasta nueva reevaluación. "
+                ""
                 + _comentario_monitoreo_insulinizado()
             ),
         }
@@ -310,8 +319,7 @@ def calcular_proximo_control_insulinizado(
     return {
         "proximo_control": "Controlar glucemia nuevamente en 30 minutos",
         "comentario_control": (
-            "Hipoglucemia: suspender infusión de insulina, tratar según protocolo "
-            "y recontrolar a los 30 minutos. "
+            " "
             + _comentario_monitoreo_insulinizado()
         ),
     }
@@ -324,7 +332,7 @@ def calcular_proximo_control_post_hipoglucemia(glicemia):
         return {
             "proximo_control": "Controlar glucemia nuevamente en 30 minutos",
             "comentario_control": (
-                "Si la glucemia continúa ≤ 70 mg/dL, repetir tratamiento según protocolo."
+                ""
             ),
         }
 
@@ -332,8 +340,7 @@ def calcular_proximo_control_post_hipoglucemia(glicemia):
         return {
             "proximo_control": "Controlar glucemia nuevamente en 1 hora",
             "comentario_control": (
-                "Si la glucemia es > 70 mg/dL y ≤ 120 mg/dL, mantener la infusión suspendida "
-                "y controlar cada hora."
+                ""
             ),
         }
 
@@ -341,7 +348,7 @@ def calcular_proximo_control_post_hipoglucemia(glicemia):
         return {
             "proximo_control": "Controlar glucemia nuevamente en 1 hora",
             "comentario_control": (
-                "Continuar vigilancia estrecha hasta definir reinicio o no de la infusión."
+                ""
             ),
         }
 
@@ -360,14 +367,14 @@ def calcular_proximo_control_no_insulinizado(glicemia):
     if glicemia < Decimal("70"):
         return {
             "proximo_control": "Controlar glucemia nuevamente en 30 minutos",
-            "comentario_control": "Hipoglucemia: tratar según protocolo y recontrolar.",
+            "comentario_control": "",
         }
 
     if glicemia < Decimal("180"):
         return {
             "proximo_control": "Controlar glucemia según monitoreo clínico indicado",
             "comentario_control": (
-                "Paciente sin infusión activa y sin criterio actual de insulinización endovenosa."
+                ""
             ),
         }
 
@@ -384,16 +391,14 @@ def calcular_proximo_control_no_insulinizado(glicemia):
         return {
             "proximo_control": "Controlar glucemia nuevamente en 2 horas",
             "comentario_control": (
-                "Hiperglucemia significativa. Si se confirma persistencia o ya cumple criterio, "
-                "iniciar protocolo de insulinización."
+                ""
             ),
         }
 
     return {
         "proximo_control": "Controlar glucemia nuevamente en 1 hora",
         "comentario_control": (
-            "Hiperglucemia marcada. Reevaluar de forma prioritaria e iniciar protocolo "
-            "si corresponde."
+            ""
         ),
     }
 

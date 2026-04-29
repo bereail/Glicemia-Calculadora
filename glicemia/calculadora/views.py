@@ -67,7 +67,6 @@ def _guardar_medicion(request, cleaned_data, resultado):
         proximo_control=texto_seguro(resultado.get("proximo_control")),
         observacion=texto_seguro(
             resultado.get("observacion")
-            or resultado.get("comentario_control")
             or resultado.get("conducta_extra")
         ),
         tendencia=texto_seguro(resultado.get("tendencia")),

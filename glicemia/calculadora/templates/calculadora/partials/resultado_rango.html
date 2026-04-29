@@ -17,16 +17,6 @@
           </div>
         </div>
 
-        <div class="rango-header__main">
-          <div class="rango-header__label">
-            <span class="ui-icon">◉</span>
-            Situación actual
-          </div>
-          <div class="rango-header__title">
-            {{ resultado.resumen_objetivo|default:"Dentro de rango" }}
-          </div>
-        </div>
-
 
         
         <div class="rango-header__conducta-resumen {% if resultado.ui_variant == 'success' %}rango-header__conducta-resumen--ok{% else %}rango-header__conducta-resumen--alerta{% endif %}">

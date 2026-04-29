@@ -11,19 +11,10 @@
             Estado
           </div>
           <div class="hiper-header__estado-value">
-            {{ resultado.estado|default:"Hiperglucemia sostenida" }}
+            {{ resultado.estado_display|default:resultado.estado|default:"Hiperglucemia sostenida" }}
           </div>
         </div>
 
-        <div class="hiper-header__main">
-          <div class="hiper-header__label">
-            <span class="ui-icon">◉</span>
-            Situación actual
-          </div>
-          <h2 class="hiper-header__title">
-            {{ resultado.resumen_objetivo|default:"Fuera de rango objetivo" }}
-          </h2>
-        </div>
 
         <div class="hiper-header__conducta-resumen">
           <div class="hiper-header__label">
@@ -42,47 +33,49 @@
     <div class="hiper-bloque hiper-bloque--fila-principal">
       <div class="hiper-fila-principal hiper-fila-principal--sostenida">
 
-        <!-- TERAPIA -->
-        <div class="hiper-hero hiper-hero--terapia">
-          <div class="hiper-hero__eyebrow">
-            <span class="ui-icon">💉</span>
-            {% if resultado.infusion_activa %}
-              Infusión activa
-            {% else %}
-              Terapia
-            {% endif %}
+        {% if resultado.infusion_activa or resultado.tasa_algoritmo or resultado.tasa_calculada or resultado.bolo_calculado %}
+  <!-- TERAPIA -->
+  <div class="hiper-hero hiper-hero--terapia">
+    <div class="hiper-hero__eyebrow">
+      <span class="ui-icon">💉</span>
+      {% if resultado.infusion_activa %}
+        Infusión activa
+      {% else %}
+        Terapia
+      {% endif %}
+    </div>
+
+    <div class="hiper-hero__grid">
+      {% if not resultado.infusion_activa and resultado.bolo_calculado %}
+        <div class="hiper-hero__bloque">
+          <div class="hiper-hero__label">Bolo inicial</div>
+          <div class="hiper-hero__valor">
+            {{ resultado.bolo_calculado }} UI
           </div>
-
-          <div class="hiper-hero__grid">
-            {% if not resultado.infusion_activa %}
-              <div class="hiper-hero__bloque">
-                <div class="hiper-hero__label">Bolo inicial</div>
-                <div class="hiper-hero__valor">
-                  {{ resultado.bolo_calculado|default:"--" }} UI
-                </div>
-              </div>
-            {% endif %}
-
-            <div class="hiper-hero__bloque">
-              <div class="hiper-hero__label">Tasa de infusión</div>
-              <div class="hiper-hero__valor">
-                {% if resultado.tasa_algoritmo %}
-                  {{ resultado.tasa_algoritmo }}
-                {% elif resultado.tasa_calculada %}
-                  {{ resultado.tasa_calculada }} UI/h
-                {% else %}
-                  --
-                {% endif %}
-              </div>
-            </div>
-          </div>
-
-          {% if resultado.calculo_texto %}
-            <div class="hiper-hero__meta">
-              {{ resultado.calculo_texto }}
-            </div>
-          {% endif %}
         </div>
+      {% endif %}
+
+      {% if resultado.tasa_algoritmo or resultado.tasa_calculada %}
+        <div class="hiper-hero__bloque">
+          <div class="hiper-hero__label">Tasa de infusión</div>
+          <div class="hiper-hero__valor">
+            {% if resultado.tasa_algoritmo %}
+              {{ resultado.tasa_algoritmo }}
+            {% elif resultado.tasa_calculada %}
+              {{ resultado.tasa_calculada }} UI/h
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    {% if resultado.calculo_texto %}
+      <div class="hiper-hero__meta">
+        {{ resultado.calculo_texto }}
+      </div>
+    {% endif %}
+  </div>
+{% endif %}
 
         <!-- PRÓXIMO CONTROL -->
         <div class="hiper-proximo-card hiper-proximo-card--full">
@@ -95,11 +88,7 @@
             {{ resultado.proximo_control|default:"Controlar según protocolo indicado" }}
           </div>
 
-          {% if resultado.comentario_control %}
-            <div class="hiper-proximo-card__comment">
-              {{ resultado.comentario_control }}
-            </div>
-          {% endif %}
+
         </div>
 
       </div>
