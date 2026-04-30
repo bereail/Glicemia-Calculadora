@@ -8,21 +8,18 @@ SECRET_KEY = os.environ.get(
     "django-insecure-itkay5h7--t^l@#j!h2(bgw4$w!mxn&#rrdul37q&#1p$dpd7_",
 )
 
-DEBUG = os.environ.get("DJANGO_DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = os.environ.get(
+DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
+
+ALLOWED_HOSTS: list[str] = os.environ.get(
     "DJANGO_ALLOWED_HOSTS",
-    "127.0.0.1,localhost,192.168.100.21,192.168.6.254,192.168.7.250",
+    "127.0.0.1,localhost,192.168.100.21,192.168.6.254",
 ).split(",")
 
 CSRF_TRUSTED_ORIGINS = os.environ.get(
     "DJANGO_CSRF_TRUSTED_ORIGINS",
-    "http://192.168.6.254,http://192.168.100.21,http://192.168.7.250",
+    "http://192.168.6.254,http://192.168.100.21",
 ).split(",")
-
-# Para servidor con subruta: /glicemia
-# Para local normal: dejar vacío con DJANGO_FORCE_SCRIPT_NAME=""
-FORCE_SCRIPT_NAME = os.environ.get("DJANGO_FORCE_SCRIPT_NAME", "")
 
 INSTALLED_APPS = [
     "pacientes",
@@ -95,14 +92,9 @@ TIME_ZONE = "America/Argentina/Cordoba"
 USE_I18N = True
 USE_TZ = True
 
-if FORCE_SCRIPT_NAME:
-    LOGIN_URL = FORCE_SCRIPT_NAME + "/login/"
-    LOGIN_REDIRECT_URL = FORCE_SCRIPT_NAME + "/"
-    LOGOUT_REDIRECT_URL = FORCE_SCRIPT_NAME + "/login/"
-else:
-    LOGIN_URL = "/login/"
-    LOGIN_REDIRECT_URL = "/"
-    LOGOUT_REDIRECT_URL = "/login/"
+LOGIN_URL = "/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/login/"
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 1800

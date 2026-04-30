@@ -1,2 +1,21 @@
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+
+# Entornos
+.venv/
+venv/
+
+# DB local
+db.sqlite3
+*.sqlite3
+
+# Variables sensibles
+.env
+
+# Static compilado
+staticfiles/
+
+# OS
+.DS_Store
+Thumbs.db

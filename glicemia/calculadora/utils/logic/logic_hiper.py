@@ -11,6 +11,7 @@ from ..helpers import (
     dos_ultimas_mayores_360,
     obtener_tasa_por_algoritmo,
     tres_mediciones_mismo_escalon,
+    estan_en_mismo_escalon_200_300
 )
 
 def _marcar_visual(resultado, *, es_critico=False, nivel_visual="alerta"):
@@ -343,12 +344,18 @@ def evaluar_hiperglucemia(
     # >200 y <360 con infusión activa
 
     if actual > UMBRAL_ALERTA_ALTA and actual <= Decimal("360"):
+        print("DEBUG MISMO ESCALON 200-300")
+        print("actual:", actual)
+        print("previa:", previa)
+        print("tercera_medicion:", tercera_medicion)
+        print("resultado helper:", estan_en_mismo_escalon_200_300(previa, actual))
+
         if (
-            previa is not None
-            and tercera_medicion is None
-            and previa > Decimal("200")
-            and dos_mediciones_mismo_escalon(previa, actual)
+            tercera_medicion is None
+            and estan_en_mismo_escalon_200_300(previa, actual)
+            
         ):
+            
             resultado["estado"] = "Glucemia Fuera de Objetivo"
             resultado["estado_display"] = "Glucemia por encima de objetivo" 
             resultado["subestado"] = (
@@ -372,13 +379,14 @@ def evaluar_hiperglucemia(
                 resultado["calculo_texto"] = (
                 f"Tasa base {tasa_base.normalize()} UI/h + 0,5 UI/h → {tasa_ajustada.normalize()} UI/h"
                 )
-            _asignar_control(actual, insulinizado=True)
+            resultado["proximo_control"] = "Controlar glucemia nuevamente en 4 horas"
             resultado["comentario_control"] = (
                 "Si no se modifica la glucemia tras este ajuste, considerar fallo del Algoritmo 1 (HGP)."
             )
             resultado["observacion"] = (
                 "Aún no cumple criterios completos de hiperglucemia persistente."
             )
+            print("ENTRE AL BLOQUE CORRECTO")
             return _marcar_visual(resultado, es_critico=False, nivel_visual="alerta")
 
         if previa is not None and tercera_medicion is None:

@@ -297,7 +297,7 @@ def calcular_proximo_control_insulinizado(
             ),
         }
 
-    if Decimal("70") < glicemia <= Decimal("120"):
+    if Decimal("70") < glicemia <= Decimal("90"):
         return {
             "proximo_control": "Controlar glucemia nuevamente en 1 hora",
             "comentario_control": (
@@ -306,6 +306,23 @@ def calcular_proximo_control_insulinizado(
             ),
         }
 
+    if Decimal("90") < glicemia < Decimal("120"):
+        return {
+            "proximo_control": "Controlar glucemia nuevamente en 2 horas",
+            "comentario_control": (
+                ""
+                + _comentario_monitoreo_insulinizado()
+            ),
+        }
+
+    if glicemia == Decimal("120"):
+        return {
+            "proximo_control": "Controlar glucemia nuevamente en 2 horas",
+            "comentario_control": (
+                ""
+                + _comentario_monitoreo_insulinizado()
+            ),
+        }
     if glicemia == Decimal("70"):
         return {
             "proximo_control": "Controlar glucemia nuevamente en 30 minutos",
@@ -336,12 +353,16 @@ def calcular_proximo_control_post_hipoglucemia(glicemia):
             ),
         }
 
-    if glicemia <= Decimal("120"):
+    if Decimal("70") < glicemia <= Decimal("90"):
         return {
             "proximo_control": "Controlar glucemia nuevamente en 1 hora",
-            "comentario_control": (
-                ""
-            ),
+            "comentario_control": "",
+        }
+
+    if Decimal("90") < glicemia <= Decimal("120"):
+        return {
+            "proximo_control": "Controlar glucemia nuevamente en 2 horas",
+            "comentario_control": "",
         }
 
     if glicemia <= Decimal("180"):
@@ -523,3 +544,19 @@ def armar_resultado_insulinizacion(glicemia):
     resultado["monitoreo_glucemico"] = "Se sugiere monitoreo glucémico frecuente."
 
     return resultado
+
+
+def estan_en_mismo_escalon_200_300(previa, actual):
+    if previa is None or actual is None:
+        return False
+
+    previa = _a_decimal(previa)
+    actual = _a_decimal(actual)
+
+    if not (Decimal("200") < previa <= Decimal("300")):
+        return False
+
+    if not (Decimal("200") < actual <= Decimal("300")):
+        return False
+
+    return obtener_escalon_algoritmo(previa) == obtener_escalon_algoritmo(actual)

@@ -85,6 +85,9 @@ def evaluar_rango_70_180(
             resultado["ui_variant"] = "danger"
             resultado["en_objetivo"] = True
             resultado["en_objetivo_con_alerta"] = True
+            print(">>> ENTRO A evaluar_rango_70_180")
+            print(">>> actual:", actual)
+            print(">>> infusion_activa:", infusion_activa)
             return resultado
 
         # 91 a 160
@@ -109,14 +112,26 @@ def evaluar_rango_70_180(
 
         resultado["texto_rango_objetivo"] = "Paciente insulinizado: 140 a 200 mg/dL"
 
-        # 🔴 70 a <120
-        if UMBRAL_HIPO < actual < Decimal("120"):
+        # 🔴 71 a 90 con infusión activa
+        if UMBRAL_HIPO < actual <= Decimal("90"):
             resultado["estado"] = "Glucemia por debajo de objetivo"
             resultado["subestado"] = "Riesgo de hipoglucemia"
             resultado["resumen_objetivo"] = "Fuera de rango"
-            resultado["conducta"] = "Evaluar riesgo de hipoglucemia"
+            resultado["conducta"] = "Suspender insulina"
             resultado["requiere_recontrol"] = True
             resultado["proximo_control"] = "Controlar glucemia nuevamente en 1 hora"
+            resultado["ui_variant"] = "danger"
+            resultado["fuera_objetivo"] = True
+            return resultado
+
+        # 🟠 91 a 119 con infusión activa
+        if Decimal("90") < actual < Decimal("120"):
+            resultado["estado"] = "Glucemia por debajo de objetivo"
+            resultado["subestado"] = "Glucemia baja con infusión activa"
+            resultado["resumen_objetivo"] = "Fuera de rango"
+            resultado["conducta"] = "Suspender insulina"
+            resultado["requiere_recontrol"] = True
+            resultado["proximo_control"] = "Controlar glucemia nuevamente en 2 horas"
             resultado["ui_variant"] = "danger"
             resultado["fuera_objetivo"] = True
             return resultado
