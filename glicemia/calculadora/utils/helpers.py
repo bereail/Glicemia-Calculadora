@@ -276,11 +276,11 @@ def calcular_proximo_control_insulinizado(
             "comentario_control": _comentario_monitoreo_insulinizado(),
         }
 
-    if Decimal("200") <= glicemia < Decimal("300"):
-        return _control_4_o_6_horas(
-            horas_desde_inicio=horas_desde_inicio,
-            estable=estable,
-        )
+    if Decimal("200") < glicemia < Decimal("300"):
+        return {
+            "proximo_control": "Controlar glucemia nuevamente en 4 horas",
+            "comentario_control": _comentario_monitoreo_insulinizado(),
+        }
 
     if Decimal("140") <= glicemia < Decimal("200"):
         return _control_4_o_6_horas(
@@ -557,6 +557,37 @@ def estan_en_mismo_escalon_200_300(previa, actual):
         return False
 
     if not (Decimal("200") < actual <= Decimal("300")):
+        return False
+
+    return obtener_escalon_algoritmo(previa) == obtener_escalon_algoritmo(actual)
+
+
+def estan_en_mismo_escalon_300_400(previa, actual):
+    if previa is None or actual is None:
+        return False
+
+    previa = _a_decimal(previa)
+    actual = _a_decimal(actual)
+
+    if not (Decimal("300") <= previa <= Decimal("400")):
+        return False
+
+    if not (Decimal("300") <= actual <= Decimal("400")):
+        return False
+
+    return obtener_escalon_algoritmo(previa) == obtener_escalon_algoritmo(actual)
+
+def estan_en_mismo_escalon_300_400(previa, actual):
+    if previa is None or actual is None:
+        return False
+
+    previa = _a_decimal(previa)
+    actual = _a_decimal(actual)
+
+    if not (Decimal("300") <= previa <= Decimal("400")):
+        return False
+
+    if not (Decimal("300") <= actual <= Decimal("400")):
         return False
 
     return obtener_escalon_algoritmo(previa) == obtener_escalon_algoritmo(actual)

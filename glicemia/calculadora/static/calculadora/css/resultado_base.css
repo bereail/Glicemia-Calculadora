@@ -390,13 +390,7 @@
   line-height: 1.2;
 }
 
-/* NUEVO LAYOUT PRINCIPAL */
-.resultado-base--hiper .hiper-fila-principal--sostenida {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-  align-items: stretch;
-}
+
 
 /* TARJETA TERAPIA GRANDE */
 .resultado-base--hiper .hiper-hero--terapia {
@@ -486,8 +480,19 @@
 
 .resultado-base--hiper .hiper-proximo-card--full {
   width: 100%;
+  max-width: 320px;
+  grid-column: auto;
 }
 
+
+.resultado-base--hiper .hiper-hero--terapia {
+  min-width: 0;
+}
+
+.resultado-base--hiper .hiper-proximo-card {
+  width: 100%;
+  max-width: 320px;
+}
 .resultado-base--hiper .hiper-proximo-card__label {
   display: flex;
   align-items: center;
@@ -501,7 +506,7 @@
 }
 
 .resultado-base--hiper .hiper-proximo-card__value {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 900;
   line-height: 1.15;
   color: #fff;
@@ -548,12 +553,11 @@
     min-height: auto;
   }
 
-  .resultado-base--hiper .hiper-hero--terapia,
-  .resultado-base--hiper .hiper-proximo-card {
-    padding: 14px;
-    border-radius: 14px;
-    min-height: auto;
-  }
+.resultado-base--hiper .hiper-hero--terapia,
+.resultado-base--hiper .hiper-proximo-card {
+  min-height: 120px;
+}
+
 
   .resultado-base--hiper .hiper-header__estado-value {
     font-size: 15px;
@@ -783,6 +787,21 @@
   border: 1px solid rgba(255, 210, 90, 0.14);
 }
 
+.resultado-base--hiper .hiper-proximo-card,
+.resultado-base--hiper .hiper-proximo-card--full {
+  width: 100%;
+  max-width: none;
+  grid-column: auto;
+  justify-content: center;
+  padding: 20px 22px;
+}
+
+.resultado-base--hiper .hiper-proximo-card__value {
+  font-size: 16px;
+  line-height: 1.18;
+  max-width: 22ch;
+}
+
 /* =========================================================
    HOVER SUTIL
    ========================================================= */
@@ -843,6 +862,8 @@
 .rango-hero__meta {
   max-width: 72ch;
 }
+
+
 
 /* =========================================================
    RESPONSIVE
@@ -1148,4 +1169,167 @@
 .hiper-fila-principal,
 .rango-fila-principal--infusion {
   gap: 10px;
+}
+
+
+.hiper-hero--terapia,
+.hiper-proximo-card {
+  width: 100%;
+  height: 100%;
+}
+
+.hiper-proximo-card--full {
+  grid-column: auto;
+}
+
+@media (max-width: 900px) {
+  .hiper-fila-principal,
+  .hiper-fila-principal--sostenida {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hiper-hero--terapia {
+  min-width: 0; /* 👈 clave para que no rompa el grid */
+}
+
+.hiper-proximo-card {
+  width: 100%;
+  max-width: 320px;
+}
+
+.resultado-base--hiper .hiper-proximo-card {
+  max-width: none;
+}
+
+.resultado-base--hiper .hiper-hero--terapia,
+.resultado-base--hiper .hiper-proximo-card {
+  min-height: 122px; /* mismo que rango */
+}
+
+.resultado-base--hiper .hiper-fila-principal--sostenida {
+  display: grid;
+  grid-template-columns: 1.55fr 0.95fr; /* 👈 IGUAL QUE RANGO */
+  gap: 12px;
+  align-items: stretch;
+}
+
+
+/* =========================================================
+   HIPER - AJUSTE FINAL LIMPIO
+   Terapia + próximo control + tasa protagonista
+   ========================================================= */
+
+.resultado-base--hiper .hiper-fila-principal--sostenida {
+  display: grid;
+  grid-template-columns: 1.55fr 0.95fr;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.resultado-base--hiper .hiper-hero--terapia,
+.resultado-base--hiper .hiper-proximo-card {
+  width: 100%;
+  height: 100%;
+  min-height: 122px;
+  border-radius: 16px;
+}
+
+.resultado-base--hiper .hiper-hero--terapia {
+  padding: 16px 18px 14px;
+  justify-content: center;
+  min-width: 0;
+}
+
+.resultado-base--hiper .hiper-proximo-card,
+.resultado-base--hiper .hiper-proximo-card--full {
+  max-width: none;
+  grid-column: auto;
+  padding: 16px;
+  justify-content: center;
+}
+
+.resultado-base--hiper .hiper-hero__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.resultado-base--hiper .hiper-hero__bloque {
+  min-height: 92px;
+  padding: 16px 18px;
+}
+
+.resultado-base--hiper .hiper-hero__bloque--inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.resultado-base--hiper .hiper-hero__main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.resultado-base--hiper .hiper-hero__valor--main {
+  font-size: 42px;
+  font-weight: 950;
+  line-height: 0.95;
+  letter-spacing: -1px;
+  color: #ffffff;
+}
+
+.resultado-base--hiper .hiper-hero__label {
+  margin-top: 7px;
+  margin-bottom: 0;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 230, 235, 0.7);
+}
+
+.resultado-base--hiper .hiper-hero__side {
+  max-width: 360px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.045);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: rgba(255, 235, 238, 0.86);
+  white-space: normal;
+}
+
+.resultado-base--hiper .hiper-proximo-card__value {
+  max-width: 22ch;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.14;
+}
+
+@media (max-width: 900px) {
+  .resultado-base--hiper .hiper-fila-principal--sostenida {
+    grid-template-columns: 1fr;
+  }
+
+  .resultado-base--hiper .hiper-hero__bloque--inline {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .resultado-base--hiper .hiper-hero__valor--main {
+    font-size: 34px;
+  }
+
+  .resultado-base--hiper .hiper-hero__side {
+    max-width: none;
+  }
+
+  .resultado-base--hiper .hiper-proximo-card__value {
+    max-width: none;
+  }
 }

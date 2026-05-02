@@ -11,7 +11,8 @@ from ..helpers import (
     dos_ultimas_mayores_360,
     obtener_tasa_por_algoritmo,
     tres_mediciones_mismo_escalon,
-    estan_en_mismo_escalon_200_300
+    estan_en_mismo_escalon_200_300,
+    estan_en_mismo_escalon_300_400
 )
 
 def _marcar_visual(resultado, *, es_critico=False, nivel_visual="alerta"):
@@ -269,7 +270,7 @@ def evaluar_hiperglucemia(
         if tasa_algoritmo_1 is not None and tasa_algoritmo_2 is not None:
             diferencia = tasa_algoritmo_2 - tasa_algoritmo_1
 
-            resultado["tasa_algoritmo"] = f"{tasa_algoritmo_1.normalize()} UI/h"
+            resultado["tasa_algoritmo"] = f"{tasa_algoritmo_2.normalize()} UI/h"
 
             resultado["calculo_texto"] = (
                 f"Tasa actual {tasa_algoritmo_1.normalize()} UI/h + "
@@ -341,6 +342,60 @@ def evaluar_hiperglucemia(
         return _marcar_visual(resultado, es_critico=True, nivel_visual="critico")
 
     # ------------------------------------------------------
+    # 300-400 con infusión activa: control en 2 horas
+    # Si las dos mediciones están en el mismo escalón, obtener 3ra medición
+    # ------------------------------------------------------
+    if Decimal("300") <= actual <= Decimal("400"):
+        if (
+            tercera_medicion is None
+            and estan_en_mismo_escalon_300_400(previa, actual)
+        ):
+            resultado["estado"] = "Glucemia Fuera de Objetivo"
+            resultado["estado_display"] = "Glucemia por encima de objetivo"
+            resultado["subestado"] = (
+                "Dos mediciones consecutivas entre 300 y 400 mg/dL "
+                "en el mismo escalón con infusión activa"
+            )
+            resultado["mensaje"] = "Hiperglucemia fuera del rango objetivo."
+            resultado["resumen_objetivo"] = "Fuera de rango objetivo"
+            resultado["conducta"] = (
+                "Ajustar infusión<br>"
+                "Obtener tercera medición para evaluar persistencia"
+            )
+            resultado["requiere_recontrol"] = True
+            resultado["proximo_control"] = "Controlar glucemia nuevamente en 2 horas"
+            resultado["comentario_control"] = (
+                "Evaluar persistencia si las 3 mediciones permanecen > 200 mg/dL "
+                "en el mismo escalón."
+            )
+            resultado["observacion"] = (
+                "Aún no cumple criterios completos de hiperglucemia persistente."
+            )
+            return _marcar_visual(resultado, es_critico=False, nivel_visual="alerta")
+
+        if previa is not None and tercera_medicion is None:
+            resultado["estado"] = "Glucemia Fuera de Objetivo"
+            resultado["estado_display"] = "Glucemia por encima de objetivo"
+            resultado["subestado"] = (
+                "Dos mediciones consecutivas entre 300 y 400 mg/dL "
+                "con infusión activa"
+            )
+            resultado["mensaje"] = "Hiperglucemia fuera del rango objetivo."
+            resultado["resumen_objetivo"] = "Fuera de rango objetivo"
+            resultado["conducta"] = "Ajustar infusión"
+            resultado["requiere_recontrol"] = True
+            resultado["proximo_control"] = "Controlar glucemia nuevamente en 2 horas"
+            resultado["comentario_control"] = (
+                "Evaluar si las 3 mediciones permanecen > 200 mg/dL "
+                "en el mismo escalón."
+            )
+            resultado["observacion"] = (
+                "Aún no cumple criterios completos de hiperglucemia persistente."
+            )
+            return _marcar_visual(resultado, es_critico=False, nivel_visual="alerta")
+
+
+    # ------------------------------------------------------
     # >200 y <360 con infusión activa
 
     if actual > UMBRAL_ALERTA_ALTA and actual <= Decimal("360"):
@@ -374,7 +429,7 @@ def evaluar_hiperglucemia(
             if tasa_base is not None:
                 tasa_ajustada = tasa_base + Decimal("0.5")
 
-                resultado["tasa_algoritmo"] = f"{tasa_base.normalize()} UI/h"
+                resultado["tasa_algoritmo"] = f"{tasa_ajustada.normalize()} UI/h"
 
                 resultado["calculo_texto"] = (
                 f"Tasa base {tasa_base.normalize()} UI/h + 0,5 UI/h → {tasa_ajustada.normalize()} UI/h"
@@ -399,7 +454,7 @@ def evaluar_hiperglucemia(
             resultado["resumen_objetivo"] = "Fuera de rango objetivo"
             resultado["conducta"] = "Ajustar infusión"
             resultado["requiere_recontrol"] = True
-            resultado["proximo_control"] = " Obtener tercera medición para evaluar persistencia"
+            resultado["proximo_control"] = "Controlar glucemia nuevamente en 4 horas"
             resultado["comentario_control"] = (
                 "Evaluar si las 3 mediciones permanecen > 200 mg/dL en el mismo escalón."
             )

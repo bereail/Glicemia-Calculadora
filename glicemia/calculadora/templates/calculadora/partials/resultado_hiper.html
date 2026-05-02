@@ -15,7 +15,6 @@
           </div>
         </div>
 
-
         <div class="hiper-header__conducta-resumen">
           <div class="hiper-header__label">
             <span class="ui-icon">✚</span>
@@ -34,51 +33,60 @@
       <div class="hiper-fila-principal hiper-fila-principal--sostenida">
 
         {% if resultado.infusion_activa or resultado.tasa_algoritmo or resultado.tasa_calculada or resultado.bolo_calculado %}
-  <!-- TERAPIA -->
-  <div class="hiper-hero hiper-hero--terapia">
-    <div class="hiper-hero__eyebrow">
-      <span class="ui-icon">💉</span>
-      {% if resultado.infusion_activa %}
-        Infusión activa
-      {% else %}
-        Terapia
-      {% endif %}
-    </div>
+          <!-- TERAPIA -->
+          <div class="hiper-hero hiper-hero--terapia">
+            <div class="hiper-hero__eyebrow">
+              <span class="ui-icon">💉</span>
+              {% if resultado.infusion_activa %}
+                Infusión activa
+              {% else %}
+                Terapia
+              {% endif %}
+            </div>
 
-    <div class="hiper-hero__grid">
-      {% if not resultado.infusion_activa and resultado.bolo_calculado %}
-        <div class="hiper-hero__bloque">
-          <div class="hiper-hero__label">Bolo inicial</div>
-          <div class="hiper-hero__valor">
-            {{ resultado.bolo_calculado }} UI
+            <div class="hiper-hero__grid">
+              {% if not resultado.infusion_activa and resultado.bolo_calculado %}
+                <div class="hiper-hero__bloque">
+                  <div class="hiper-hero__valor hiper-hero__valor--main">
+                    {{ resultado.bolo_calculado }} UI
+                  </div>
+                  <div class="hiper-hero__label">
+                    Bolo inicial
+                  </div>
+                </div>
+              {% endif %}
+
+              {% if resultado.tasa_algoritmo or resultado.tasa_calculada %}
+                <div class="hiper-hero__bloque hiper-hero__bloque--inline">
+
+                  <div class="hiper-hero__main">
+                    <div class="hiper-hero__valor hiper-hero__valor--main">
+                      {% if resultado.tasa_algoritmo %}
+                        {{ resultado.tasa_algoritmo }}
+                      {% elif resultado.tasa_calculada %}
+                        {{ resultado.tasa_calculada }} UI/h
+                      {% endif %}
+                    </div>
+
+                    <div class="hiper-hero__label">
+                      Tasa de infusión
+                    </div>
+                  </div>
+
+                  {% if resultado.calculo_texto %}
+                    <div class="hiper-hero__side">
+                      {{ resultado.calculo_texto }}
+                    </div>
+                  {% endif %}
+
+                </div>
+              {% endif %}
+            </div>
           </div>
-        </div>
-      {% endif %}
-
-      {% if resultado.tasa_algoritmo or resultado.tasa_calculada %}
-        <div class="hiper-hero__bloque">
-          <div class="hiper-hero__label">Tasa de infusión</div>
-          <div class="hiper-hero__valor">
-            {% if resultado.tasa_algoritmo %}
-              {{ resultado.tasa_algoritmo }}
-            {% elif resultado.tasa_calculada %}
-              {{ resultado.tasa_calculada }} UI/h
-            {% endif %}
-          </div>
-        </div>
-      {% endif %}
-    </div>
-
-    {% if resultado.calculo_texto %}
-      <div class="hiper-hero__meta">
-        {{ resultado.calculo_texto }}
-      </div>
-    {% endif %}
-  </div>
-{% endif %}
+        {% endif %}
 
         <!-- PRÓXIMO CONTROL -->
-        <div class="hiper-proximo-card hiper-proximo-card--full">
+        <div class="hiper-proximo-card">
           <div class="hiper-proximo-card__label">
             <span class="ui-icon">🕒</span>
             Próximo control
@@ -87,8 +95,6 @@
           <div class="hiper-proximo-card__value">
             {{ resultado.proximo_control|default:"Controlar según protocolo indicado" }}
           </div>
-
-
         </div>
 
       </div>
