@@ -32,6 +32,13 @@ def tiene_acceso_home(user):
     )
 
 
+def tiene_acceso_historial(user):
+    return user.is_authenticated and (
+        user.is_superuser
+        or user.groups.filter(name="Medicos").exists()
+    )
+
+
 # =========================================================
 # GUARDADO
 # =========================================================
@@ -112,10 +119,12 @@ def control_glicemia(request):
             hubo_ajuste_insulina = form.cleaned_data.get("hubo_ajuste_insulina")
             tercera_medicion = form.cleaned_data.get("tercera_medicion")
             algoritmo_activo = form.cleaned_data.get("algoritmo_activo", "1")
+
             print("POST algoritmo_activo raw:", request.POST.get("algoritmo_activo"))
             print("cleaned algoritmo_activo:", form.cleaned_data.get("algoritmo_activo"))
             print("actual:", form.cleaned_data.get("glicemia_actual"))
             print("infusion_activa:", form.cleaned_data.get("infusion_activa"))
+
             resultado = evaluar_glucemia_service(
                 actual=actual,
                 previa=previa,
@@ -131,8 +140,6 @@ def control_glicemia(request):
                 infusion_activa=_a_bool(infusion_activa),
             )
 
-            # necesario para los templates:
-            # si el paciente ya está insulinizado, ocultar solo "Bolo inicial"
             resultado["infusion_activa"] = _a_bool(infusion_activa)
 
             estado_lower = str(resultado.get("estado") or "").lower()
@@ -154,13 +161,13 @@ def control_glicemia(request):
     return render(
         request,
         "calculadora/control_glicemia.html",
-        {
-            "form": form,
-            "resultado": resultado,
-            "medicion_guardada": medicion_guardada,
-        },
-    )
-
+    {
+        "form": form,
+        "resultado": resultado,
+        "medicion_guardada": medicion_guardada,
+        "es_medico": request.user.groups.filter(name="Medicos").exists(),
+    },
+)
 
 def _filtrar_mediciones_desde_request(request):
     usuario = request.GET.get("usuario", "").strip()
@@ -196,7 +203,7 @@ def _filtrar_mediciones_desde_request(request):
 
 
 @login_required
-@user_passes_test(tiene_acceso_home, login_url="/login/")
+@user_passes_test(tiene_acceso_historial, login_url="/login/")
 def historial(request):
     (
         mediciones_qs,
@@ -256,7 +263,7 @@ def historial(request):
 
 
 @login_required
-@user_passes_test(tiene_acceso_home, login_url="/login/")
+@user_passes_test(tiene_acceso_historial, login_url="/login/")
 def exportar_historial_excel(request):
     mediciones, usuario, estado, clase, periodo = _filtrar_mediciones_desde_request(
         request
@@ -359,7 +366,7 @@ def exportar_historial_excel(request):
 
 
 @login_required
-@user_passes_test(tiene_acceso_home, login_url="/login/")
+@user_passes_test(tiene_acceso_historial, login_url="/login/")
 def exportar_historial_pdf(request):
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4, landscape
@@ -421,7 +428,17 @@ def exportar_historial_pdf(request):
 
     table = Table(
         data,
-        colWidths=[28 * mm, 28 * mm, 18 * mm, 18 * mm, 18 * mm, 34 * mm, 24 * mm, 60 * mm, 24 * mm],
+        colWidths=[
+            28 * mm,
+            28 * mm,
+            18 * mm,
+            18 * mm,
+            18 * mm,
+            34 * mm,
+            24 * mm,
+            60 * mm,
+            24 * mm,
+        ],
     )
 
     table.setStyle(
