@@ -161,7 +161,7 @@ def control_glicemia(request):
     return render(
         request,
         "calculadora/control_glicemia.html",
-<<<<<<< HEAD
+
     {
         "form": form,
         "resultado": resultado,
@@ -169,16 +169,8 @@ def control_glicemia(request):
         "es_medico": request.user.groups.filter(name="Medicos").exists(),
     },
 )
-=======
-        {
-            "form": form,
-            "resultado": resultado,
-            "medicion_guardada": medicion_guardada,
-            "es_medico": request.user.groups.filter(name="Medicos").exists(),
-        },
-    )
 
->>>>>>> 345c3ca8 (borrar rebote post hipo)
+
 
 def _filtrar_mediciones_desde_request(request):
     usuario = request.GET.get("usuario", "").strip()
