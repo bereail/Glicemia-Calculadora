@@ -19,7 +19,18 @@
  <header class="topbar">
   <div class="container topbar__inner">
 
+<<<<<<< HEAD
     <h1 class="logo">Glicemia</h1>
+=======
+      <nav>
+        <a href="{% url 'control_glicemia' %}" class="btn">Inicio</a>
+        {% if request.user.is_superuser or es_medico %}
+        <a href="{% url 'historial' %}" class="btn">Historial</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+>>>>>>> 345c3ca8 (borrar rebote post hipo)
 
 <nav class="topbar__nav">
 

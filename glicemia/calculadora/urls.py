@@ -15,5 +15,13 @@ urlpatterns = [
         views.exportar_historial_pdf,
         name="exportar_historial_pdf",
     ),
+<<<<<<< HEAD
     path("logout/", LogoutView.as_view(next_page="/login/"), name="logout"),
+=======
+    path(
+    "logout/",
+    LogoutView.as_view(next_page="/login/"),
+    name="logout"
+    ),
+>>>>>>> 345c3ca8 (borrar rebote post hipo)
 ]
