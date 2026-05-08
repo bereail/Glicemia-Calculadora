@@ -8,11 +8,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SEGURIDAD BASE
 # =========================================================
 
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
-
-if not SECRET_KEY:
-    raise Exception("Falta configurar DJANGO_SECRET_KEY en variables de entorno")
-
+SECRET_KEY = os.environ.get(
+    "DJANGO_SECRET_KEY",
+    "solo-local-no-produccion",
+)
 
 DEBUG = os.environ.get("DJANGO_DEBUG", "False") == "True"
 
@@ -53,7 +52,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
 
-    # Si usás WhiteNoise para estáticos en producción
+    # WhiteNoise para archivos estáticos
     "whitenoise.middleware.WhiteNoiseMiddleware",
 
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -94,7 +93,8 @@ WSGI_APPLICATION = "glicemia.wsgi.application"
 # =========================================================
 # BASE DE DATOS
 # =========================================================
-# Por ahora SQLite. Para producción profesional: PostgreSQL.
+# SQLite para desarrollo / primera versión.
+# Producción profesional recomendada: PostgreSQL.
 
 DATABASES = {
     "default": {
@@ -132,6 +132,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # =========================================================
 
 LANGUAGE_CODE = "es-ar"
+
 TIME_ZONE = "America/Argentina/Cordoba"
 
 USE_I18N = True
@@ -152,13 +153,18 @@ LOGOUT_REDIRECT_URL = "/login/"
 # =========================================================
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
 SESSION_COOKIE_AGE = 1800
+
 SESSION_COOKIE_HTTPONLY = True
 
-CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_HTTPONLY = True
 
 
-# Activar cookies seguras solo cuando uses HTTPS
+# =========================================================
+# HTTPS
+# =========================================================
+
 USE_HTTPS = os.environ.get("USE_HTTPS", "False") == "True"
 
 SESSION_COOKIE_SECURE = USE_HTTPS
@@ -170,9 +176,12 @@ CSRF_COOKIE_SECURE = USE_HTTPS
 # =========================================================
 
 STATIC_URL = "/static/"
+
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_STORAGE = (
+    "whitenoise.storage.CompressedManifestStaticFilesStorage"
+)
 
 
 # =========================================================
@@ -187,8 +196,25 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # =========================================================
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
+
 X_FRAME_OPTIONS = "DENY"
 
+
+# =========================================================
+# HTTPS EXTRA
+# =========================================================
+
 if USE_HTTPS:
+
     SECURE_SSL_REDIRECT = True
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+    SECURE_PROXY_SSL_HEADER = (
+        "HTTP_X_FORWARDED_PROTO",
+        "https",
+    )
+
+    SECURE_HSTS_SECONDS = 31536000
+
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+    SECURE_HSTS_PRELOAD = True
