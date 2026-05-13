@@ -13,7 +13,7 @@ from ..helpers import (
     tres_mediciones_mismo_escalon,
     estan_en_mismo_escalon_200_300,
     estan_en_mismo_escalon_300_400
-)
+)       
 
 def _marcar_visual(resultado, *, es_critico=False, nivel_visual="alerta"):
     resultado["es_critico"] = es_critico
@@ -177,7 +177,14 @@ def evaluar_hiperglucemia(
 
         if previa >= UMBRAL_HIPER:
             resultado = armar_resultado_insulinizacion(actual)
+
             resultado["texto_rango_objetivo"] = "Paciente insulinizado: 140 a 200 mg/dL"
+
+            # SIN infusión activa: mostrar SOLO bolo inicial.
+            resultado["tasa_algoritmo"] = None
+            resultado["tasa_inicial"] = None
+            resultado["calculo_texto"] = None
+
             return resultado
 
         resultado["estado"] = "Hiperglucemia en Ascenso"
@@ -346,6 +353,10 @@ def evaluar_hiperglucemia(
     # Si las dos mediciones están en el mismo escalón, obtener 3ra medición
     # ------------------------------------------------------
     if Decimal("300") <= actual <= Decimal("400"):
+        print("ENTRO BLOQUE 300-359 MISMO ESCALON")
+        print("previa:", previa)
+        print("actual:", actual)
+        print("mismo escalon:", estan_en_mismo_escalon_300_400(previa, actual))
         if (
             tercera_medicion is None
             and estan_en_mismo_escalon_300_400(previa, actual)
@@ -359,10 +370,23 @@ def evaluar_hiperglucemia(
             resultado["mensaje"] = "Hiperglucemia fuera del rango objetivo."
             resultado["resumen_objetivo"] = "Fuera de rango objetivo"
             resultado["conducta"] = (
-                "Ajustar infusión<br>"
+                "Ajustar tasa de infusión en 0,5 UI/h<br>"
                 "Obtener tercera medición para evaluar persistencia"
             )
             resultado["requiere_recontrol"] = True
+
+            tasa_base = obtener_tasa_por_algoritmo(actual, algoritmo_activo)["tasa"]
+
+        if tasa_base is not None:
+            tasa_ajustada = tasa_base + Decimal("0.5")
+
+            resultado["tasa_algoritmo"] = f"{tasa_ajustada.normalize()} UI/h"
+            resultado["tasa_calculada"] = tasa_ajustada
+
+            resultado["calculo_texto"] = (
+                f"Tasa base {tasa_base.normalize()} UI/h + "
+                f"0,5 UI/h → {tasa_ajustada.normalize()} UI/h"
+            )
             resultado["proximo_control"] = "Controlar glucemia nuevamente en 2 horas"
             resultado["comentario_control"] = (
                 "Evaluar persistencia si las 3 mediciones permanecen > 200 mg/dL "

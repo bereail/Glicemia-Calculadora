@@ -45,27 +45,35 @@
             </div>
 
             <div class="hiper-hero__grid">
-              {% if not resultado.infusion_activa and resultado.bolo_calculado %}
-                <div class="hiper-hero__bloque">
-                  <div class="hiper-hero__valor hiper-hero__valor--main">
-                    {{ resultado.bolo_calculado }} UI
+
+              {% if not resultado.infusion_activa %}
+                {% if resultado.bolo_calculado %}
+                  <div class="hiper-hero__bloque">
+                    <div class="hiper-hero__valor hiper-hero__valor--main">
+                      {{ resultado.bolo_calculado }} UI
+                    </div>
+                    <div class="hiper-hero__label">
+                      Bolo inicial
+                    </div>
                   </div>
-                  <div class="hiper-hero__label">
-                    Bolo inicial
+                {% elif resultado.tasa_calculada %}
+                  <div class="hiper-hero__bloque">
+                    <div class="hiper-hero__valor hiper-hero__valor--main">
+                      {{ resultado.tasa_calculada }}
+                    </div>
+                    <div class="hiper-hero__label">
+                      Bolo inicial
+                    </div>
                   </div>
-                </div>
+                {% endif %}
               {% endif %}
 
-              {% if resultado.tasa_algoritmo or resultado.tasa_calculada %}
+              {% if resultado.infusion_activa and resultado.tasa_algoritmo %}
                 <div class="hiper-hero__bloque hiper-hero__bloque--inline">
 
                   <div class="hiper-hero__main">
                     <div class="hiper-hero__valor hiper-hero__valor--main">
-                      {% if resultado.tasa_algoritmo %}
-                        {{ resultado.tasa_algoritmo }}
-                      {% elif resultado.tasa_calculada %}
-                        {{ resultado.tasa_calculada }} UI/h
-                      {% endif %}
+                      {{ resultado.tasa_algoritmo }}
                     </div>
 
                     <div class="hiper-hero__label">
@@ -81,6 +89,7 @@
 
                 </div>
               {% endif %}
+
             </div>
           </div>
         {% endif %}
