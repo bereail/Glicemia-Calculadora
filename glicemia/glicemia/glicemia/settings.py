@@ -1,23 +1,41 @@
+import os
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "django-insecure-5ep3vdrem3cc7^n%q%%c050y^ma^yk+v&t7&!+&8^u0+sg#8yv"
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# =========================================================
+# SEGURIDAD BASE
+# =========================================================
 
-ALLOWED_HOSTS: list[str] = [
-    "192.168.100.21",
-    "127.0.0.1",
-    "localhost",
-    "192.168.6.254",
-]
+SECRET_KEY = os.environ.get(
+    "DJANGO_SECRET_KEY",
+    "solo-local-no-produccion",
+)
 
-# Application definition
+DEBUG = os.environ.get("DJANGO_DEBUG", "False") == "True"
+
+
+ALLOWED_HOSTS = os.environ.get(
+    "DJANGO_ALLOWED_HOSTS",
+    "127.0.0.1,localhost,192.168.7.250,192.168.100.21,192.168.7.210,138.36.238.175,www.ailonline.com.ar,ailonline.com.ar",
+).split(",")
+
+
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    "DJANGO_CSRF_TRUSTED_ORIGINS",
+    "http://192.168.7.250,http://192.168.100.21,http://192.168.7.210,http://138.36.238.175,https://www.ailonline.com.ar,https://ailonline.com.ar",
+).split(",")
+
+
+# =========================================================
+# APPS
+# =========================================================
 
 INSTALLED_APPS = [
+    "pacientes",
+    "calculadora",
+
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -26,8 +44,17 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 ]
 
+
+# =========================================================
+# MIDDLEWARE
+# =========================================================
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+
+    # WhiteNoise para archivos estáticos
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -36,12 +63,18 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+
 ROOT_URLCONF = "glicemia.urls"
+
+
+# =========================================================
+# TEMPLATES
+# =========================================================
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -53,11 +86,15 @@ TEMPLATES = [
     },
 ]
 
+
 WSGI_APPLICATION = "glicemia.wsgi.application"
 
 
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+# =========================================================
+# BASE DE DATOS
+# =========================================================
+# SQLite para desarrollo / primera versión.
+# Producción profesional recomendada: PostgreSQL.
 
 DATABASES = {
     "default": {
@@ -67,8 +104,9 @@ DATABASES = {
 }
 
 
-# Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
+# =========================================================
+# VALIDADORES DE CONTRASEÑA
+# =========================================================
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -76,6 +114,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {
+            "min_length": 8,
+        },
     },
     {
         "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
@@ -86,13 +127,94 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-LANGUAGE_CODE = "en-us"
+# =========================================================
+# LOCALIZACIÓN
+# =========================================================
 
-TIME_ZONE = "UTC"
+LANGUAGE_CODE = "es-ar"
+
+TIME_ZONE = "America/Argentina/Cordoba"
 
 USE_I18N = True
-
 USE_TZ = True
 
 
-STATIC_URL = "static/"
+# =========================================================
+# LOGIN / LOGOUT
+# =========================================================
+
+LOGIN_URL = "/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/login/"
+
+
+# =========================================================
+# SESIONES Y COOKIES
+# =========================================================
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+SESSION_COOKIE_AGE = 1800
+
+SESSION_COOKIE_HTTPONLY = True
+
+CSRF_COOKIE_HTTPONLY = True
+
+
+# =========================================================
+# HTTPS
+# =========================================================
+
+USE_HTTPS = os.environ.get("USE_HTTPS", "False") == "True"
+
+SESSION_COOKIE_SECURE = USE_HTTPS
+CSRF_COOKIE_SECURE = USE_HTTPS
+
+
+# =========================================================
+# STATIC FILES
+# =========================================================
+
+STATIC_URL = "/static/"
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STATICFILES_STORAGE = (
+    "whitenoise.storage.CompressedManifestStaticFilesStorage"
+)
+
+
+# =========================================================
+# DEFAULTS
+# =========================================================
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# =========================================================
+# HEADERS DE SEGURIDAD
+# =========================================================
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+X_FRAME_OPTIONS = "DENY"
+
+
+# =========================================================
+# HTTPS EXTRA
+# =========================================================
+
+if USE_HTTPS:
+
+    SECURE_SSL_REDIRECT = True
+
+    SECURE_PROXY_SSL_HEADER = (
+        "HTTP_X_FORWARDED_PROTO",
+        "https",
+    )
+
+    SECURE_HSTS_SECONDS = 31536000
+
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+    SECURE_HSTS_PRELOAD = True

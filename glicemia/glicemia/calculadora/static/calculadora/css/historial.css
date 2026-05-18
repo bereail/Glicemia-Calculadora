@@ -1,0 +1,405 @@
+/* =========================================================
+   HISTORIAL
+   Filtros + métricas + tabla + exportación
+   ========================================================= */
+
+/* =========================================================
+   CONTENEDOR GENERAL
+   ========================================================= */
+
+.historial-shell {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.historial-page-title {
+  margin: 0;
+  font-size: clamp(1.35rem, 2vw, 1.9rem);
+  line-height: 1.05;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+/* =========================================================
+   PANEL FILTROS
+   ========================================================= */
+
+.historial-filtros {
+  padding: 18px;
+}
+
+.historial-filtros__header {
+  margin-bottom: 14px;
+}
+
+.historial-filtros__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.historial-filtros__subtitle {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.3;
+}
+
+.historial-filtros__grid {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) minmax(180px, 180px) auto auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.historial-filtros__field {
+  min-width: 0;
+}
+
+.historial-filtros__actions {
+  display: flex;
+  gap: 10px;
+  align-items: end;
+}
+
+.historial-filtros .btn,
+.historial-filtros button {
+  min-width: 120px;
+  height: 40px;
+}
+
+/* =========================================================
+   MÉTRICAS
+   ========================================================= */
+
+.historial-metricas {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.historial-metrica {
+  position: relative;
+  overflow: hidden;
+  padding: 16px 16px 14px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(12, 37, 68, 0.94) 0%, rgba(8, 24, 46, 0.98) 100%);
+  border: 1px solid rgba(95, 148, 224, 0.18);
+  box-shadow: var(--shadow-md);
+}
+
+.historial-metrica::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+
+.historial-metrica--total::before {
+  background: #60a5fa;
+}
+
+.historial-metrica--hipo::before {
+  background: #f87171;
+}
+
+.historial-metrica--ok::before {
+  background: #34d399;
+}
+
+.historial-metrica--hiper::before {
+  background: #fbbf24;
+}
+
+.historial-metrica__label {
+  margin: 0 0 8px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9db3cc;
+}
+
+.historial-metrica__value {
+  margin: 0 0 4px;
+  font-size: clamp(1.55rem, 2.6vw, 2.1rem);
+  line-height: 0.95;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.historial-metrica__desc {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.28;
+  color: #d8e5f8;
+}
+
+/* =========================================================
+   PANEL TABLA / EXPORTAR
+   ========================================================= */
+
+.historial-tabla-panel {
+  padding: 18px;
+}
+
+.historial-tabla-panel__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.historial-tabla-panel__title {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.historial-tabla-panel__subtitle {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.historial-export-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.historial-export-actions .btn {
+  min-width: 138px;
+}
+
+/* =========================================================
+   TABLA
+   ========================================================= */
+
+.historial-table-wrap {
+  overflow: auto;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(5, 15, 30, 0.18);
+}
+
+.historial-table {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: collapse;
+}
+
+.historial-table thead th {
+  text-align: left;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #8ea3c2;
+  padding: 14px 14px;
+  border-bottom: 1px solid #22385e;
+  background: rgba(255, 255, 255, 0.01);
+  white-space: nowrap;
+}
+
+.historial-table tbody td {
+  padding: 14px;
+  vertical-align: middle;
+  color: #f3f7ff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.historial-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.historial-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.historial-table__fecha {
+  white-space: nowrap;
+  color: #dce8f8;
+  font-weight: 700;
+}
+
+.historial-table__usuario,
+.historial-table__modo,
+.historial-table__tendencia {
+  white-space: nowrap;
+}
+
+.historial-table__glucemia {
+  white-space: nowrap;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.historial-table__conducta {
+  min-width: 300px;
+  color: #e5eefb;
+  line-height: 1.24;
+}
+
+.historial-table__conducta .link-algoritmo {
+  color: #8fd0ff;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.historial-table__conducta .link-algoritmo:hover {
+  color: #b4e2ff;
+}
+
+/* =========================================================
+   PILLS DE ESTADO
+   ========================================================= */
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e5e7eb;
+}
+
+.status-pill-ok {
+  background: rgba(16, 185, 129, 0.16);
+  color: #a7f3d0;
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.status-pill-hypo {
+  background: rgba(239, 68, 68, 0.16);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.status-pill-hyper {
+  background: rgba(245, 158, 11, 0.16);
+  color: #fcd34d;
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.status-pill-neutral {
+  background: rgba(148, 163, 184, 0.14);
+  color: #dbe7f7;
+  border-color: rgba(148, 163, 184, 0.26);
+}
+
+/* =========================================================
+   EMPTY / PAGINACIÓN
+   ========================================================= */
+
+.historial-empty {
+  padding: 18px;
+  text-align: center;
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+.page-info {
+  color: #9fb2cf;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .historial-filtros__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .historial-filtros__actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+
+  .historial-metricas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .historial-filtros,
+  .historial-tabla-panel {
+    padding: 14px;
+  }
+
+  .historial-filtros__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .historial-filtros__actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .historial-filtros__actions .btn,
+  .historial-filtros__actions button {
+    width: 100%;
+  }
+
+  .historial-metricas {
+    grid-template-columns: 1fr;
+  }
+
+  .historial-tabla-panel__top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .historial-export-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .historial-export-actions .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .historial-page-title {
+    font-size: 1.3rem;
+  }
+
+  .historial-metrica {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .historial-metrica__value {
+    font-size: 1.7rem;
+  }
+}
