@@ -177,13 +177,13 @@ def evaluar_hiperglucemia(
 
         if previa >= UMBRAL_HIPER:
             resultado = armar_resultado_insulinizacion(actual)
-
             resultado["texto_rango_objetivo"] = "Paciente insulinizado: 140 a 200 mg/dL"
 
-            # SIN infusión activa: mostrar SOLO bolo inicial.
+            dosis = (actual / Decimal("100")).quantize(Decimal("0.1"))
+            resultado["bolo_inicial"] = f"{dosis} UI"
+            resultado["tasa_inicial"] = f"{dosis} UI/h"
             resultado["tasa_algoritmo"] = None
-            resultado["tasa_inicial"] = None
-            resultado["calculo_texto"] = None
+
 
             return resultado
 
@@ -352,11 +352,7 @@ def evaluar_hiperglucemia(
     # 300-400 con infusión activa: control en 2 horas
     # Si las dos mediciones están en el mismo escalón, obtener 3ra medición
     # ------------------------------------------------------
-    if Decimal("300") <= actual <= Decimal("400"):
-        print("ENTRO BLOQUE 300-359 MISMO ESCALON")
-        print("previa:", previa)
-        print("actual:", actual)
-        print("mismo escalon:", estan_en_mismo_escalon_300_400(previa, actual))
+    if Decimal("300") <= actual <= Decimal("400"):      
         if (
             tercera_medicion is None
             and estan_en_mismo_escalon_300_400(previa, actual)
@@ -423,12 +419,6 @@ def evaluar_hiperglucemia(
     # >200 y <360 con infusión activa
 
     if actual > UMBRAL_ALERTA_ALTA and actual <= Decimal("360"):
-        print("DEBUG MISMO ESCALON 200-300")
-        print("actual:", actual)
-        print("previa:", previa)
-        print("tercera_medicion:", tercera_medicion)
-        print("resultado helper:", estan_en_mismo_escalon_200_300(previa, actual))
-
         if (
             tercera_medicion is None
             and estan_en_mismo_escalon_200_300(previa, actual)
@@ -465,7 +455,7 @@ def evaluar_hiperglucemia(
             resultado["observacion"] = (
                 "Aún no cumple criterios completos de hiperglucemia persistente."
             )
-            print("ENTRE AL BLOQUE CORRECTO")
+
             return _marcar_visual(resultado, es_critico=False, nivel_visual="alerta")
 
         if previa is not None and tercera_medicion is None:

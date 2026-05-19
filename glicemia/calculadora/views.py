@@ -120,11 +120,6 @@ def control_glicemia(request):
             tercera_medicion = form.cleaned_data.get("tercera_medicion")
             algoritmo_activo = form.cleaned_data.get("algoritmo_activo", "1")
 
-            print("POST algoritmo_activo raw:", request.POST.get("algoritmo_activo"))
-            print("cleaned algoritmo_activo:", form.cleaned_data.get("algoritmo_activo"))
-            print("actual:", form.cleaned_data.get("glicemia_actual"))
-            print("infusion_activa:", form.cleaned_data.get("infusion_activa"))
-
             resultado = evaluar_glucemia_service(
                 actual=actual,
                 previa=previa,

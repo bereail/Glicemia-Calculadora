@@ -85,9 +85,7 @@ def evaluar_rango_70_180(
             resultado["ui_variant"] = "danger"
             resultado["en_objetivo"] = True
             resultado["en_objetivo_con_alerta"] = True
-            print(">>> ENTRO A evaluar_rango_70_180")
-            print(">>> actual:", actual)
-            print(">>> infusion_activa:", infusion_activa)
+
             return resultado
 
         # 91 a 160

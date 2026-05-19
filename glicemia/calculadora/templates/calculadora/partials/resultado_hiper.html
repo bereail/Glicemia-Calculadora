@@ -1,15 +1,16 @@
 <section class="resultado-base resultado-base--hiper resultado-base--hiper-sostenida {% if resultado.es_critica %}resultado-base--hiper-critica{% endif %}">
   <div class="hiper-layout hiper-layout--sostenida">
 
-    <!-- 1. HEADER -->
+    <!-- HEADER -->
     <div class="hiper-bloque hiper-bloque--header">
       <div class="hiper-header hiper-header--compacto hiper-header--con-conducta">
-        
+
         <div class="hiper-header__estado">
           <div class="hiper-header__label">
             <span class="ui-icon">⚠</span>
             Estado
           </div>
+
           <div class="hiper-header__estado-value">
             {{ resultado.estado_display|default:resultado.estado|default:"Hiperglucemia sostenida" }}
           </div>
@@ -20,6 +21,7 @@
             <span class="ui-icon">✚</span>
             Conducta inmediata
           </div>
+
           <div class="hiper-header__conducta-resumen-value">
             {{ resultado.conducta|default:"Continuar conducta indicada."|safe }}
           </div>
@@ -28,74 +30,86 @@
       </div>
     </div>
 
-    <!-- 2. FILA PRINCIPAL -->
+    <!-- FILA PRINCIPAL -->
     <div class="hiper-bloque hiper-bloque--fila-principal">
       <div class="hiper-fila-principal hiper-fila-principal--sostenida">
 
-        {% if resultado.infusion_activa or resultado.tasa_algoritmo or resultado.tasa_calculada or resultado.bolo_calculado %}
-          <!-- TERAPIA -->
-          <div class="hiper-hero hiper-hero--terapia">
-            <div class="hiper-hero__eyebrow">
-              <span class="ui-icon">💉</span>
-              {% if resultado.infusion_activa %}
-                Infusión activa
-              {% else %}
-                Terapia
-              {% endif %}
-            </div>
+        <!-- TERAPIA -->
+        <div class="hiper-hero hiper-hero--terapia">
 
-            <div class="hiper-hero__grid">
+          <div class="hiper-hero__eyebrow">
+            <span class="ui-icon">💉</span>
 
-              {% if not resultado.infusion_activa %}
-                {% if resultado.bolo_calculado %}
-                  <div class="hiper-hero__bloque">
-                    <div class="hiper-hero__valor hiper-hero__valor--main">
-                      {{ resultado.bolo_calculado }} UI
-                    </div>
-                    <div class="hiper-hero__label">
-                      Bolo inicial
-                    </div>
-                  </div>
-                {% elif resultado.tasa_calculada %}
-                  <div class="hiper-hero__bloque">
-                    <div class="hiper-hero__valor hiper-hero__valor--main">
-                      {{ resultado.tasa_calculada }}
-                    </div>
-                    <div class="hiper-hero__label">
-                      Bolo inicial
-                    </div>
-                  </div>
-                {% endif %}
-              {% endif %}
-
-              {% if resultado.infusion_activa and resultado.tasa_algoritmo %}
-                <div class="hiper-hero__bloque hiper-hero__bloque--inline">
-
-                  <div class="hiper-hero__main">
-                    <div class="hiper-hero__valor hiper-hero__valor--main">
-                      {{ resultado.tasa_algoritmo }}
-                    </div>
-
-                    <div class="hiper-hero__label">
-                      Tasa de infusión
-                    </div>
-                  </div>
-
-                  {% if resultado.calculo_texto %}
-                    <div class="hiper-hero__side">
-                      {{ resultado.calculo_texto }}
-                    </div>
-                  {% endif %}
-
-                </div>
-              {% endif %}
-
-            </div>
+            {% if resultado.infusion_activa %}
+              Infusión activa
+            {% else %}
+              Terapia
+            {% endif %}
           </div>
-        {% endif %}
+
+          <div class="hiper-hero__grid hiper-hero__grid--inicio">
+
+            <!-- BOLO -->
+            {% if resultado.bolo_inicial %}
+            <div class="hiper-hero__bloque">
+
+              <div class="hiper-hero__valor hiper-hero__valor--main">
+                {{ resultado.bolo_inicial }}
+              </div>
+
+              <div class="hiper-hero__label">
+                Bolo inicial
+              </div>
+
+            </div>
+            {% endif %}
+
+            <!-- TASA -->
+            {% if resultado.tasa_inicial %}
+            <div class="hiper-hero__bloque">
+
+              <div class="hiper-hero__valor hiper-hero__valor--main">
+                {{ resultado.tasa_inicial }}
+              </div>
+
+              <div class="hiper-hero__label">
+                Tasa de infusión
+              </div>
+
+            </div>
+            {% endif %}
+
+            <!-- INFUSIÓN ACTIVA -->
+            {% if resultado.infusion_activa and resultado.tasa_algoritmo %}
+            <div class="hiper-hero__bloque hiper-hero__bloque--inline">
+
+              <div class="hiper-hero__main">
+
+                <div class="hiper-hero__valor hiper-hero__valor--main">
+                  {{ resultado.tasa_algoritmo }}
+                </div>
+
+                <div class="hiper-hero__label">
+                  Tasa de infusión
+                </div>
+
+              </div>
+
+              {% if resultado.calculo_texto %}
+              <div class="hiper-hero__side">
+                {{ resultado.calculo_texto }}
+              </div>
+              {% endif %}
+
+            </div>
+            {% endif %}
+
+          </div>
+        </div>
 
         <!-- PRÓXIMO CONTROL -->
         <div class="hiper-proximo-card">
+
           <div class="hiper-proximo-card__label">
             <span class="ui-icon">🕒</span>
             Próximo control
@@ -104,6 +118,7 @@
           <div class="hiper-proximo-card__value">
             {{ resultado.proximo_control|default:"Controlar según protocolo indicado" }}
           </div>
+
         </div>
 
       </div>

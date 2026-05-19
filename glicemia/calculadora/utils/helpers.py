@@ -538,7 +538,7 @@ def armar_resultado_insulinizacion(glicemia):
     resultado["tasa_inicial"] = f"{dosis} UI/h"
     resultado["bolo_calculado"] = f"{dosis}"
     resultado["tasa_calculada"] = f"{dosis}"
-    resultado["tasa_algoritmo"] = tasa_algoritmo["texto"]
+    resultado["tasa_algoritmo"] = None
     resultado["calculo_texto"] = "Dosis inicial estimada según glucemia actual."
 
     resultado["proximo_control"] = control_info["proximo_control"]

@@ -1433,3 +1433,19 @@
     grid-template-columns: 1fr;
   }
 }
+
+.resultado-base--hiper .hiper-hero__grid--inicio {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.resultado-base--hiper .hiper-hero__grid--inicio .hiper-hero__bloque {
+  min-height: 86px;
+}
+
+@media (max-width: 768px) {
+  .resultado-base--hiper .hiper-hero__grid--inicio {
+    grid-template-columns: 1fr;
+  }
+}

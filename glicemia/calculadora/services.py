@@ -11,9 +11,6 @@ def evaluar_glucemia_service(
     horas_desde_inicio=None,
     estable=False,
 ):
-    print("SERVICE algoritmo_activo recibido:", algoritmo_activo)
-    print("SERVICE actual recibido:", actual)
-    print("SERVICE infusion_activa recibida:", infusion_activa)
 
     return resolver_glucemia(
         actual=actual,
