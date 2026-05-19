@@ -517,10 +517,12 @@ def armar_resultado_insulinizacion(glicemia):
     resultado["es_critica"] = True
 
     dosis = calcular_bolo_y_tasa_inicial(glicemia)
-    control_info = calcular_proximo_control(
-        glicemia,
-        insulinizado=True,
-    )
+
+    control_info = {
+        "proximo_control": "Controlar glucemia nuevamente en 1 hora",
+        "comentario_control": "Inicio de protocolo de insulinización endovenosa."
+    }
+
     tasa_algoritmo = obtener_tasa_por_algoritmo(glicemia, algoritmo=1)
 
     resultado["estado"] = "Hiperglucemia Sostenida"

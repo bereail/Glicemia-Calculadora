@@ -10,6 +10,7 @@
     <section class="hero">
       <div class="hero__text">
         <h1>Control de glicemia e infusión de insulina - UCI HEEP</h1>
+
         <div class="alerta-protocolo">
           Aplicable solo a pacientes UCI con Terapia Nutricional Médica, sin Cetoacidosis Diabética ni estado Hiperosmolar no Cetósico
         </div>
@@ -34,6 +35,7 @@
         <div class="field-group">
           <label for="id_glicemia_actual">Glicemia actual</label>
           {{ form.glicemia_actual }}
+
           {% if form.glicemia_actual.errors %}
             <div class="field-error">{{ form.glicemia_actual.errors }}</div>
           {% endif %}
@@ -41,9 +43,9 @@
 
         <div id="bloque_contexto" class="hidden">
 
-          <!-- INFUSIÓN ACTIVA -->
           <div class="field-group">
             <label class="field-label">{{ form.infusion_activa.label }}</label>
+
             <div class="glicemia-radio-group">
               {% for radio in form.infusion_activa %}
                 <label class="glicemia-radio-card">
@@ -52,14 +54,15 @@
                 </label>
               {% endfor %}
             </div>
+
             {% if form.infusion_activa.errors %}
               <div class="field-error">{{ form.infusion_activa.errors }}</div>
             {% endif %}
           </div>
 
-          <!-- ALGORITMO EN USO: justo debajo de infusión -->
           <div id="algoritmo_container" class="field-group hidden">
             <label class="field-label">{{ form.algoritmo_activo.label }}</label>
+
             <div class="glicemia-radio-group">
               {% for radio in form.algoritmo_activo %}
                 <label class="glicemia-radio-card">
@@ -68,24 +71,25 @@
                 </label>
               {% endfor %}
             </div>
+
             <div class="field-helper">
               Seleccionar solo si el paciente ya se encuentra en Algoritmo 2.
             </div>
+
             {% if form.algoritmo_activo.errors %}
               <div class="field-error">{{ form.algoritmo_activo.errors }}</div>
             {% endif %}
           </div>
 
-          <!-- HELPER PREVIA -->
           <div id="helper_previa_container" class="field-helper hidden">
             <span id="helper_previa"></span>
           </div>
 
-          <!-- GLICEMIAS PREVIAS -->
           <div id="previas_box" class="hidden">
             <div class="field-group">
               <label for="id_glicemia_previa">Glicemia previa</label>
               {{ form.glicemia_previa }}
+
               {% if form.glicemia_previa.errors %}
                 <div class="field-error">{{ form.glicemia_previa.errors }}</div>
               {% endif %}
@@ -94,6 +98,7 @@
             <div id="anterior_container" class="field-group hidden">
               <label for="id_tercera_medicion">Glicemia anterior</label>
               {{ form.tercera_medicion }}
+
               {% if form.tercera_medicion.errors %}
                 <div class="field-error">{{ form.tercera_medicion.errors }}</div>
               {% endif %}
@@ -118,7 +123,9 @@
   <div class="modal-resultado__backdrop" data-close-resultado></div>
 
   <div class="modal-resultado__dialog" role="dialog" aria-modal="true">
-    <button type="button" class="modal-resultado__close" id="cerrar-modal-resultado">×</button>
+    <button type="button" class="modal-resultado__close" id="cerrar-modal-resultado">
+      ×
+    </button>
 
     <div class="modal-resultado__header">
       <p class="modal-resultado__eyebrow">Resultado</p>
@@ -126,10 +133,12 @@
     </div>
 
     <div class="modal-resultado__body">
+
       <div class="resumen-entrada">
         <div class="resumen-entrada__header">Datos evaluados</div>
 
         <div class="resumen-entrada__grid">
+
           <div class="resumen-entrada__item">
             <span class="resumen-entrada__label">Glucemia actual</span>
             <span class="resumen-entrada__value">
@@ -150,14 +159,6 @@
             </span>
           </div>
 
-          {% if resultado.infusion_activa and resultado.algoritmo_activo %}
-      <div class="resumen-entrada__item">
-        <span class="resumen-entrada__label">Algoritmo en uso</span>
-        <span class="resumen-entrada__value">
-          {{ resultado.algoritmo_activo }}
-        </span>
-      </div>
-      {% endif %}
           {% if form.glicemia_previa.value %}
           <div class="resumen-entrada__item">
             <span class="resumen-entrada__label">Glucemia previa</span>
@@ -175,6 +176,7 @@
             </span>
           </div>
           {% endif %}
+
         </div>
       </div>
 
@@ -185,6 +187,7 @@
       {% else %}
         {% include "calculadora/partials/resultado_rango.html" %}
       {% endif %}
+
     </div>
   </div>
 </div>
@@ -192,11 +195,11 @@
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=5">
-<link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=5">
-<link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=5">
+<link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=7">
+<link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=7">
+<link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=7">
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=7"></script>
+<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=9"></script>
 {% endblock %}
