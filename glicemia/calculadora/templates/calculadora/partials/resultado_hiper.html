@@ -50,7 +50,7 @@
           <div class="hiper-hero__grid hiper-hero__grid--inicio">
 
             <!-- BOLO -->
-            {% if resultado.bolo_inicial %}
+            {% if resultado.bolo_inicial and not resultado.infusion_activa %}
             <div class="hiper-hero__bloque">
 
               <div class="hiper-hero__valor hiper-hero__valor--main">
@@ -65,19 +65,19 @@
             {% endif %}
 
             <!-- TASA -->
-            {% if resultado.tasa_inicial %}
-            <div class="hiper-hero__bloque">
+{% if resultado.tasa_inicial and not resultado.infusion_activa %}
+<div class="hiper-hero__bloque">
 
-              <div class="hiper-hero__valor hiper-hero__valor--main">
-                {{ resultado.tasa_inicial }}
-              </div>
+  <div class="hiper-hero__valor hiper-hero__valor--main">
+    {{ resultado.tasa_inicial }}
+  </div>
 
-              <div class="hiper-hero__label">
-                Tasa de infusión
-              </div>
+  <div class="hiper-hero__label">
+    Tasa de infusión
+  </div>
 
-            </div>
-            {% endif %}
+</div>
+{% endif %}
 
             <!-- INFUSIÓN ACTIVA -->
             {% if resultado.infusion_activa and resultado.tasa_algoritmo %}

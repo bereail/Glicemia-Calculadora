@@ -16,6 +16,24 @@ from .constants import (
 )
 
 
+def aplicar_reglas_inicio_protocolo(resultado):
+    conducta = resultado.get("conducta", "") or ""
+
+    inicia_protocolo = (
+        "iniciar protocolo" in conducta.lower()
+        or "insulinización endovenosa" in conducta.lower()
+    )
+
+    if inicia_protocolo:
+        resultado["mostrar_bolo_inicial"] = True
+        resultado["mostrar_tasa_infusion"] = True
+
+        resultado["tasa_infusion"] = resultado.get("tasa_algoritmo")
+        resultado["bolo_inicial"] = resultado.get("bolo_inicial")
+
+    return resultado
+
+
 def _a_decimal(valor, permitir_none=False):
     if valor in (None, ""):
         if permitir_none:
