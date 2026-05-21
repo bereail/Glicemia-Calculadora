@@ -1,0 +1,81 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>{% block title %}Control Glicemia{% endblock %}</title>
+
+  <link rel="stylesheet" href="{% static 'calculadora/css/base.css' %}?v=20260414-1">
+  <link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=20260414-1">
+  <link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=20260414-1">
+  <link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=20260414-1">
+
+  {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+  <header class="topbar">
+    <div class="container topbar__inner">
+
+      <h1 class="logo">Glicemia</h1>
+
+      <nav class="topbar__nav">
+
+        <div class="topbar__nav-left">
+
+          <a href="{% url 'control_glicemia' %}" class="btn">
+            Inicio
+          </a>
+
+          {% if request.user.is_superuser or es_medico %}
+            <a href="{% url 'historial' %}" class="btn">
+              Historial
+            </a>
+          {% endif %}
+
+<a
+  href="{% static 'calculadora/docs/protocolo-glicemia.pdf' %}"
+  target="_blank"
+  class="btn"
+>
+  Ver protocolo
+</a>
+
+        </div>
+
+        <div class="topbar__nav-right">
+
+          <form method="post"
+                action="{% url 'logout' %}"
+                class="logout-form">
+
+            {% csrf_token %}
+
+            <button type="submit"
+                    class="btn btn-logout">
+              Cerrar Sesión
+            </button>
+
+          </form>
+
+        </div>
+
+      </nav>
+
+    </div>
+  </header>
+
+  <main>
+    {% block content %}
+    {% endblock %}
+  </main>
+
+  {% block extra_js %}
+    <script src="{% static 'calculadora/js/control_glicemia.js' %}?v=3"></script>
+  {% endblock %}
+
+</body>
+</html>

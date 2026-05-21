@@ -1,0 +1,48 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}">
+
+<div class="actions actions--stack mt-3">
+  <button type="button" id="btn-tabla-algoritmos" class="btn-outline-info">
+    Consultar tabla de algoritmos
+  </button>
+</div>
+
+<div id="modal-tabla" class="modal-tabla hidden" aria-hidden="true">
+  <div class="modal-tabla__backdrop" id="cerrar-modal-tabla"></div>
+
+  <div
+    class="modal-tabla__dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-tabla-title"
+  >
+    <div class="modal-tabla__header">
+      <div>
+        <p class="modal-tabla__eyebrow">Referencia rápida</p>
+        <h3 id="modal-tabla-title">Tabla de algoritmos de insulinización</h3>
+        <p class="modal-tabla__desc">
+          Dosis iniciales, rango objetivo y criterios de ajuste.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        id="btn-cerrar-tabla"
+        class="modal-tabla__close"
+        aria-label="Cerrar"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="modal-tabla__body">
+      <div class="modal-tabla__image-wrap">
+        <img
+          src="{% static 'calculadora/img/tabla_algoritmos.png' %}"
+          alt="Tabla de algoritmos de insulinización"
+          class="modal-tabla__image"
+        >
+      </div>
+    </div>
+  </div>
+</div>

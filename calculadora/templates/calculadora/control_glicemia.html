@@ -1,0 +1,205 @@
+{% extends "calculadora/base.html" %}
+{% load static %}
+
+{% block title %}Control de glicemia{% endblock %}
+
+{% block content %}
+<div class="app-shell">
+  <div class="layout">
+
+    <section class="hero">
+      <div class="hero__text">
+        <h1>Control de glicemia e infusión de insulina - UCI HEEP</h1>
+
+        <div class="alerta-protocolo">
+          Aplicable solo a pacientes UCI con Terapia Nutricional Médica, sin Cetoacidosis Diabética ni estado Hiperosmolar no Cetósico
+        </div>
+      </div>
+    </section>
+
+    <section class="panel panel-form">
+      <div class="panel__header">
+        <h2>Ingresar datos</h2>
+        <p>Completá los campos para obtener una orientación clínica inicial.</p>
+      </div>
+
+      <form method="post" novalidate id="form-glicemia">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        <div class="field-group">
+          <label for="id_glicemia_actual">Glicemia actual</label>
+          {{ form.glicemia_actual }}
+
+          {% if form.glicemia_actual.errors %}
+            <div class="field-error">{{ form.glicemia_actual.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div id="bloque_contexto" class="hidden">
+
+          <div class="field-group">
+            <label class="field-label">{{ form.infusion_activa.label }}</label>
+
+            <div class="glicemia-radio-group">
+              {% for radio in form.infusion_activa %}
+                <label class="glicemia-radio-card">
+                  {{ radio.tag }}
+                  <span>{{ radio.choice_label }}</span>
+                </label>
+              {% endfor %}
+            </div>
+
+            {% if form.infusion_activa.errors %}
+              <div class="field-error">{{ form.infusion_activa.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div id="algoritmo_container" class="field-group hidden">
+            <label class="field-label">{{ form.algoritmo_activo.label }}</label>
+
+            <div class="glicemia-radio-group">
+              {% for radio in form.algoritmo_activo %}
+                <label class="glicemia-radio-card">
+                  {{ radio.tag }}
+                  <span>{{ radio.choice_label }}</span>
+                </label>
+              {% endfor %}
+            </div>
+
+            <div class="field-helper">
+              Seleccionar solo si el paciente ya se encuentra en Algoritmo 2.
+            </div>
+
+            {% if form.algoritmo_activo.errors %}
+              <div class="field-error">{{ form.algoritmo_activo.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div id="helper_previa_container" class="field-helper hidden">
+            <span id="helper_previa"></span>
+          </div>
+
+          <div id="previas_box" class="hidden">
+            <div class="field-group">
+              <label for="id_glicemia_previa">Glicemia previa</label>
+              {{ form.glicemia_previa }}
+
+              {% if form.glicemia_previa.errors %}
+                <div class="field-error">{{ form.glicemia_previa.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div id="anterior_container" class="field-group hidden">
+              <label for="id_tercera_medicion">Glicemia anterior</label>
+              {{ form.tercera_medicion }}
+
+              {% if form.tercera_medicion.errors %}
+                <div class="field-error">{{ form.tercera_medicion.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="btn-primary">Evaluar</button>
+        </div>
+      </form>
+
+      {% include "calculadora/partials/tabla_algoritmos.html" %}
+    </section>
+
+  </div>
+</div>
+
+{% if resultado %}
+<div id="modal-resultado" class="modal-resultado" aria-hidden="false">
+  <div class="modal-resultado__backdrop" data-close-resultado></div>
+
+  <div class="modal-resultado__dialog" role="dialog" aria-modal="true">
+    <button type="button" class="modal-resultado__close" id="cerrar-modal-resultado">
+      ×
+    </button>
+
+    <div class="modal-resultado__header">
+      <p class="modal-resultado__eyebrow">Resultado</p>
+      <h2>Resultado de la evaluación</h2>
+    </div>
+
+    <div class="modal-resultado__body">
+
+      <div class="resumen-entrada">
+        <div class="resumen-entrada__header">Datos evaluados</div>
+
+        <div class="resumen-entrada__grid">
+
+          <div class="resumen-entrada__item">
+            <span class="resumen-entrada__label">Glucemia actual</span>
+            <span class="resumen-entrada__value">
+              {{ form.glicemia_actual.value|default:"—" }} mg/dL
+            </span>
+          </div>
+
+          <div class="resumen-entrada__item">
+            <span class="resumen-entrada__label">Infusión activa</span>
+            <span class="resumen-entrada__value">
+              {% if form.infusion_activa.value == "True" or form.infusion_activa.value == "true" or form.infusion_activa.value == "1" %}
+                Sí
+              {% elif form.infusion_activa.value == "False" or form.infusion_activa.value == "false" or form.infusion_activa.value == "0" %}
+                No
+              {% else %}
+                —
+              {% endif %}
+            </span>
+          </div>
+
+          {% if form.glicemia_previa.value %}
+          <div class="resumen-entrada__item">
+            <span class="resumen-entrada__label">Glucemia previa</span>
+            <span class="resumen-entrada__value">
+              {{ form.glicemia_previa.value }} mg/dL
+            </span>
+          </div>
+          {% endif %}
+
+          {% if form.tercera_medicion.value %}
+          <div class="resumen-entrada__item">
+            <span class="resumen-entrada__label">Glucemia anterior</span>
+            <span class="resumen-entrada__value">
+              {{ form.tercera_medicion.value }} mg/dL
+            </span>
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+
+      {% if resultado.clase_visual == "critico" and "hipogluc" in resultado.estado|lower %}
+        {% include "calculadora/partials/resultado_hipo.html" %}
+      {% elif resultado.clase_visual == "alerta" %}
+        {% include "calculadora/partials/resultado_hiper.html" %}
+      {% else %}
+        {% include "calculadora/partials/resultado_rango.html" %}
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=7">
+<link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=7">
+<link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=7">
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=9"></script>
+{% endblock %}

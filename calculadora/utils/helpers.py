@@ -56,26 +56,6 @@ def _a_bool(valor):
     return str(valor).strip().lower() in ("true", "1", "si", "sí", "s", "yes")
 
 
-def aplicar_reglas_inicio_protocolo(resultado):
-    conducta = resultado.get("conducta", "") or ""
-
-    inicia_protocolo = (
-        "iniciar protocolo" in conducta.lower()
-        or "insulinización endovenosa" in conducta.lower()
-    )
-
-    if inicia_protocolo:
-        resultado["mostrar_bolo_inicial"] = True
-        resultado["mostrar_tasa_infusion"] = True
-
-        tasa = resultado.get("tasa")
-        bolo = resultado.get("bolo_inicial")
-
-        resultado["tasa_infusion"] = tasa
-        resultado["bolo_inicial"] = bolo
-
-    return resultado
-
 def _resultado_base(clase=None):
     return {
         "mostrar_resultado": False,
