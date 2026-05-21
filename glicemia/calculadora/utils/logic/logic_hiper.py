@@ -170,9 +170,9 @@ def evaluar_hiperglucemia(
             resultado["subestado"] = "Una medición ≥ 180 mg/dL sin infusión activa"
             resultado["mensaje"] = "Hiperglucemia aislada."
             resultado["resumen_objetivo"] = "Fuera de rango objetivo"
-            resultado["conducta"] = "Solicitar nueva medición para confirmar persistencia."
+            resultado["conducta"] = "Solicitar nueva medición para confirmar hiperglucemia sostenida."
             resultado["requiere_recontrol"] = True
-            resultado["proximo_control"] = "Obtener nueva medición para confirmar persistencia"
+            resultado["proximo_control"] = "Controlar glucemia dentro de los 30 minutos, según criterio médico."
             resultado["observacion"] = "Una sola medición no confirma persistencia."
             return _marcar_visual(resultado, es_critico=False, nivel_visual="alerta")
         
@@ -190,7 +190,7 @@ def evaluar_hiperglucemia(
         resultado["mensaje"] = "Hiperglucemia en ascenso."
         resultado["resumen_objetivo"] = "Fuera de rango objetivo"
         resultado["conducta"] = (
-            "Repetir glucemia para confirmar persistencia. "
+            "Solicitar nueva medición para confirmar hiperglucemia sostenida."
             "Si presenta 2 controles consecutivos ≥ 180 mg/dL, iniciar protocolo de insulinización."
         )
         resultado["requiere_recontrol"] = True

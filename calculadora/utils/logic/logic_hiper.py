@@ -190,7 +190,7 @@ def evaluar_hiperglucemia(
         resultado["mensaje"] = "Hiperglucemia en ascenso."
         resultado["resumen_objetivo"] = "Fuera de rango objetivo"
         resultado["conducta"] = (
-            "Repetir glucemia para confirmar persistencia. "
+            "Solicitar nueva medición para confirmar hiperglucemia sostenida."
             "Si presenta 2 controles consecutivos ≥ 180 mg/dL, iniciar protocolo de insulinización."
         )
         resultado["requiere_recontrol"] = True
