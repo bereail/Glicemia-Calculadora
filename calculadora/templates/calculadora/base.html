@@ -20,7 +20,7 @@
   <header class="topbar">
     <div class="container topbar__inner">
 
-      <h1 class="logo">Glicemia</h1>
+      <h1 class="logo">METANUTRIC - HEEP</h1>
 
       <nav class="topbar__nav">
 
@@ -30,11 +30,11 @@
             Inicio
           </a>
 
-          {% if request.user.is_superuser or es_medico %}
-            <a href="{% url 'historial' %}" class="btn">
-              Historial
-            </a>
-          {% endif %}
+          {% if request.user.is_superuser or request.user.username == "metanutric" %}
+    <a href="{% url 'historial' %}" class="btn">
+        Historial
+    </a>
+{% endif %}
 
 <a
   href="{% static 'calculadora/docs/protocolo-glicemia.pdf' %}"
