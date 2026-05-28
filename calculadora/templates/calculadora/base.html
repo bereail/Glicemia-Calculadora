@@ -7,72 +7,101 @@
 
   <title>{% block title %}Control Glicemia{% endblock %}</title>
 
-  <link rel="stylesheet" href="{% static 'calculadora/css/base.css' %}?v=20260528-1">
-  <link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=20260414-1">
-  <link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=1000">
-  <link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=20260414-1">
+  <link rel="stylesheet" href="{% static 'calculadora/css/base.css' %}?v=20260528-10">
+  <link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=20260528-10">
+  <link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=20260528-10">
+  <link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=20260528-10">
 
   {% block extra_css %}{% endblock %}
 </head>
 
 <body>
 
-  <header class="topbar">
-    <div class="container topbar__inner">
+<header class="topbar">
 
-      <a href="{% url 'control_glicemia' %}" class="logo-link">
-        <h1 class="logo">METANUTRIC - GLUCIHEEP</h1>
-      </a>
+  <div class="topbar__mobile">
+    <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Abrir menú">
+      ☰
+    </button>
 
-      <nav class="topbar__nav">
+    <h1 class="mobile-logo">
+      METANUTRIC<br>
+      GLUCIHEEP
+    </h1>
 
-        <div class="topbar__nav-left">
+    <form method="post" action="{% url 'logout' %}" class="mobile-logout-form">
+      {% csrf_token %}
+      <button type="submit" class="mobile-logout-btn">
+        ↪ Salir
+      </button>
+    </form>
+  </div>
 
-<a 
-  href="{% url 'control_glicemia' %}" 
-  class="btn {% if request.path == '/' %}btn-current{% endif %}"
->
-            Inicio
+  <div class="container topbar__inner">
+    <h1 class="logo">METANUTRIC - GLUCIHEEP</h1>
+
+    <nav class="topbar__nav" id="mobileMenu">
+
+      <div class="topbar__nav-left">
+        <a href="{% url 'control_glicemia' %}" class="btn">
+          <span class="nav-icon">⌂</span>
+          <span>Inicio</span>
+        </a>
+
+        {% if request.user.is_superuser or request.user.username == "metanutric" %}
+          <a href="{% url 'historial' %}" class="btn nav-history">
+            <span class="nav-icon">◫</span>
+            <span>Historial</span>
           </a>
+        {% endif %}
 
-          {% if request.user.is_superuser or request.user.username == "metanutric" %}
-            <a href="{% url 'historial' %}" class="btn">
-              Historial
-            </a>
-          {% endif %}
+        <a href="{% static 'calculadora/docs/protocolo-glicemia.pdf' %}" target="_blank" class="btn">
+          <span class="nav-icon">⊞</span>
+          <span>Ver protocolo</span>
+        </a>
 
-          <a href="{% static 'calculadora/docs/protocolo-glicemia.pdf' %}" target="_blank" class="btn">
-            Ver protocolo
-          </a>
+        <a href="{% static 'calculadora/docs/instructivo.pdf' %}" target="_blank" class="btn">
+          <span class="nav-icon">☷</span>
+          <span>Instructivo</span>
+        </a>
+      </div>
 
-          <a href="{% static 'calculadora/docs/instructivo.pdf' %}" target="_blank" class="btn">
-            Instructivo
-          </a>
+      <div class="topbar__nav-right">
+        <form method="post" action="{% url 'logout' %}" class="logout-form">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-logout">
+            <span class="nav-icon">↪</span>
+            <span>Cerrar sesión</span>
+          </button>
+        </form>
+      </div>
 
-        </div>
+    </nav>
+  </div>
 
-        <div class="topbar__nav-right">
-          <form method="post" action="{% url 'logout' %}" class="logout-form">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-logout">
-              Cerrar Sesión
-            </button>
-          </form>
-        </div>
+</header>
 
-      </nav>
-
-    </div>
-  </header>
-
-  <main>
-    {% block content %}
-    {% endblock %}
-  </main>
-
-  {% block extra_js %}
-    <script src="{% static 'calculadora/js/control_glicemia.js' %}?v=3"></script>
+<main>
+  {% block content %}
   {% endblock %}
+</main>
+
+{% block extra_js %}
+  <script src="{% static 'calculadora/js/control_glicemia.js' %}?v=20260528-10"></script>
+{% endblock %}
+
+<script>
+  const btn = document.getElementById("mobileMenuBtn");
+  const menu = document.getElementById("mobileMenu");
+
+  if (btn && menu) {
+    btn.addEventListener("click", () => {
+      const open = menu.classList.toggle("topbar__nav--open");
+      document.body.classList.toggle("menu-mobile-open", open);
+      btn.textContent = open ? "×" : "☰";
+    });
+  }
+</script>
 
 </body>
 </html>
