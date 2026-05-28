@@ -35,7 +35,7 @@ def tiene_acceso_home(user):
 def tiene_acceso_historial(user):
     return user.is_authenticated and (
         user.is_superuser
-        or user.groups.filter(name="Medicos").exists()
+        or user.username == "metanutric"
     )
 
 

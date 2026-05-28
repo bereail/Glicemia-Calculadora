@@ -1629,3 +1629,48 @@
   font-weight: 950 !important;
   text-align: left !important;
 }
+
+/* =========================================================
+   FIX FINAL - SOLO PRÓXIMO CONTROL FULL
+   ========================================================= */
+
+.resultado-base--rango .rango-final__solo-control {
+  width: 100% !important;
+  min-height: 136px !important;
+  padding: 22px 24px !important;
+  border-radius: 16px !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+
+  box-sizing: border-box !important;
+}
+
+.resultado-base--rango .rango-final__solo-control--ok {
+  background: linear-gradient(135deg, #1f8f57 0%, #176b42 100%) !important;
+  border: 1px solid rgba(46, 204, 113, 0.25) !important;
+}
+
+.resultado-base--rango .rango-final__solo-control--alerta {
+  background: linear-gradient(135deg, #b38318 0%, #7b560f 100%) !important;
+  border: 1px solid rgba(255, 196, 72, 0.28) !important;
+}
+
+.resultado-base--rango .rango-final__solo-control .rango-final__mini-label {
+  width: 100% !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+  margin-bottom: 12px !important;
+}
+
+.resultado-base--rango .rango-final__solo-control .rango-final__control {
+  width: 100% !important;
+  max-width: none !important;
+  font-size: 18px !important;
+  line-height: 1.15 !important;
+  font-weight: 950 !important;
+  color: #ffffff !important;
+  text-align: left !important;
+}

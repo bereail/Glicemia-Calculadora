@@ -28,7 +28,7 @@
 
     </div>
 
-    {% if resultado.terapia_tipo %}
+{% if resultado.mostrar_terapia and resultado.terapia_tipo %}
 
       <div class="rango-final__cards">
 
@@ -90,52 +90,13 @@
 
 {% else %}
 
-  <div
-    style="
-      width: 100%;
-      min-height: 136px;
-      padding: 22px 24px;
-      border-radius: 16px;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: flex-start;
-      background: linear-gradient(135deg, #b38318 0%, #7b560f 100%);
-      border: 1px solid rgba(255, 196, 72, 0.28);
-      box-shadow:
-        0 10px 24px rgba(0,0,0,0.18),
-        inset 0 1px 0 rgba(255,255,255,0.05);
-    "
-  >
-    <div
-      style="
-        display: flex;
-        align-items: center;
-        gap: 7px;
-        margin-bottom: 12px;
-        font-size: 11px;
-        font-weight: 900;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: rgba(255,244,214,0.82);
-      "
-    >
+  <div class="rango-final__solo-control {% if resultado.ui_variant == 'success' %}rango-final__solo-control--ok{% else %}rango-final__solo-control--alerta{% endif %}">
+    <div class="rango-final__mini-label">
       <span class="ui-icon">🕒</span>
       Próximo control
     </div>
 
-    <div
-      style="
-        width: 100%;
-        max-width: none;
-        font-size: 18px;
-        line-height: 1.15;
-        font-weight: 950;
-        color: #ffffff;
-        text-align: left;
-      "
-    >
+    <div class="rango-final__control">
       {{ resultado.proximo_control|default:"Controlar glucemia nuevamente en 1 hora" }}
     </div>
   </div>

@@ -770,3 +770,148 @@ textarea:focus,
   border-color: var(--secondary-border-hover) !important;
   transform: translateY(-1px);
 }
+
+/* =========================================================
+   TOPBAR FINAL LIMPIO
+   ========================================================= */
+
+.topbar {
+  padding: 18px 0 16px;
+}
+
+.topbar__inner {
+  width: min(100%, 1120px);
+  margin-inline: auto;
+  padding-inline: 20px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+}
+
+.logo-link {
+  display: block;
+  width: fit-content;
+  margin-inline: auto;
+  text-decoration: none;
+  color: inherit;
+}
+
+.logo-link:hover,
+.logo-link:visited,
+.logo-link:active {
+  text-decoration: none;
+  color: inherit;
+}
+
+.logo {
+  margin: 0;
+  text-align: center;
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  color: #ffffff;
+}
+
+.topbar__nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.topbar__nav-left {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+   gap: 18px;
+  flex-wrap: wrap;
+}
+
+.topbar__nav {
+  padding-inline: 8px;
+}
+
+.topbar__nav-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+@media (max-width: 768px) {
+  .topbar__inner {
+    width: 100%;
+    padding-inline: 14px;
+    gap: 14px;
+  }
+
+  .topbar__nav {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .topbar__nav-left,
+  .topbar__nav-right {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .topbar__nav-right {
+    margin-left: 0;
+  }
+}
+
+.logo {
+  margin: 0;
+  text-align: center;
+
+  font-size: clamp(2rem, 4vw, 3.2rem);
+
+  font-weight: 900;
+  letter-spacing: -0.05em;
+
+  line-height: 1;
+
+  color: #ffffff;
+
+  padding-inline: 12px;
+}
+
+/* =========================================================
+   LINK ACTIVO NAVBAR
+   ========================================================= */
+
+.btn-current {
+  position: relative;
+
+  color: #ffffff !important;
+
+  border-color: rgba(122, 178, 255, 0.22) !important;
+
+  background: rgba(32, 58, 98, 0.72) !important;
+}
+
+.btn-current::after {
+  content: "";
+
+  position: absolute;
+
+  left: 50%;
+  bottom: -7px;
+
+  transform: translateX(-50%);
+
+  width: 24px;
+  height: 3px;
+
+  border-radius: 999px;
+
+  background: #7ab2ff;
+
+  box-shadow:
+    0 0 10px rgba(122,178,255,.45);
+}
