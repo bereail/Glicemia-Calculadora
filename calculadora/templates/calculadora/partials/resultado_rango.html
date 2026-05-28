@@ -1,107 +1,145 @@
-<section class="resultado-base resultado-base--rango {% if resultado.ui_variant == 'success' %}resultado-base--rango-ok{% elif resultado.en_objetivo_con_alerta or resultado.fuera_objetivo %}resultado-base--rango-alerta{% endif %} {% if resultado.mostrar_tasa %}resultado-base--rango-infusion{% endif %}">
+<section class="resultado-base resultado-base--rango {% if resultado.ui_variant == 'success' %}resultado-base--rango-ok{% elif resultado.en_objetivo_con_alerta or resultado.fuera_objetivo %}resultado-base--rango-alerta{% endif %}">
 
-  <div class="rango-layout {% if resultado.mostrar_tasa %}rango-layout--infusion{% else %}rango-layout--simple{% endif %}">
+  <div class="rango-final">
 
-    <!-- 1. HEADER -->
-    <div class="rango-bloque rango-bloque--header">
-      <div class="rango-header rango-header--compacto rango-header--con-conducta">
+    <div class="rango-final__header">
 
-        
-        <div class="rango-header__estado {% if resultado.ui_variant == 'success' %}rango-header__estado--ok{% elif resultado.en_objetivo_con_alerta or resultado.fuera_objetivo %}rango-header__estado--alerta{% endif %}">
-          <div class="rango-header__label">
-            <span class="ui-icon">{% if resultado.ui_variant == 'success' %}✓{% else %}⚠{% endif %}</span>
-            Estado
-          </div>
-          <div class="rango-header__estado-value">
-            {{ resultado.estado|default:"En objetivo" }}
-          </div>
+      <div class="rango-final__status {% if resultado.ui_variant == 'success' %}rango-final__status--ok{% else %}rango-final__status--alerta{% endif %}">
+        <div class="rango-final__mini-label">
+          <span class="ui-icon">{% if resultado.ui_variant == 'success' %}✓{% else %}⚠{% endif %}</span>
+          Estado
         </div>
 
+        <div class="rango-final__title">
+          {{ resultado.estado|default:"En objetivo" }}
+        </div>
+      </div>
 
-        
-        <div class="rango-header__conducta-resumen {% if resultado.ui_variant == 'success' %}rango-header__conducta-resumen--ok{% else %}rango-header__conducta-resumen--alerta{% endif %}">
-          <div class="rango-header__label">
-            <span class="ui-icon">✚</span>
-            Conducta inmediata
-          </div>
-          <div class="rango-header__conducta-resumen-value">
-            {{ resultado.conducta|default:"Mantener conducta actual y continuar monitoreo." }}
-          </div>
+      <div class="rango-final__status {% if resultado.ui_variant == 'success' %}rango-final__status--ok{% else %}rango-final__status--alerta{% endif %}">
+        <div class="rango-final__mini-label">
+          <span class="ui-icon">✚</span>
+          Conducta inmediata
         </div>
 
+        <div class="rango-final__title">
+          {{ resultado.conducta|default:"Mantener conducta actual" }}
+        </div>
       </div>
+
     </div>
 
-    <!-- 2. FILA PRINCIPAL -->
-    <div class="rango-bloque rango-bloque--fila-principal">
-      <div class="rango-fila-principal {% if resultado.mostrar_tasa %}rango-fila-principal--infusion{% else %}rango-fila-principal--single{% endif %}">
+    {% if resultado.terapia_tipo %}
 
-        {% if resultado.mostrar_tasa %}
-          <div class="rango-hero rango-hero--terapia {% if resultado.ui_variant == 'success' %}rango-hero--terapia-ok{% else %}rango-hero--terapia-alerta{% endif %}">
-            <div class="rango-hero__eyebrow">
-              <span class="ui-icon">💉</span>
-              Terapia
-            </div>
+      <div class="rango-final__cards">
 
+        <div class="rango-final__card {% if resultado.ui_variant == 'success' %}rango-final__card--ok{% else %}rango-final__card--alerta{% endif %}">
+          <div class="rango-final__mini-label">
+            <span class="ui-icon">💉</span>
+            Terapia
+          </div>
 
-            <div class="rango-hero__grid">
+          <div class="rango-final__inner">
 
-              {% if not resultado.infusion_activa %}
-
-  {% if resultado.bolo_inicial %}
-    <div class="hiper-hero__bloque">
-      <div class="hiper-hero__valor hiper-hero__valor--main">
-        {{ resultado.bolo_inicial }}
-      </div>
-      <div class="hiper-hero__label">
-        Bolo inicial
-      </div>
-    </div>
-  {% endif %}
-
-  {% if resultado.tasa_inicial %}
-    <div class="hiper-hero__bloque">
-      <div class="hiper-hero__valor hiper-hero__valor--main">
-        {{ resultado.tasa_inicial }}
-      </div>
-      <div class="hiper-hero__label">
-        Tasa de infusión
-      </div>
-    </div>
-  {% endif %}
-
-{% endif %}
-                </div>
+            {% if resultado.terapia_tipo == "infusion_activa" %}
+              <div class="rango-final__value">
+                {{ resultado.terapia_valor|default:"Mantener tasa actual" }}
               </div>
-            </div>
 
-            {% if resultado.calculo_texto %}
-              <div class="rango-hero__meta">
-                {{ resultado.calculo_texto }}
+              <div class="rango-final__sub">
+                {{ resultado.terapia_titulo|default:"Tasa de infusión actual" }}
+              </div>
+
+            {% elif resultado.terapia_tipo == "inicio_protocolo" %}
+              <div class="rango-final__value">
+                {{ resultado.bolo_inicial }}
+              </div>
+
+              <div class="rango-final__sub">
+                Bolo inicial
+              </div>
+
+              <div class="rango-final__value rango-final__value--second">
+                {{ resultado.tasa_inicial }}
+              </div>
+
+              <div class="rango-final__sub">
+                Tasa de infusión
+              </div>
+
+            {% else %}
+              <div class="rango-final__text">
+                {{ resultado.terapia_texto|default:"Mantener conducta actual según protocolo." }}
               </div>
             {% endif %}
-          </div>
-        {% endif %}
 
-        <div class="rango-proximo-card {% if resultado.ui_variant == 'success' %}rango-proximo-card--ok{% else %}rango-proximo-card--alerta{% endif %}">
-          <div class="rango-proximo-card__label">
+          </div>
+        </div>
+
+        <div class="rango-final__card {% if resultado.ui_variant == 'success' %}rango-final__card--ok{% else %}rango-final__card--alerta{% endif %}">
+          <div class="rango-final__mini-label">
             <span class="ui-icon">🕒</span>
             Próximo control
           </div>
 
-          <div class="rango-proximo-card__value">
+          <div class="rango-final__control">
             {{ resultado.proximo_control|default:"Controlar glucemia nuevamente en 1 hora" }}
           </div>
-
-          {% if resultado.comentario_control %}
-            <div class="rango-proximo-card__comment">
-              {{ resultado.comentario_control }}
-            </div>
-          {% endif %}
         </div>
 
       </div>
+
+{% else %}
+
+  <div
+    style="
+      width: 100%;
+      min-height: 136px;
+      padding: 22px 24px;
+      border-radius: 16px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      background: linear-gradient(135deg, #b38318 0%, #7b560f 100%);
+      border: 1px solid rgba(255, 196, 72, 0.28);
+      box-shadow:
+        0 10px 24px rgba(0,0,0,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+    "
+  >
+    <div
+      style="
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 12px;
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(255,244,214,0.82);
+      "
+    >
+      <span class="ui-icon">🕒</span>
+      Próximo control
     </div>
 
+    <div
+      style="
+        width: 100%;
+        max-width: none;
+        font-size: 18px;
+        line-height: 1.15;
+        font-weight: 950;
+        color: #ffffff;
+        text-align: left;
+      "
+    >
+      {{ resultado.proximo_control|default:"Controlar glucemia nuevamente en 1 hora" }}
+    </div>
   </div>
+
+{% endif %}
+
 </section>

@@ -1449,3 +1449,183 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================================================
+   RANGO FINAL - CLASES ÚNICAS
+   ========================================================= */
+
+.resultado-base--rango .rango-final {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+}
+
+.resultado-base--rango .rango-final__header {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 14px !important;
+}
+
+.resultado-base--rango .rango-final__status {
+  min-height: 86px !important;
+  padding: 16px 18px !important;
+  border-radius: 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+}
+
+.resultado-base--rango .rango-final__status--ok {
+  background: rgba(46, 204, 113, 0.10) !important;
+  border: 1px solid rgba(46, 204, 113, 0.25) !important;
+}
+
+.resultado-base--rango .rango-final__status--alerta {
+  background: rgba(255, 193, 7, 0.10) !important;
+  border: 1px solid rgba(255, 193, 7, 0.25) !important;
+}
+
+.resultado-base--rango .rango-final__mini-label {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-bottom: 8px !important;
+  font-size: 10px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.09em !important;
+  text-transform: uppercase !important;
+  color: rgba(255,255,255,0.78) !important;
+}
+
+.resultado-base--rango .rango-final__title {
+  font-size: 18px !important;
+  line-height: 1.12 !important;
+  font-weight: 950 !important;
+  color: #fff !important;
+  text-transform: uppercase !important;
+}
+
+.resultado-base--rango .rango-final__cards {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 14px !important;
+  align-items: stretch !important;
+}
+
+.resultado-base--rango .rango-final__card {
+  min-height: 136px !important;
+  padding: 18px 20px !important;
+  border-radius: 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+}
+
+.resultado-base--rango .rango-final__card--ok {
+  background: linear-gradient(135deg, #1f8f57 0%, #176b42 100%) !important;
+  border: 1px solid rgba(46, 204, 113, 0.25) !important;
+}
+
+.resultado-base--rango .rango-final__card--alerta {
+  background: linear-gradient(135deg, #b38318 0%, #7b560f 100%) !important;
+  border: 1px solid rgba(255, 196, 72, 0.28) !important;
+}
+
+.resultado-base--rango .rango-final__inner {
+  width: 100% !important;
+  min-height: 78px !important;
+  padding: 14px 16px !important;
+  border-radius: 14px !important;
+  background: rgba(255,255,255,0.07) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+}
+
+.resultado-base--rango .rango-final__value {
+  font-size: 24px !important;
+  line-height: 1 !important;
+  font-weight: 950 !important;
+  color: #fff !important;
+}
+
+.resultado-base--rango .rango-final__value--second {
+  margin-top: 16px !important;
+}
+
+.resultado-base--rango .rango-final__sub {
+  margin-top: 6px !important;
+  font-size: 10px !important;
+  line-height: 1.15 !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: rgba(255,255,255,0.78) !important;
+}
+
+.resultado-base--rango .rango-final__text,
+.resultado-base--rango .rango-final__control {
+  font-size: 18px !important;
+  line-height: 1.15 !important;
+  font-weight: 950 !important;
+  color: #fff !important;
+  max-width: 28ch !important;
+}
+
+.resultado-base--rango .rango-final__comment {
+  margin-top: 8px !important;
+  font-size: 13px !important;
+  line-height: 1.35 !important;
+  color: rgba(255,255,255,0.85) !important;
+}
+
+@media (max-width: 900px) {
+  .resultado-base--rango .rango-final__header,
+  .resultado-base--rango .rango-final__cards {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* =========================================================
+   FIX - PRÓXIMO CONTROL FULL COMO CARD ANCHA
+   ========================================================= */
+
+.resultado-base--rango .rango-final__control-full {
+  width: 100% !important;
+  min-height: 136px !important;
+  padding: 22px 24px !important;
+  border-radius: 16px !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+
+  box-sizing: border-box !important;
+}
+
+.resultado-base--rango .rango-final__control-full--alerta {
+  background: linear-gradient(135deg, #b38318 0%, #7b560f 100%) !important;
+  border: 1px solid rgba(255, 196, 72, 0.28) !important;
+}
+
+.resultado-base--rango .rango-final__control-full--ok {
+  background: linear-gradient(135deg, #1f8f57 0%, #176b42 100%) !important;
+  border: 1px solid rgba(46, 204, 113, 0.25) !important;
+}
+
+.resultado-base--rango .rango-final__control-full .rango-final__mini-label {
+  width: 100% !important;
+  justify-content: flex-start !important;
+  margin-bottom: 12px !important;
+}
+
+.resultado-base--rango .rango-final__control-full .rango-final__control {
+  width: 100% !important;
+  max-width: none !important;
+  font-size: 18px !important;
+  line-height: 1.15 !important;
+  font-weight: 950 !important;
+  text-align: left !important;
+}

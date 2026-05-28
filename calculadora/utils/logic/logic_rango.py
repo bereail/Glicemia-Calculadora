@@ -12,6 +12,7 @@ from ..helpers import (
     _resultado_base,
     calcular_proximo_control,
     obtener_tasa_por_algoritmo,
+    aplicar_presentacion_terapia,
 )
 
 
@@ -34,7 +35,6 @@ def evaluar_rango_70_180(
     infusion_activa = _a_bool(infusion_activa)
     algoritmo_activo = int(algoritmo_activo or 1)
 
-    limite_inferior, limite_superior = obtener_limites(infusion_activa)
 
     resultado = _resultado_base()
     resultado["mostrar_resultado"] = True
@@ -85,9 +85,13 @@ def evaluar_rango_70_180(
             resultado["ui_variant"] = "danger"
             resultado["en_objetivo"] = True
             resultado["en_objetivo_con_alerta"] = True
+            resultado = aplicar_presentacion_terapia(
+                resultado,
+                infusion_activa=infusion_activa,
+            )
 
             return resultado
-
+        
         # 91 a 160
         if Decimal("90") <= actual < UMBRAL_HIPER:
             resultado["estado"] = "Glucemia en objetivo"
@@ -96,8 +100,12 @@ def evaluar_rango_70_180(
             resultado["proximo_control"] = "Controlar glucemia nuevamente en 6 horas"
             resultado["ui_variant"] = "success"
             resultado["en_objetivo"] = True
-            return resultado
+            resultado = aplicar_presentacion_terapia(
+                resultado,
+                infusion_activa=infusion_activa,
+            )
 
+            return resultado
 
         return None
 
@@ -120,6 +128,11 @@ def evaluar_rango_70_180(
             resultado["proximo_control"] = "Controlar glucemia nuevamente en 1 hora"
             resultado["ui_variant"] = "danger"
             resultado["fuera_objetivo"] = True
+        # No mostrar Terapia en este caso
+            resultado["mostrar_terapia"] = False
+            resultado["terapia"] = None
+            resultado["tasa_infusional"] = None
+
             return resultado
 
         # 🟠 91 a 119 con infusión activa
@@ -132,24 +145,36 @@ def evaluar_rango_70_180(
             resultado["proximo_control"] = "Controlar glucemia nuevamente en 2 horas"
             resultado["ui_variant"] = "danger"
             resultado["fuera_objetivo"] = True
-            return resultado
+        # No mostrar Terapia en este caso
+            resultado["mostrar_terapia"] = False
+            resultado["terapia"] = None
+            resultado["tasa_infusional"] = None
 
-        # 120 a 139
+            return resultado
+                # 120 a 139
         if Decimal("120") <= actual < OBJETIVO_MIN_INFUSION:
             resultado["estado"] = "Glucemia por debajo de objetivo"
             resultado["subestado"] = "Glucemia baja con infusión activa"
             resultado["conducta"] = "Evaluar riesgo de hipoglucemia"
 
             tasa_data = obtener_tasa_por_algoritmo(actual, algoritmo_activo)
+
             resultado["tasa"] = tasa_data.get("texto") or tasa_data.get("valor")
+            resultado["tasa_algoritmo"] = resultado["tasa"]
+
             resultado["mostrar_tasa"] = True
 
             _asignar_control(actual)
 
             resultado["ui_variant"] = "danger"
             resultado["fuera_objetivo"] = True
-            return resultado
 
+            resultado = aplicar_presentacion_terapia(
+                resultado,
+                infusion_activa=infusion_activa,
+            )
+
+            return resultado
         # 140 a 200
         if OBJETIVO_MIN_INFUSION <= actual <= OBJETIVO_MAX_INFUSION:
             resultado["estado"] = "Glucemia en objetivo con infusión"
@@ -157,7 +182,10 @@ def evaluar_rango_70_180(
             resultado["conducta"] = "Mantener conducta actual"
 
             tasa_data = obtener_tasa_por_algoritmo(actual, algoritmo_activo)
+
             resultado["tasa"] = tasa_data.get("texto") or tasa_data.get("valor")
+            resultado["tasa_algoritmo"] = resultado["tasa"]
+
             resultado["mostrar_tasa"] = True
 
             resultado["ui_variant"] = "success"
@@ -168,10 +196,10 @@ def evaluar_rango_70_180(
 
             resultado["proximo_control"] = "Controlar glucemia nuevamente en 6 horas"
 
-            return resultado
+            resultado = aplicar_presentacion_terapia(
+                resultado,
+                infusion_activa=infusion_activa,
+            )
 
-            resultado["ui_variant"] = "success"
-            resultado["proximo_control"] = "Controlar glucemia nuevamente en 6 horas"
             return resultado
-
     return None

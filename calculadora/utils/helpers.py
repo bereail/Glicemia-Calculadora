@@ -33,6 +33,34 @@ def aplicar_reglas_inicio_protocolo(resultado):
 
     return resultado
 
+def aplicar_presentacion_terapia(resultado, infusion_activa=False):
+    conducta = resultado.get("conducta", "") or ""
+
+    inicia_protocolo = (
+        "iniciar protocolo" in conducta.lower()
+        or "insulinización endovenosa" in conducta.lower()
+    )
+
+    if infusion_activa:
+        resultado["terapia_tipo"] = "infusion_activa"
+        resultado["terapia_titulo"] = "Tasa de infusión actual"
+        resultado["terapia_valor"] = (
+            resultado.get("tasa_algoritmo")
+            or resultado.get("tasa_actual")
+            or resultado.get("tasa_infusion")
+            or "Mantener tasa actual"
+        )
+
+    elif inicia_protocolo:
+        resultado["terapia_tipo"] = "inicio_protocolo"
+        resultado["mostrar_bolo_inicial"] = True
+        resultado["mostrar_tasa_infusion"] = True
+
+    else:
+        resultado["terapia_tipo"] = "general"
+        resultado["terapia_texto"] = "Mantener conducta actual según protocolo."
+
+    return resultado
 
 def _a_decimal(valor, permitir_none=False):
     if valor in (None, ""):
@@ -92,6 +120,12 @@ def _resultado_base(clase=None):
         "algoritmo_activo": None,
         "algoritmo_sugerido": None,
         "clasificacion_protocolo": None,
+        "terapia_tipo": None,
+        "terapia_titulo": None,
+        "terapia_valor": None,
+        "terapia_texto": None,
+        "mostrar_bolo_inicial": False,
+        "mostrar_tasa_infusion": False,
     }
 
 

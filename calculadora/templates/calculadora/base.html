@@ -9,8 +9,9 @@
 
   <link rel="stylesheet" href="{% static 'calculadora/css/base.css' %}?v=20260414-1">
   <link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=20260414-1">
-  <link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=20260414-1">
+  <link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=1000">
   <link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=20260414-1">
+
 
   {% block extra_css %}{% endblock %}
 </head>
@@ -20,7 +21,7 @@
   <header class="topbar">
     <div class="container topbar__inner">
 
-      <h1 class="logo">METANUTRIC - HEEP</h1>
+      <h1 class="logo">METANUTRIC - GLUCIHEEP</h1>
 
       <nav class="topbar__nav">
 
@@ -45,12 +46,13 @@
 </a>
 
 <a
-  href="{% static 'calculadora/docs/instructivo-glicemia.pdf' %}"
+  href="{% static 'calculadora/docs/instructivo.pdf' %}"
   target="_blank"
   class="btn"
 >
-  Ver instructivo
+  Instructivo
 </a>
+
 
         </div>
 
