@@ -1,5 +1,7 @@
 {% load static %}
+
 <!doctype html>
+
 <html lang="es">
 <head>
   <meta charset="utf-8">
@@ -7,12 +9,24 @@
 
   <title>{% block title %}Control Glicemia{% endblock %}</title>
 
-  <link rel="stylesheet" href="{% static 'calculadora/css/base.css' %}?v=20260528-10">
-  <link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=20260528-10">
-  <link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=20260528-10">
-  <link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=20260528-10">
+  <link rel="stylesheet" href="{% static 'calculadora/css/base.css' %}?v=20260528-11">
+  <link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=20260528-11">
+  <link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=20260528-11">
+  <link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=20260528-11">
 
-  {% block extra_css %}{% endblock %}
+{% block extra_css %}{% endblock %}
+
+  <style>
+
+    .logo,
+    .mobile-logo {
+      text-decoration: none !important;
+      color: inherit !important;
+      cursor: pointer;
+    }
+
+  </style>
+
 </head>
 
 <body>
@@ -20,63 +34,103 @@
 <header class="topbar">
 
   <div class="topbar__mobile">
-    <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Abrir menú">
-      ☰
-    </button>
 
-    <h1 class="mobile-logo">
-      METANUTRIC<br>
-      GLUCIHEEP
-    </h1>
+<button type="button"
+        class="mobile-menu-btn"
+        id="mobileMenuBtn"
+        aria-label="Abrir menú">
+  ☰
+</button>
 
-    <form method="post" action="{% url 'logout' %}" class="mobile-logout-form">
-      {% csrf_token %}
-      <button type="submit" class="mobile-logout-btn">
-        ↪ Salir
-      </button>
-    </form>
+<a href="{% url 'control_glicemia' %}"
+   class="mobile-logo"
+   id="mobileLogoReset">
+
+  METANUTRIC<br>
+  GLUCIHEEP
+
+</a>
+
+<form method="post"
+      action="{% url 'logout' %}"
+      class="mobile-logout-form">
+
+  {% csrf_token %}
+
+  <button type="submit" class="mobile-logout-btn">
+    ↪ Salir
+  </button>
+
+</form>
+
   </div>
 
   <div class="container topbar__inner">
-    <h1 class="logo">METANUTRIC - GLUCIHEEP</h1>
 
-    <nav class="topbar__nav" id="mobileMenu">
+<a href="{% url 'control_glicemia' %}"
+   class="logo"
+   id="logoReset">
 
-      <div class="topbar__nav-left">
-        <a href="{% url 'control_glicemia' %}" class="btn">
-          <span class="nav-icon">⌂</span>
-          <span>Inicio</span>
-        </a>
+  METANUTRIC - GLUCIHEEP
 
-        {% if request.user.is_superuser or request.user.username == "metanutric" %}
-          <a href="{% url 'historial' %}" class="btn nav-history">
-            <span class="nav-icon">◫</span>
-            <span>Historial</span>
-          </a>
-        {% endif %}
+</a>
 
-        <a href="{% static 'calculadora/docs/protocolo-glicemia.pdf' %}" target="_blank" class="btn">
-          <span class="nav-icon">⊞</span>
-          <span>Ver protocolo</span>
-        </a>
+<nav class="topbar__nav" id="mobileMenu">
 
-        <a href="{% static 'calculadora/docs/instructivo.pdf' %}" target="_blank" class="btn">
-          <span class="nav-icon">☷</span>
-          <span>Instructivo</span>
-        </a>
-      </div>
+  <div class="topbar__nav-left">
 
-      <div class="topbar__nav-right">
-        <form method="post" action="{% url 'logout' %}" class="logout-form">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-logout">
-            <span class="nav-icon">↪</span>
-            <span>Cerrar sesión</span>
-          </button>
-        </form>
-      </div>
+    <a href="{% url 'control_glicemia' %}" class="btn">
+      <span class="nav-icon">⌂</span>
+      <span>Inicio</span>
+    </a>
 
-    </nav>
+    {% if request.user.is_superuser or request.user.username == "metanutric" %}
+      <a href="{% url 'historial' %}" class="btn nav-history">
+        <span class="nav-icon">◫</span>
+        <span>Historial</span>
+      </a>
+    {% endif %}
+
+    <a href="{% static 'calculadora/docs/protocolo-glicemia.pdf' %}"
+       target="_blank"
+       class="btn">
+
+      <span class="nav-icon">⊞</span>
+      <span>Ver protocolo</span>
+
+    </a>
+
+    <a href="{% static 'calculadora/docs/instructivo.pdf' %}"
+       target="_blank"
+       class="btn">
+
+      <span class="nav-icon">☷</span>
+      <span>Instructivo</span>
+
+    </a>
+
+  </div>
+
+  <div class="topbar__nav-right">
+
+    <form method="post"
+          action="{% url 'logout' %}"
+          class="logout-form">
+
+      {% csrf_token %}
+
+      <button type="submit" class="btn btn-logout">
+        <span class="nav-icon">↪</span>
+        <span>Cerrar sesión</span>
+      </button>
+
+    </form>
+
+  </div>
+
+</nav>
+
+
   </div>
 
 </header>
@@ -87,20 +141,65 @@
 </main>
 
 {% block extra_js %}
-  <script src="{% static 'calculadora/js/control_glicemia.js' %}?v=20260528-10"></script>
+
+  <script src="{% static 'calculadora/js/control_glicemia.js' %}?v=20260528-11"></script>
+
 {% endblock %}
 
 <script>
+
   const btn = document.getElementById("mobileMenuBtn");
   const menu = document.getElementById("mobileMenu");
 
   if (btn && menu) {
+
     btn.addEventListener("click", () => {
+
       const open = menu.classList.toggle("topbar__nav--open");
+
       document.body.classList.toggle("menu-mobile-open", open);
+
       btn.textContent = open ? "×" : "☰";
+
     });
+
   }
+
+  function resetFormulario() {
+
+    const forms = document.querySelectorAll("form");
+
+    forms.forEach(form => {
+
+      if (!form.classList.contains("logout-form") &&
+          !form.classList.contains("mobile-logout-form")) {
+
+        form.reset();
+
+      }
+
+    });
+
+    localStorage.clear();
+    sessionStorage.clear();
+
+  }
+
+  const logoDesktop = document.getElementById("logoReset");
+  const logoMobile = document.getElementById("mobileLogoReset");
+
+  if (logoDesktop) {
+
+    logoDesktop.addEventListener("click", resetFormulario);
+
+  }
+
+  if (logoMobile) {
+
+    logoMobile.addEventListener("click", resetFormulario);
+
+  }
+
 </script>
 
 </body>
