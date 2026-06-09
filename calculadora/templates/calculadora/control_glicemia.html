@@ -32,14 +32,43 @@
           </div>
         {% endif %}
 
-        <div class="field-group">
-          <label for="id_glicemia_actual">Glicemia actual</label>
-          {{ form.glicemia_actual }}
+<div class="field-group">
+  <label for="id_glicemia_actual">
+    Glicemia actual
+  </label>
 
-          {% if form.glicemia_actual.errors %}
-            <div class="field-error">{{ form.glicemia_actual.errors }}</div>
-          {% endif %}
-        </div>
+  {{ form.glicemia_actual }}
+
+  <div style="display:flex;justify-content:flex-end;margin-top:8px;margin-bottom:6px;">
+    <a
+      href=""
+      id="btn-limpiar"
+      title="Limpiar formulario"
+      style="
+        display:inline-flex;
+        align-items:center;
+        gap:4px;
+        padding:3px 8px;
+        border-radius:999px;
+        border:1px solid rgba(96,165,250,.20);
+        background:transparent;
+        color:#93c5fd;
+        font-size:10px;
+        font-weight:700;
+        text-decoration:none;
+        opacity:.85;
+      "
+    >
+      🧹 Limpiar
+    </a>
+  </div>
+
+  {% if form.glicemia_actual.errors %}
+    <div class="field-error">
+      {{ form.glicemia_actual.errors }}
+    </div>
+  {% endif %}
+</div>
 
         <div id="bloque_contexto" class="hidden">
 
@@ -107,20 +136,11 @@
 
         </div>
 
-<div class="actions actions-glicemia">
-  <button type="submit" class="btn-primary btn-evaluar">
-    Evaluar
-  </button>
-
-<button
-  type="button"
-  id="btn-limpiar"
-  class="btn-limpiar"
-  title="Borrar todos los campos"
->
-  🧹 Limpiar
-</button>
-</div>
+        <div class="actions">
+          <button type="submit" class="btn-primary">
+            Evaluar
+          </button>
+        </div>
       </form>
 
       {% include "calculadora/partials/tabla_algoritmos.html" %}
@@ -206,7 +226,7 @@
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=8">
+<link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=70">
 <link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=999">
 <link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=7">
 {% endblock %}
@@ -220,7 +240,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (!btnLimpiar) return;
 
-  btnLimpiar.addEventListener("click", function () {
+  btnLimpiar.addEventListener("click", function (event) {
+    event.preventDefault();
     window.location.href = window.location.pathname;
   });
 });

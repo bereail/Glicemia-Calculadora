@@ -354,3 +354,15 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+
+
+document.addEventListener("DOMContentLoaded", function () {
+  const btnLimpiar = document.getElementById("btn-limpiar");
+
+  if (!btnLimpiar) return;
+
+  btnLimpiar.addEventListener("click", function (event) {
+    event.preventDefault();
+    window.location.href = window.location.pathname;
+  });
+});
