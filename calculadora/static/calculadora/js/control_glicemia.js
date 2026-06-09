@@ -322,3 +322,35 @@ document.addEventListener("DOMContentLoaded", function () {
     abrirModalResultado();
   }
 });
+
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const btnLimpiar = document.getElementById("btn-limpiar");
+
+    if (!btnLimpiar) return;
+
+    btnLimpiar.addEventListener("click", function () {
+
+        const form = document.getElementById("form-glicemia");
+
+        form.reset();
+
+        document.getElementById("bloque_contexto")?.classList.add("hidden");
+        document.getElementById("algoritmo_container")?.classList.add("hidden");
+        document.getElementById("previas_box")?.classList.add("hidden");
+        document.getElementById("anterior_container")?.classList.add("hidden");
+        document.getElementById("helper_previa_container")?.classList.add("hidden");
+
+        const modal = document.getElementById("modal-resultado");
+        if (modal) {
+            modal.remove();
+        }
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    });
+
+});

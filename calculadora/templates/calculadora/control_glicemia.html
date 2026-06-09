@@ -107,9 +107,20 @@
 
         </div>
 
-        <div class="actions">
-          <button type="submit" class="btn-primary">Evaluar</button>
-        </div>
+<div class="actions actions-glicemia">
+  <button type="submit" class="btn-primary btn-evaluar">
+    Evaluar
+  </button>
+
+<button
+  type="button"
+  id="btn-limpiar"
+  class="btn-limpiar"
+  title="Borrar todos los campos"
+>
+  🧹 Limpiar
+</button>
+</div>
       </form>
 
       {% include "calculadora/partials/tabla_algoritmos.html" %}
@@ -195,11 +206,23 @@
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=7">
+<link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=8">
 <link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=999">
 <link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=7">
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=9"></script>
+<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=10"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const btnLimpiar = document.getElementById("btn-limpiar");
+
+  if (!btnLimpiar) return;
+
+  btnLimpiar.addEventListener("click", function () {
+    window.location.href = window.location.pathname;
+  });
+});
+</script>
 {% endblock %}
