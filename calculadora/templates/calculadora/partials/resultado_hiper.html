@@ -30,8 +30,19 @@
       </div>
     </div>
 
+    <!-- ALERTA AJUSTE PREVIO -->
+    {% if resultado.alerta_ajuste_previo %}
+    <div class="hiper-bloque hiper-bloque--alerta-medico">
+      <div class="resultado-alerta resultado-alerta--medico">
+        <span class="ui-icon">⚠</span>
+        {{ resultado.observacion }}
+      </div>
+    </div>
+    {% endif %}
+
     <!-- FILA PRINCIPAL -->
     <div class="hiper-bloque hiper-bloque--fila-principal">
+      {% if resultado.bolo_inicial or resultado.tasa_inicial or resultado.tasa_algoritmo %}
       <div class="hiper-fila-principal hiper-fila-principal--sostenida">
 
         <!-- TERAPIA -->
@@ -39,68 +50,34 @@
 
           <div class="hiper-hero__eyebrow">
             <span class="ui-icon">💉</span>
-
-            {% if resultado.infusion_activa %}
-              Infusión activa
-            {% else %}
-              Terapia
-            {% endif %}
+            {% if resultado.infusion_activa %}Infusión activa{% else %}Terapia{% endif %}
           </div>
 
           <div class="hiper-hero__grid hiper-hero__grid--inicio">
 
-            <!-- BOLO -->
             {% if resultado.bolo_inicial and not resultado.infusion_activa %}
             <div class="hiper-hero__bloque">
-
-              <div class="hiper-hero__valor hiper-hero__valor--main">
-                {{ resultado.bolo_inicial }}
-              </div>
-
-              <div class="hiper-hero__label">
-                Bolo inicial
-              </div>
-
+              <div class="hiper-hero__valor hiper-hero__valor--main">{{ resultado.bolo_inicial }}</div>
+              <div class="hiper-hero__label">Bolo inicial</div>
             </div>
             {% endif %}
 
-            <!-- TASA -->
-{% if resultado.tasa_inicial and not resultado.infusion_activa %}
-<div class="hiper-hero__bloque">
+            {% if resultado.tasa_inicial and not resultado.infusion_activa %}
+            <div class="hiper-hero__bloque">
+              <div class="hiper-hero__valor hiper-hero__valor--main">{{ resultado.tasa_inicial }}</div>
+              <div class="hiper-hero__label">Tasa de infusión</div>
+            </div>
+            {% endif %}
 
-  <div class="hiper-hero__valor hiper-hero__valor--main">
-    {{ resultado.tasa_inicial }}
-  </div>
-
-  <div class="hiper-hero__label">
-    Tasa de infusión
-  </div>
-
-</div>
-{% endif %}
-
-            <!-- INFUSIÓN ACTIVA -->
             {% if resultado.infusion_activa and resultado.tasa_algoritmo %}
             <div class="hiper-hero__bloque hiper-hero__bloque--inline">
-
               <div class="hiper-hero__main">
-
-                <div class="hiper-hero__valor hiper-hero__valor--main">
-                  {{ resultado.tasa_algoritmo }}
-                </div>
-
-                <div class="hiper-hero__label">
-                  Tasa de infusión
-                </div>
-
+                <div class="hiper-hero__valor hiper-hero__valor--main">{{ resultado.tasa_algoritmo }}</div>
+                <div class="hiper-hero__label">Tasa de infusión</div>
               </div>
-
               {% if resultado.calculo_texto %}
-              <div class="hiper-hero__side">
-                {{ resultado.calculo_texto }}
-              </div>
+              <div class="hiper-hero__side">{{ resultado.calculo_texto }}</div>
               {% endif %}
-
             </div>
             {% endif %}
 
@@ -109,19 +86,32 @@
 
         <!-- PRÓXIMO CONTROL -->
         <div class="hiper-proximo-card">
-
           <div class="hiper-proximo-card__label">
             <span class="ui-icon">🕒</span>
             Próximo control
           </div>
-
           <div class="hiper-proximo-card__value">
             {{ resultado.proximo_control|default:"Controlar según protocolo indicado" }}
           </div>
-
         </div>
 
       </div>
+      {% else %}
+      <div class="hiper-fila-principal hiper-fila-principal--sostenida hiper-fila-principal--sin-terapia">
+
+        <!-- PRÓXIMO CONTROL (ancho completo, sin terapia) -->
+        <div class="hiper-proximo-card hiper-proximo-card--full">
+          <div class="hiper-proximo-card__label">
+            <span class="ui-icon">🕒</span>
+            Próximo control
+          </div>
+          <div class="hiper-proximo-card__value">
+            {{ resultado.proximo_control|default:"Controlar según protocolo indicado" }}
+          </div>
+        </div>
+
+      </div>
+      {% endif %}
     </div>
 
   </div>
