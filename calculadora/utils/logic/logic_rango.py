@@ -72,7 +72,7 @@ def evaluar_rango_70_180(
         if not (UMBRAL_HIPO <= actual < UMBRAL_HIPER):
             return None
 
-        resultado["texto_rango_objetivo"] = "Paciente no insulinizado: 70 a 180 mg/dL"
+        resultado["texto_rango_objetivo"] = "Paciente no insulinizado: 70 a 179 mg/dL"
 
         # 70 a 90
         if UMBRAL_HIPO <= actual < Decimal("90"):
@@ -81,7 +81,7 @@ def evaluar_rango_70_180(
             resultado["resumen_objetivo"] = "Dentro de rango"
             resultado["conducta"] = "Mantener vigilancia clínica"
             resultado["alerta_borde_hipo"] = True
-            resultado["proximo_control"] = "Controlar glucemia nuevamente en 4 hora"
+            resultado["proximo_control"] = "Controlar glucemia nuevamente en 4 horas"
             resultado["ui_variant"] = "danger"
             resultado["en_objetivo"] = True
             resultado["en_objetivo_con_alerta"] = True
@@ -159,7 +159,7 @@ def evaluar_rango_70_180(
 
             tasa_data = obtener_tasa_por_algoritmo(actual, algoritmo_activo)
 
-            resultado["tasa"] = tasa_data.get("texto") or tasa_data.get("valor")
+            resultado["tasa"] = tasa_data.get("texto")
             resultado["tasa_algoritmo"] = resultado["tasa"]
 
             resultado["mostrar_tasa"] = True
@@ -183,7 +183,7 @@ def evaluar_rango_70_180(
 
             tasa_data = obtener_tasa_por_algoritmo(actual, algoritmo_activo)
 
-            resultado["tasa"] = tasa_data.get("texto") or tasa_data.get("valor")
+            resultado["tasa"] = tasa_data.get("texto")
             resultado["tasa_algoritmo"] = resultado["tasa"]
 
             resultado["mostrar_tasa"] = True
@@ -194,7 +194,7 @@ def evaluar_rango_70_180(
             resultado["fuera_objetivo"] = False
             resultado["alerta_rango"] = ""
 
-            resultado["proximo_control"] = "Controlar glucemia nuevamente en 6 horas"
+            _asignar_control(actual)
 
             resultado = aplicar_presentacion_terapia(
                 resultado,

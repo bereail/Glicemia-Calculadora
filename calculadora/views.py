@@ -24,6 +24,28 @@ from .utils.ui.presentation import (
 # PERMISOS
 # =========================================================
 
+def _calcular_contexto_infusion(user):
+    primera = (
+        MedicionGlucemia.objects
+        .filter(usuario=user, infusion_activa=True)
+        .order_by("fecha_hora")
+        .first()
+    )
+    horas_desde_inicio = None
+    if primera:
+        delta = timezone.now() - primera.fecha_hora
+        horas_desde_inicio = delta.total_seconds() / 3600
+
+    ultimas = list(
+        MedicionGlucemia.objects
+        .filter(usuario=user, infusion_activa=True)
+        .order_by("-fecha_hora")[:2]
+    )
+    estable = len(ultimas) >= 2 and all(m.clase == "en_rango" for m in ultimas)
+
+    return horas_desde_inicio, estable
+
+
 def tiene_acceso_home(user):
     return user.is_authenticated and (
         user.is_superuser
@@ -120,6 +142,8 @@ def control_glicemia(request):
             tercera_medicion = form.cleaned_data.get("tercera_medicion")
             algoritmo_activo = form.cleaned_data.get("algoritmo_activo", "1")
 
+            horas_desde_inicio, estable = _calcular_contexto_infusion(request.user)
+
             resultado = evaluar_glucemia_service(
                 actual=actual,
                 previa=previa,
@@ -127,6 +151,8 @@ def control_glicemia(request):
                 hubo_ajuste_insulina=hubo_ajuste_insulina,
                 tercera_medicion=tercera_medicion,
                 algoritmo_activo=algoritmo_activo,
+                horas_desde_inicio=horas_desde_inicio,
+                estable=estable,
             )
 
             resultado = enriquecer_resultado_ui(

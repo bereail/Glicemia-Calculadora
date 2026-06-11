@@ -9,10 +9,7 @@
 
   <title>{% block title %}Control Glicemia{% endblock %}</title>
 
-  <link rel="stylesheet" href="{% static 'calculadora/css/base.css' %}?v=20260528-11">
-  <link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=20260528-11">
-  <link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=20260528-11">
-  <link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=20260528-11">
+  <link rel="stylesheet" href="{% static 'calculadora/css/base.css' %}?v=20260610-13">
 
 {% block extra_css %}{% endblock %}
 
@@ -79,13 +76,15 @@
 
   <div class="topbar__nav-left">
 
-    <a href="{% url 'control_glicemia' %}" class="btn">
+    <a href="{% url 'control_glicemia' %}"
+       class="btn {% if request.resolver_match.url_name == 'control_glicemia' %}btn-current{% endif %}">
       <span class="nav-icon">⌂</span>
       <span>Inicio</span>
     </a>
 
     {% if request.user.is_superuser or request.user.username == "metanutric" %}
-      <a href="{% url 'historial' %}" class="btn nav-history">
+      <a href="{% url 'historial' %}"
+         class="btn nav-history {% if request.resolver_match.url_name == 'historial' %}btn-current{% endif %}">
         <span class="nav-icon">◫</span>
         <span>Historial</span>
       </a>
@@ -142,7 +141,7 @@
 
 {% block extra_js %}
 
-  <script src="{% static 'calculadora/js/control_glicemia.js' %}?v=20260528-11"></script>
+  <script src="{% static 'calculadora/js/control_glicemia.js' %}?v=20260610-12"></script>
 
 {% endblock %}
 

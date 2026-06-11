@@ -32,43 +32,14 @@
           </div>
         {% endif %}
 
-<div class="field-group">
-  <label for="id_glicemia_actual">
-    Glicemia actual
-  </label>
+        <div class="field-group">
+          <label for="id_glicemia_actual">Glicemia actual</label>
+          {{ form.glicemia_actual }}
 
-  {{ form.glicemia_actual }}
-
-  <div style="display:flex;justify-content:flex-end;margin-top:8px;margin-bottom:6px;">
-    <a
-      href=""
-      id="btn-limpiar"
-      title="Limpiar formulario"
-      style="
-        display:inline-flex;
-        align-items:center;
-        gap:4px;
-        padding:3px 8px;
-        border-radius:999px;
-        border:1px solid rgba(96,165,250,.20);
-        background:transparent;
-        color:#93c5fd;
-        font-size:10px;
-        font-weight:700;
-        text-decoration:none;
-        opacity:.85;
-      "
-    >
-      🧹 Limpiar
-    </a>
-  </div>
-
-  {% if form.glicemia_actual.errors %}
-    <div class="field-error">
-      {{ form.glicemia_actual.errors }}
-    </div>
-  {% endif %}
-</div>
+          {% if form.glicemia_actual.errors %}
+            <div class="field-error">{{ form.glicemia_actual.errors }}</div>
+          {% endif %}
+        </div>
 
         <div id="bloque_contexto" class="hidden">
 
@@ -114,6 +85,24 @@
             <span id="helper_previa"></span>
           </div>
 
+          <div id="ajuste_container" class="field-group hidden">
+            <label class="field-label">{{ form.hubo_ajuste_insulina.label }}</label>
+            <div class="glicemia-radio-group">
+              {% for radio in form.hubo_ajuste_insulina %}
+                <label class="glicemia-radio-card">
+                  {{ radio.tag }}
+                  <span>{{ radio.choice_label }}</span>
+                </label>
+              {% endfor %}
+            </div>
+            <div class="field-helper">
+              Indicar si en el control anterior se realizó un ajuste de la infusión de insulina.
+            </div>
+            {% if form.hubo_ajuste_insulina.errors %}
+              <div class="field-error">{{ form.hubo_ajuste_insulina.errors }}</div>
+            {% endif %}
+          </div>
+
           <div id="previas_box" class="hidden">
             <div class="field-group">
               <label for="id_glicemia_previa">Glicemia previa</label>
@@ -137,8 +126,10 @@
         </div>
 
         <div class="actions">
-          <button type="submit" class="btn-primary">
-            Evaluar
+          <button type="submit" class="btn-primary">Evaluar</button>
+          <button type="button" class="btn-limpiar hidden" id="btn-limpiar" aria-label="Limpiar todos los campos del formulario">
+            <span class="btn-limpiar__icon" aria-hidden="true">↺</span>
+            Limpiar campos
           </button>
         </div>
       </form>
@@ -211,9 +202,9 @@
         </div>
       </div>
 
-      {% if resultado.clase_visual == "critico" and "hipogluc" in resultado.estado|lower %}
+      {% if "hipogluc" in resultado.estado|lower %}
         {% include "calculadora/partials/resultado_hipo.html" %}
-      {% elif resultado.clase_visual == "alerta" %}
+      {% elif resultado.clase_visual == "alerta" or resultado.clase_visual == "critico" %}
         {% include "calculadora/partials/resultado_hiper.html" %}
       {% else %}
         {% include "calculadora/partials/resultado_rango.html" %}
@@ -226,24 +217,11 @@
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=70">
-<link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=999">
-<link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=7">
+<link rel="stylesheet" href="{% static 'calculadora/css/control_glicemia.css' %}?v=20260610-14">
+<link rel="stylesheet" href="{% static 'calculadora/css/resultado_base.css' %}?v=20260610-12">
+<link rel="stylesheet" href="{% static 'calculadora/css/tabla_algoritmo.css' %}?v=20260610-12">
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=10"></script>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-  const btnLimpiar = document.getElementById("btn-limpiar");
-
-  if (!btnLimpiar) return;
-
-  btnLimpiar.addEventListener("click", function (event) {
-    event.preventDefault();
-    window.location.href = window.location.pathname;
-  });
-});
-</script>
+<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=20260610-12"></script>
 {% endblock %}

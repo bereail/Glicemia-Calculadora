@@ -31,12 +31,12 @@ def resolver_glucemia(
         return _aplicar_tendencia(resultado, actual, previa)
 
     resultado = evaluar_rango_70_180(
-    actual=actual,
-    previa=previa,
-    infusion_activa=infusion_activa,
-    algoritmo_activo=algoritmo_activo,
-    horas_desde_inicio=horas_desde_inicio,
-    estable=estable,
+        actual=actual,
+        previa=previa,
+        infusion_activa=infusion_activa,
+        algoritmo_activo=algoritmo_activo,
+        horas_desde_inicio=horas_desde_inicio,
+        estable=estable,
     )
     if resultado is not None:
         return _aplicar_tendencia(resultado, actual, previa)
@@ -52,6 +52,11 @@ def resolver_glucemia(
         estable=estable,
     )
     if resultado is not None:
+        if hubo_ajuste_insulina:
+            aviso = "Glucemia persistentemente alta luego de ajuste previo. Avisar al médico."
+            observacion_previa = resultado.get("observacion") or ""
+            resultado["observacion"] = (aviso + " " + observacion_previa).strip()
+            resultado["alerta_ajuste_previo"] = True
         return _aplicar_tendencia(resultado, actual, previa)
 
     resultado = _resultado_base()

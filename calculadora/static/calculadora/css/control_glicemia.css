@@ -191,12 +191,36 @@
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    transform 0.15s ease,
+    box-shadow 0.18s ease;
 }
 
 .glicemia-radio-card:hover {
   border-color: #2f80ed;
-  background: rgba(47, 128, 237, 0.08);
+  background: rgba(47, 128, 237, 0.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(47, 128, 237, 0.15);
+}
+
+.glicemia-radio-card:active {
+  transform: scale(0.97);
+  box-shadow: none;
+}
+
+/* Estado seleccionado */
+.glicemia-radio-card:has(input[type="radio"]:checked) {
+  border-color: #2f80ed;
+  background: rgba(47, 128, 237, 0.14);
+  box-shadow: 0 0 0 2px rgba(47, 128, 237, 0.2);
+}
+
+/* Focus visible accesible en el radio dentro de la card */
+.glicemia-radio-card:focus-within {
+  outline: 3px solid rgba(122, 178, 255, 0.55);
+  outline-offset: 2px;
 }
 
 .glicemia-radio-card input[type="radio"] {
@@ -222,8 +246,7 @@
   gap: 6px;
 }
 
-.btn-primary,
-button[type="submit"] {
+.btn-primary {
   width: 100%;
   height: 36px;
   border: none;
@@ -234,18 +257,28 @@ button[type="submit"] {
   font-weight: 900;
   cursor: pointer;
   box-shadow: 0 10px 24px rgba(49, 203, 106, 0.22);
+  transition:
+    background var(--transition),
+    transform var(--transition),
+    box-shadow var(--transition),
+    opacity var(--transition);
 }
 
-.btn-primary:hover,
-button[type="submit"]:hover {
+.btn-primary:hover {
   background: var(--primary-hover);
   transform: translateY(-1px);
 }
 
-.btn-primary:focus {
+.btn-primary:focus-visible {
+  outline: 3px solid rgba(49, 203, 106, 0.6);
+  outline-offset: 3px;
   box-shadow:
     0 10px 24px rgba(49, 203, 106, 0.22),
-    0 0 0 3px rgba(49, 203, 106, 0.14);
+    0 0 0 4px rgba(49, 203, 106, 0.18);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
 }
 
 /* =========================================================
@@ -387,6 +420,83 @@ button[type="submit"]:hover {
 }
 
 /* =========================================================
+   TRANSICIONES DE ENTRADA/SALIDA DE CAMPOS
+   ========================================================= */
+
+.campo-animable {
+  overflow: hidden;
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s ease,
+    max-height 0.28s ease;
+}
+
+.campo-visible {
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 600px; /* valor amplio para cualquier contenido */
+  pointer-events: auto;
+}
+
+.campo-oculto {
+  opacity: 0;
+  transform: translateY(-6px);
+  max-height: 0;
+  pointer-events: none;
+}
+
+/* =========================================================
+   ESTADO DE CARGA DEL BOTÓN EVALUAR
+   ========================================================= */
+
+.btn-primary:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-cargando {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(4, 19, 26, 0.3);
+  border-top-color: rgba(4, 19, 26, 0.9);
+  border-radius: 50%;
+  animation: btn-spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* =========================================================
+   ANIMACIÓN DE ENTRADA DEL MODAL RESULTADO
+   ========================================================= */
+
+@keyframes modal-entrada {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-resultado--entrando .modal-resultado__dialog {
+  animation: modal-entrada 0.22s ease forwards;
+}
+
+/* =========================================================
    RESPONSIVE
    ========================================================= */
 
@@ -417,32 +527,131 @@ button[type="submit"]:hover {
   #secuencia_mediciones .glicemia-secuencia__arrow {
     display: none;
   }
+
+  /* Botones de acción en mobile: stack vertical limpio */
+  .actions {
+    gap: 8px;
+  }
+
+  .btn-primary {
+    height: 44px;
+    font-size: 0.9rem;
+  }
+
+  .btn-limpiar {
+    height: 40px;
+    font-size: 0.8rem;
+  }
 }
 
 @media (max-width: 520px) {
   .hero h1 {
-    font-size: 1.28rem;
+    font-size: 1.18rem;
+    line-height: 1.1;
   }
 
   .alerta-protocolo {
-    font-size: 0.66rem;
+    font-size: 0.64rem;
+    padding: 5px 9px;
   }
 
   .panel-form,
   .panel-result {
-    padding: 11px;
+    padding: 10px;
   }
 
   input[type="number"],
   .input-number {
-    min-height: 40px;
-    font-size: 0.96rem;
+    min-height: 44px;
+    font-size: 1rem;
   }
 
   .btn-primary {
-    height: 38px;
-    font-size: 0.84rem;
+    height: 44px;
+    font-size: 0.88rem;
   }
+
+  .btn-limpiar {
+    height: 40px;
+  }
+
+  /* Radio cards más compactas en mobile muy pequeño */
+  .glicemia-radio-card {
+    min-width: 70px;
+    padding: 8px 9px;
+    font-size: 0.78rem;
+  }
+}
+
+/* =========================================================
+   BOTÓN LIMPIAR
+   ========================================================= */
+
+.btn-limpiar {
+  width: 100%;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1.5px solid rgba(130, 170, 220, 0.22);
+  border-radius: 12px;
+  background: transparent;
+  color: rgba(180, 210, 255, 0.55);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    border-color var(--transition),
+    color var(--transition),
+    background var(--transition),
+    transform var(--transition);
+  letter-spacing: 0.02em;
+}
+
+.btn-limpiar:hover {
+  border-color: rgba(130, 170, 220, 0.5);
+  color: rgba(210, 230, 255, 0.9);
+  background: rgba(130, 170, 220, 0.07);
+  transform: translateY(-1px);
+}
+
+.btn-limpiar:active {
+  transform: scale(0.98);
+}
+
+.btn-limpiar:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(130, 170, 220, 0.2);
+}
+
+.btn-limpiar__icon {
+  font-size: 1rem;
+  display: inline-block;
+  transition: transform 0.45s ease;
+}
+
+.btn-limpiar:hover .btn-limpiar__icon {
+  transform: rotate(-180deg);
+}
+
+.btn-limpiar.is-clearing .btn-limpiar__icon {
+  animation: limpiar-spin 0.45s ease forwards;
+}
+
+@keyframes limpiar-spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); }
+}
+
+.input-control.input-cleared {
+  animation: input-pulse 0.5s ease;
+}
+
+@keyframes input-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(130, 170, 220, 0); }
+  40%  { box-shadow: 0 0 0 5px rgba(130, 170, 220, 0.22); }
+  100% { box-shadow: 0 0 0 0 rgba(130, 170, 220, 0); }
 }
 
 /* =========================================================
@@ -619,170 +828,4 @@ body.modal-open {
   font-size: 16px;
   font-weight: 700;
   color: #ffffff;
-}
-
-
-/* =========================================================
-   BOTÓN LIMPIAR INLINE - UI FINAL
-   ========================================================= */
-
-
-
-
-.btn-limpiar-inline {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 4px !important;
-
-  height: 24px !important;
-  padding: 0 10px !important;
-
-  border: 1px solid rgba(96, 165, 250, 0.38) !important;
-  border-radius: 999px !important;
-
-  background: rgba(18, 52, 95, 0.78) !important;
-  color: #dbeafe !important;
-
-  font-size: 0.68rem !important;
-  font-weight: 800 !important;
-  line-height: 1 !important;
-
-  cursor: pointer !important;
-  white-space: nowrap !important;
-  box-shadow: none !important;
-  transition: all 0.18s ease !important;
-}
-
-.btn-limpiar-inline:hover {
-  background: rgba(25, 65, 118, 0.98) !important;
-  border-color: rgba(147, 197, 253, 0.8) !important;
-  color: #ffffff !important;
-  transform: translateY(-1px) !important;
-}
-
-.btn-limpiar-inline:active {
-  transform: translateY(0) !important;
-}
-
-/* =========================================================
-   BOTON BORRAR CAMPOS - UI FINAL
-   ========================================================= */
-
-.field-actions-inline {
-  display: flex !important;
-  justify-content: flex-end !important;
-  margin-top: 6px !important;
-}
-
-.btn-reset-form {
-  appearance: none !important;
-  -webkit-appearance: none !important;
-
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 5px !important;
-
-  height: 26px !important;
-  padding: 0 11px !important;
-
-  border-radius: 999px !important;
-  border: 1px solid rgba(96, 165, 250, 0.28) !important;
-
-  background: rgba(15, 35, 65, 0.78) !important;
-  color: #cfe3ff !important;
-
-  font-family: inherit !important;
-  font-size: 0.70rem !important;
-  font-weight: 800 !important;
-  line-height: 1 !important;
-
-  cursor: pointer !important;
-  white-space: nowrap !important;
-  box-shadow: none !important;
-
-  transition:
-    background 0.18s ease,
-    border-color 0.18s ease,
-    color 0.18s ease,
-    transform 0.18s ease !important;
-}
-
-.btn-reset-form:hover {
-  background: rgba(25, 55, 95, 0.98) !important;
-  border-color: rgba(147, 197, 253, 0.7) !important;
-  color: #ffffff !important;
-  transform: translateY(-1px) !important;
-}
-
-.btn-reset-form:active {
-  transform: translateY(0) !important;
-}
-
-
-.field-actions-inline {
-  display: flex !important;
-  justify-content: flex-end !important;
-  margin-top: 6px !important;
-}
-
-.btn-reset-form {
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 5px !important;
-  height: 26px !important;
-  padding: 0 11px !important;
-  border-radius: 999px !important;
-  border: 1px solid rgba(96, 165, 250, 0.28) !important;
-  background: rgba(15, 35, 65, 0.78) !important;
-  color: #cfe3ff !important;
-  font-family: inherit !important;
-  font-size: 0.70rem !important;
-  font-weight: 800 !important;
-  line-height: 1 !important;
-  cursor: pointer !important;
-  white-space: nowrap !important;
-  box-shadow: none !important;
-}
-
-.btn-reset-form:hover {
-  background: rgba(25, 55, 95, 0.98) !important;
-  border-color: rgba(147, 197, 253, 0.7) !important;
-  color: #ffffff !important;
-}
-
-.link-reset-form,
-.link-reset-form:visited {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 5px !important;
-
-  padding: 4px 10px !important;
-  border-radius: 999px !important;
-
-  background: rgba(18, 52, 95, 0.78) !important;
-  border: 1px solid rgba(96, 165, 250, 0.35) !important;
-
-  color: #dbeafe !important;
-  text-decoration: none !important;
-
-  font-size: 0.70rem !important;
-  font-weight: 800 !important;
-  line-height: 1 !important;
-}
-
-.link-reset-form:hover {
-  background: rgba(25, 65, 118, 0.98) !important;
-  border-color: rgba(147, 197, 253, 0.75) !important;
-  color: #ffffff !important;
-}
-
-.field-actions-inline {
-  display: flex !important;
-  justify-content: flex-end !important;
-  margin-top: 6px !important;
 }

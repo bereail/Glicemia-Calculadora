@@ -300,7 +300,7 @@ def _control_4_o_6_horas(horas_desde_inicio=None, estable=False):
     return {
         "proximo_control": "Controlar glucemia nuevamente en 6 horas",
         "comentario_control": (
-            "Paciente estable y con más de 24 horas de seguimiento. "
+            ""
             + _comentario_monitoreo_insulinizado()
         ),
     }
@@ -316,10 +316,7 @@ def calcular_proximo_control_insulinizado(
     if glicemia > Decimal("400"):
         return {
             "proximo_control": "Controlar glucemia nuevamente en 1 hora",
-            "comentario_control": (
-                ""
-                + _comentario_monitoreo_insulinizado()
-            ),
+            "comentario_control": _comentario_monitoreo_insulinizado(),
         }
 
     if Decimal("300") <= glicemia <= Decimal("400"):
@@ -343,37 +340,25 @@ def calcular_proximo_control_insulinizado(
     if Decimal("120") < glicemia < Decimal("140"):
         return {
             "proximo_control": "Controlar glucemia nuevamente en 2 horas",
-            "comentario_control": (
-                " "
-                + _comentario_monitoreo_insulinizado()
-            ),
+            "comentario_control": _comentario_monitoreo_insulinizado(),
         }
 
     if Decimal("70") < glicemia <= Decimal("90"):
         return {
             "proximo_control": "Controlar glucemia nuevamente en 1 hora",
-            "comentario_control": (
-                ""
-                + _comentario_monitoreo_insulinizado()
-            ),
+            "comentario_control": _comentario_monitoreo_insulinizado(),
         }
 
     if Decimal("90") < glicemia < Decimal("120"):
         return {
             "proximo_control": "Controlar glucemia nuevamente en 2 horas",
-            "comentario_control": (
-                ""
-                + _comentario_monitoreo_insulinizado()
-            ),
+            "comentario_control": _comentario_monitoreo_insulinizado(),
         }
 
     if glicemia == Decimal("120"):
         return {
             "proximo_control": "Controlar glucemia nuevamente en 2 horas",
-            "comentario_control": (
-                ""
-                + _comentario_monitoreo_insulinizado()
-            ),
+            "comentario_control": _comentario_monitoreo_insulinizado(),
         }
     if glicemia == Decimal("70"):
         return {
@@ -387,10 +372,7 @@ def calcular_proximo_control_insulinizado(
 
     return {
         "proximo_control": "Controlar glucemia nuevamente en 30 minutos",
-        "comentario_control": (
-            " "
-            + _comentario_monitoreo_insulinizado()
-        ),
+        "comentario_control": _comentario_monitoreo_insulinizado(),
     }
 
 
@@ -615,21 +597,6 @@ def estan_en_mismo_escalon_200_300(previa, actual):
 
     return obtener_escalon_algoritmo(previa) == obtener_escalon_algoritmo(actual)
 
-
-def estan_en_mismo_escalon_300_400(previa, actual):
-    if previa is None or actual is None:
-        return False
-
-    previa = _a_decimal(previa)
-    actual = _a_decimal(actual)
-
-    if not (Decimal("300") <= previa <= Decimal("400")):
-        return False
-
-    if not (Decimal("300") <= actual <= Decimal("400")):
-        return False
-
-    return obtener_escalon_algoritmo(previa) == obtener_escalon_algoritmo(actual)
 
 def estan_en_mismo_escalon_300_400(previa, actual):
     if previa is None or actual is None:

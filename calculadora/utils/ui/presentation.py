@@ -111,15 +111,13 @@ def enriquecer_resultado_ui(resultado, actual, infusion_activa):
     resultado["calculo_texto"] = resultado.get("calculo_texto") or ""
 
     if infusion_activa and actual not in (None, ""):
-        actual_float = float(actual)
-        tasa = round(actual_float / 100, 2)
+        tasa = round(float(actual) / 100, 2)
         tasa_texto = f"{tasa:.2f}".rstrip("0").rstrip(".")
-        actual_texto = f"{actual_float:.2f}".rstrip("0").rstrip(".")
 
-        resultado["tasa_calculada"] = tasa_texto
-        resultado["bolo_calculado"] = tasa_texto
-
-        # solo completar si todavía no vino desde lógica clínica
+        if not resultado.get("tasa_calculada"):
+            resultado["tasa_calculada"] = tasa_texto
+        if not resultado.get("bolo_calculado"):
+            resultado["bolo_calculado"] = tasa_texto
         if not resultado.get("bolo_inicial"):
             resultado["bolo_inicial"] = tasa_texto
         if not resultado.get("tasa_inicial"):

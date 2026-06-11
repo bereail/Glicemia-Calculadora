@@ -84,6 +84,12 @@
           <div class="rango-final__control">
             {{ resultado.proximo_control|default:"Controlar glucemia nuevamente en 1 hora" }}
           </div>
+
+          {% if resultado.comentario_control %}
+          <div class="rango-final__comentario">
+            {{ resultado.comentario_control }}
+          </div>
+          {% endif %}
         </div>
 
       </div>
@@ -99,6 +105,12 @@
     <div class="rango-final__control">
       {{ resultado.proximo_control|default:"Controlar glucemia nuevamente en 1 hora" }}
     </div>
+
+    {% if resultado.comentario_control %}
+    <div class="rango-final__comentario">
+      {{ resultado.comentario_control }}
+    </div>
+    {% endif %}
   </div>
 
 {% endif %}

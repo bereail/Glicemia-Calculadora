@@ -22,7 +22,7 @@ class GlucemiaForm(forms.Form):
                 "class": "input-control",
                 "placeholder": "Ej: 185",
                 "id": "id_glicemia_actual",
-                "inputmode": "numeric",
+                "inputmode": "decimal",
                 "min": "0",
                 "max": "999",
                 "step": "1",
@@ -158,7 +158,8 @@ class GlucemiaForm(forms.Form):
                 "El ajuste de insulina solo aplica si hay infusión activa.",
             )
 
-        if infusion_activa and previa is None:
+        modo = cleaned_data.get("modo", "seguimiento")
+        if infusion_activa and previa is None and modo != "inicio":
             self.add_error(
                 "glicemia_previa",
                 "La glicemia previa es obligatoria si hay infusión activa.",

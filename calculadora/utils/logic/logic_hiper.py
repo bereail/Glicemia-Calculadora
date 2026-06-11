@@ -1,6 +1,9 @@
+import logging
 from decimal import Decimal
 
 from ..constants import UMBRAL_ALERTA_ALTA, UMBRAL_HIPER
+
+logger = logging.getLogger(__name__)
 from ..helpers import (
     _a_bool,
     _a_decimal,
@@ -295,33 +298,6 @@ def evaluar_hiperglucemia(
         return _marcar_visual(resultado, es_critico=True, nivel_visual="critico")
 
     # ------------------------------------------------------
-    # ALGORITMO 1 + 3 mediciones >200 en mismo escalón = PERSISTENTE
-    # ------------------------------------------------------
-    if algoritmo_activo == 1 and es_hiperglucemia_persistente_algoritmo_1(
-        actual=actual,
-        previa=previa,
-        anterior=tercera_medicion,
-        infusion_activa=infusion_activa,
-    ):
-        resultado["estado"] = "Hiperglucemia Persistente"
-        resultado["subestado"] = (
-            "Tres mediciones consecutivas > 200 mg/dL en el mismo escalón durante Algoritmo 1"
-        )
-        resultado["mensaje"] = "Hiperglucemia persistente fuera del rango objetivo."
-        resultado["resumen_objetivo"] = "Fuera de rango objetivo"
-        resultado["conducta"] = "Dar aviso médico y continuar con Algoritmo 2."
-        resultado["requiere_recontrol"] = True
-        resultado["algoritmo_sugerido"] = "Algoritmo 2"
-        resultado["tasa_algoritmo"] = obtener_tasa_por_algoritmo(actual, algoritmo_activo)["texto"]
-        resultado["clasificacion_protocolo"] = "HGP"
-        resultado["observacion"] = (
-            "Fallo del Algoritmo 1: persistencia fuera de objetivo en el mismo escalón."
-        )
-        _asignar_control(actual, insulinizado=True)
-        return _marcar_visual(resultado, es_critico=True, nivel_visual="critico")
-
-
-    # ------------------------------------------------------
     # >=360 con infusión activa
     # ------------------------------------------------------
     if actual >= Decimal("360"):
@@ -336,7 +312,7 @@ def evaluar_hiperglucemia(
         resultado["tasa_inicial"] = None
 
         if previa is None:
-            resultado["estado"] = "Hiperglucemia Persistente"
+            resultado["estado"] = "Hiperglucemia Marcada"
             resultado["subestado"] = "Actual ≥ 360 mg/dL con infusión activa"
             resultado["mensaje"] = "Hiperglucemia marcada."
             resultado["resumen_objetivo"] = "Fuera de rango objetivo"
@@ -398,10 +374,7 @@ def evaluar_hiperglucemia(
     # Si las dos mediciones están en el mismo escalón, obtener 3ra medición
     # ------------------------------------------------------
     if Decimal("300") <= actual <= Decimal("400"):
-        print("ENTRO BLOQUE 300-359 MISMO ESCALON")
-        print("previa:", previa)
-        print("actual:", actual)
-        print("mismo escalon:", estan_en_mismo_escalon_300_400(previa, actual))
+        logger.debug("ENTRO BLOQUE 300-359 MISMO ESCALON — previa: %s | actual: %s | mismo escalón: %s", previa, actual, estan_en_mismo_escalon_300_400(previa, actual))
 
         if (
             tercera_medicion is None
@@ -467,37 +440,11 @@ def evaluar_hiperglucemia(
 
             return _marcar_visual(resultado, es_critico=False, nivel_visual="alerta")
 
-        if previa is not None and tercera_medicion is None:
-            resultado["estado"] = "Glucemia Fuera de Objetivo"
-            resultado["estado_display"] = "Glucemia por encima de objetivo"
-            resultado["subestado"] = (
-                "Dos mediciones consecutivas entre 300 y 400 mg/dL "
-                "con infusión activa"
-            )
-            resultado["mensaje"] = "Hiperglucemia fuera del rango objetivo."
-            resultado["resumen_objetivo"] = "Fuera de rango objetivo"
-            resultado["conducta"] = "Ajustar infusión"
-            resultado["requiere_recontrol"] = True
-            resultado["proximo_control"] = "Controlar glucemia nuevamente en 2 horas"
-            resultado["comentario_control"] = (
-                "Evaluar si las 3 mediciones permanecen > 200 mg/dL "
-                "en el mismo escalón."
-            )
-            resultado["observacion"] = (
-                "Aún no cumple criterios completos de hiperglucemia persistente."
-            )
-            return _marcar_visual(resultado, es_critico=False, nivel_visual="alerta")
-
-
     # ------------------------------------------------------
     # >200 y <360 con infusión activa
 
     if actual > UMBRAL_ALERTA_ALTA and actual <= Decimal("360"):
-        print("DEBUG MISMO ESCALON 200-300")
-        print("actual:", actual)
-        print("previa:", previa)
-        print("tercera_medicion:", tercera_medicion)
-        print("resultado helper:", estan_en_mismo_escalon_200_300(previa, actual))
+        logger.debug("DEBUG MISMO ESCALON 200-300 — actual: %s | previa: %s | tercera_medicion: %s | mismo escalón: %s", actual, previa, tercera_medicion, estan_en_mismo_escalon_200_300(previa, actual))
 
         if (
             tercera_medicion is None
@@ -535,7 +482,7 @@ def evaluar_hiperglucemia(
             resultado["observacion"] = (
                 "Aún no cumple criterios completos de hiperglucemia persistente."
             )
-            print("ENTRE AL BLOQUE CORRECTO")
+            logger.debug("ENTRE AL BLOQUE CORRECTO")
             return _marcar_visual(resultado, es_critico=False, nivel_visual="alerta")
 
         if previa is not None and tercera_medicion is None:

@@ -7,7 +7,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const helperPreviaContainer = document.getElementById("helper_previa_container");
   const helperPrevia = document.getElementById("helper_previa");
 
+  const ajusteContainer = document.getElementById("ajuste_container");
   const previasBox = document.getElementById("previas_box");
+  const btnLimpiar = document.getElementById("btn-limpiar");
   const anteriorContainer = document.getElementById("anterior_container");
   const algoritmoContainer = document.getElementById("algoritmo_container");
 
@@ -39,16 +41,69 @@ document.addEventListener("DOMContentLoaded", function () {
     return valor === "true" || valor === "1" || valor === "si" || valor === "sí";
   }
 
+  // Lista de elementos que usan transición animada en lugar de display:none brusco
+  const ANIMABLES = new Set([
+    "bloque_contexto",
+    "previas_box",
+    "anterior_container",
+    "algoritmo_container",
+    "helper_previa_container",
+    "ajuste_container",
+    "secuencia_mediciones",
+    "hipo_helper_box",
+  ]);
+
+  // Ocultar sin animación (para inicialización)
+  function ocultarInmediato(el) {
+    if (!el) return;
+    el.classList.remove("campo-visible");
+    el.classList.add("campo-oculto");
+    el.style.display = "none";
+  }
+
+  // Inicializar todos los animables en estado oculto sin transición
+  ANIMABLES.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.add("campo-animable");
+      el.classList.remove("hidden");
+      ocultarInmediato(el);
+    }
+  });
+
   function mostrar(el) {
     if (!el) return;
-    el.classList.remove("hidden");
-    el.style.display = "";
+    if (ANIMABLES.has(el.id)) {
+      el.style.display = "";
+      // requestAnimationFrame doble para forzar repaint antes de la transición
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          el.classList.remove("campo-oculto");
+          el.classList.add("campo-visible");
+        });
+      });
+    } else {
+      el.classList.remove("hidden");
+      el.style.display = "";
+    }
   }
 
   function ocultar(el) {
     if (!el) return;
-    el.classList.add("hidden");
-    el.style.display = "none";
+    if (ANIMABLES.has(el.id)) {
+      el.classList.remove("campo-visible");
+      el.classList.add("campo-oculto");
+      // Esperar a que termine la transición para retirar del flujo
+      el.addEventListener("transitionend", function handler() {
+        if (el.classList.contains("campo-oculto")) {
+          el.style.display = "none";
+        }
+        el.removeEventListener("transitionend", handler);
+      });
+    } else {
+      el.classList.add("hidden");
+      el.style.display = "none";
+    }
   }
 
   function seleccionarAlgoritmo1PorDefecto() {
@@ -173,23 +228,26 @@ document.addEventListener("DOMContentLoaded", function () {
       ocultar(hipoHelperBox);
       ocultar(bloqueContexto);
       ocultar(helperPreviaContainer);
+      ocultar(ajusteContainer);
       ocultar(previasBox);
       ocultar(anteriorContainer);
       ocultar(algoritmoContainer);
       ocultar(secuenciaMediciones);
-      //seleccionarAlgoritmo1PorDefecto();
+      ocultar(btnLimpiar);
       return;
     }
+
+    mostrar(btnLimpiar);
 
     if (actual <= 70) {
       mostrar(hipoHelperBox);
       ocultar(bloqueContexto);
       ocultar(helperPreviaContainer);
+      ocultar(ajusteContainer);
       ocultar(previasBox);
       ocultar(anteriorContainer);
       ocultar(algoritmoContainer);
       ocultar(secuenciaMediciones);
-      //seleccionarAlgoritmo1PorDefecto();
       return;
     }
 
@@ -198,11 +256,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (infusion === null) {
       ocultar(helperPreviaContainer);
+      ocultar(ajusteContainer);
       ocultar(previasBox);
       ocultar(anteriorContainer);
       ocultar(algoritmoContainer);
       ocultar(secuenciaMediciones);
-      //seleccionarAlgoritmo1PorDefecto();
       return;
     }
 
@@ -210,6 +268,7 @@ document.addEventListener("DOMContentLoaded", function () {
     mostrar(previasBox);
 
     if (infusion) {
+      mostrar(ajusteContainer);
       if (helperPrevia) {
         helperPrevia.textContent = "La glicemia previa es obligatoria para evaluar tendencia.";
       }
@@ -242,6 +301,7 @@ document.addEventListener("DOMContentLoaded", function () {
         labelPreviaHint.textContent = "(opcional)";
       }
 
+      ocultar(ajusteContainer);
       ocultar(anteriorContainer);
       ocultar(algoritmoContainer);
       ocultar(secuenciaMediciones);
@@ -268,8 +328,45 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  function limpiarFormulario() {
+    btnLimpiar?.classList.add("is-clearing");
+    setTimeout(() => btnLimpiar?.classList.remove("is-clearing"), 500);
+
+    document.getElementById("form-glicemia")?.reset();
+
+    if (inputActual) {
+      inputActual.classList.add("input-cleared");
+      inputActual.addEventListener("animationend", () => {
+        inputActual.classList.remove("input-cleared");
+      }, { once: true });
+      inputActual.focus();
+    }
+
+    actualizarFormulario();
+  }
+
+  btnLimpiar?.addEventListener("click", limpiarFormulario);
+
   inputActual?.addEventListener("input", actualizarFormulario);
   radiosInfusion.forEach((r) => r.addEventListener("change", actualizarFormulario));
+
+  // Auto-selección del campo glucemia actual al recibir foco
+  inputActual?.addEventListener("focus", function () {
+    this.select();
+  });
+
+  // Estado de carga en botón Evaluar al hacer submit
+  const formGlicemia = document.getElementById("form-glicemia");
+  const btnEvaluar = formGlicemia?.querySelector('button[type="submit"]');
+
+  if (formGlicemia && btnEvaluar) {
+    formGlicemia.addEventListener("submit", function () {
+      btnEvaluar.disabled = true;
+      btnEvaluar.classList.add("btn-cargando");
+      btnEvaluar.innerHTML =
+        '<span class="btn-spinner" aria-hidden="true"></span>Evaluando...';
+    });
+  }
 
   actualizarFormulario();
 });
@@ -294,6 +391,13 @@ document.addEventListener("DOMContentLoaded", function () {
     modalResultado.classList.remove("hidden");
     modalResultado.setAttribute("aria-hidden", "false");
     body.classList.add("modal-open");
+    // Forzar reflow para que la animación CSS de entrada se ejecute
+    void modalResultado.offsetWidth;
+    modalResultado.classList.add("modal-resultado--entrando");
+    modalResultado.addEventListener("animationend", function handler() {
+      modalResultado.classList.remove("modal-resultado--entrando");
+      modalResultado.removeEventListener("animationend", handler);
+    });
   }
 
   function cerrarModalResultadoFn() {
@@ -321,48 +425,4 @@ document.addEventListener("DOMContentLoaded", function () {
   if (bodyResultado && bodyResultado.textContent.trim() !== "") {
     abrirModalResultado();
   }
-});
-
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    const btnLimpiar = document.getElementById("btn-limpiar");
-
-    if (!btnLimpiar) return;
-
-    btnLimpiar.addEventListener("click", function () {
-
-        const form = document.getElementById("form-glicemia");
-
-        form.reset();
-
-        document.getElementById("bloque_contexto")?.classList.add("hidden");
-        document.getElementById("algoritmo_container")?.classList.add("hidden");
-        document.getElementById("previas_box")?.classList.add("hidden");
-        document.getElementById("anterior_container")?.classList.add("hidden");
-        document.getElementById("helper_previa_container")?.classList.add("hidden");
-
-        const modal = document.getElementById("modal-resultado");
-        if (modal) {
-            modal.remove();
-        }
-
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-        });
-    });
-
-});
-
-
-document.addEventListener("DOMContentLoaded", function () {
-  const btnLimpiar = document.getElementById("btn-limpiar");
-
-  if (!btnLimpiar) return;
-
-  btnLimpiar.addEventListener("click", function (event) {
-    event.preventDefault();
-    window.location.href = window.location.pathname;
-  });
 });
