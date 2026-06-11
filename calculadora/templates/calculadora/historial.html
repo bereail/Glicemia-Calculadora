@@ -128,7 +128,7 @@
               <td class="historial-table__fecha">{{ m.fecha_hora|date:"d/m/Y H:i" }}</td>
               <td class="historial-table__usuario">{{ m.usuario.username }}</td>
               <td class="historial-table__glucemia">
-                {{ m.glicemia }} <span class="historial-table__unit">mg/dL</span>
+                {{ m.glicemia_actual }} <span class="historial-table__unit">mg/dL</span>
               </td>
               <td class="historial-table__modo">{{ m.get_modo_display }}</td>
               <td>
