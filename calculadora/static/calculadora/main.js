@@ -1,10 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
-  alert("MAIN JS CARGADO");
-  console.log("MAIN JS CARGADO");
-
   const glicemiaActualInput = document.getElementById("id_glicemia_actual");
   const bloqueContexto = document.getElementById("bloque_contexto");
-  const hipoHelperBox = document.getElementById("hipo_helper_box");
 
   const btnPrevia = document.getElementById("btn_previa");
   const btnPreviaContainer = document.getElementById("btn_previa_container");
@@ -91,10 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function actualizarFlujo() {
     const actual = getGlicemiaActual();
 
-    console.log("actual:", actual);
-
     if (actual === null) {
-      ocultar(hipoHelperBox);
       ocultar(bloqueContexto);
       ocultar(btnPreviaContainer);
       ocultarPrevia(true);
@@ -103,7 +96,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (actual < 70) {
-      mostrar(hipoHelperBox);
       ocultar(bloqueContexto);
       ocultar(btnPreviaContainer);
       ocultarPrevia(true);
@@ -111,7 +103,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    ocultar(hipoHelperBox);
     mostrar(bloqueContexto);
 
     const infusionValue = getInfusionValue();

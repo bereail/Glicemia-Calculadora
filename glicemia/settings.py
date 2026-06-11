@@ -52,8 +52,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
 
-    # WhiteNoise para archivos estáticos
-    "whitenoise.middleware.WhiteNoiseMiddleware",
+    # WhiteNoise solo en producción (en desarrollo Django sirve estáticos directamente)
+    *( ["whitenoise.middleware.WhiteNoiseMiddleware"] if not DEBUG else [] ),
 
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -177,15 +177,12 @@ CSRF_COOKIE_SECURE = USE_HTTPS
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [
-    BASE_DIR / "calculadora" / "static",
-]
-
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-STATICFILES_STORAGE = (
-    "whitenoise.storage.CompressedManifestStaticFilesStorage"
-)
+if DEBUG:
+    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+else:
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
 # =========================================================
