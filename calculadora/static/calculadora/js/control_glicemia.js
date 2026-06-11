@@ -301,6 +301,7 @@ document.addEventListener("DOMContentLoaded", function () {
         labelPreviaHint.textContent = "(opcional)";
       }
 
+      ajusteContainer.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
       ocultar(ajusteContainer);
       ocultar(anteriorContainer);
       ocultar(algoritmoContainer);

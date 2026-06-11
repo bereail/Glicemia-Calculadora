@@ -152,7 +152,7 @@ class GlucemiaForm(forms.Form):
                 "Para usar la glicemia anterior, primero debés cargar la glicemia previa.",
             )
 
-        if hubo_ajuste is not None and not infusion_activa:
+        if hubo_ajuste is True and not infusion_activa:
             self.add_error(
                 "hubo_ajuste_insulina",
                 "El ajuste de insulina solo aplica si hay infusión activa.",

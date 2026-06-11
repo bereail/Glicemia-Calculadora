@@ -268,8 +268,8 @@ class EnriquecerResultadoUITest(TestCase):
 class VistasSmokeTest(TestCase):
 
     def setUp(self):
-        self.user = User.objects.create_user(
-            username="testenfermera", password="testpass123", is_staff=True
+        self.user = User.objects.create_superuser(
+            username="testenfermera", email="test@test.com", password="testpass123"
         )
         self.client = Client()
         self.client.login(username="testenfermera", password="testpass123")
@@ -297,6 +297,19 @@ class VistasSmokeTest(TestCase):
             "algoritmo_activo": "1",
         })
         self.assertIn(resp.status_code, [200, 302])
+
+    def test_dos_180_sin_infusion_no_da_error_validacion(self):
+        """Bug: hubo_ajuste_insulina=false sin infusión no debe generar error de validación."""
+        resp = self.client.post("/", {
+            "glicemia_actual": "180",
+            "glicemia_previa": "180",
+            "modo": "seguimiento",
+            "infusion_activa": "false",
+            "hubo_ajuste_insulina": "false",
+            "algoritmo_activo": "1",
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "ajuste de insulina solo aplica")
 
     def test_evaluar_glucemia_post_hipo(self):
         resp = self.client.post("/", {
