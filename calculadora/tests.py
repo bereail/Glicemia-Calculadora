@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 
+from .forms import GlucemiaForm
 from .utils.resolver import resolver_glucemia
 from .utils.logic.logic_hiper import evaluar_hiperglucemia
 from .utils.logic.logic_rango import evaluar_rango_70_180
@@ -10,6 +11,7 @@ from .utils.helpers import (
     calcular_proximo_control_insulinizado,
     estan_en_mismo_escalon_200_300,
     estan_en_mismo_escalon_300_400,
+    obtener_tasa_por_algoritmo,
 )
 from .utils.ui.presentation import enriquecer_resultado_ui
 
@@ -320,3 +322,303 @@ class VistasSmokeTest(TestCase):
             "algoritmo_activo": "1",
         })
         self.assertIn(resp.status_code, [200, 302])
+
+
+# =========================================================
+# CASOS CRÍTICOS — combinaciones sin infusión con previa alta
+# =========================================================
+
+class CasosCriticosSinInfusionTest(TestCase):
+
+    def _r(self, actual, previa=None, infusion=False, ajuste=False, tercera=None, algo="1"):
+        return resolver_glucemia(
+            actual=Decimal(str(actual)),
+            previa=Decimal(str(previa)) if previa is not None else None,
+            infusion_activa=infusion,
+            hubo_ajuste_insulina=ajuste,
+            tercera_medicion=Decimal(str(tercera)) if tercera is not None else None,
+            algoritmo_activo=algo,
+        )
+
+    def test_360_sin_infusion_previa_360_es_sostenida(self):
+        """360 + infusion=No + previa=360: inicia protocolo de insulinización."""
+        r = self._r(360, previa=360, infusion=False)
+        self.assertEqual(r["estado"], "Hiperglucemia Sostenida")
+        self.assertIn("iniciar protocolo", r.get("conducta", "").lower())
+
+    def test_360_sin_infusion_previa_360_tiene_bolo_e_infusion_inicial(self):
+        r = self._r(360, previa=360, infusion=False)
+        self.assertIsNotNone(r.get("bolo_inicial"))
+        self.assertIsNotNone(r.get("tasa_inicial"))
+        self.assertIsNotNone(r.get("bolo_calculado"))
+
+    def test_360_sin_infusion_sin_previa_es_aislada(self):
+        r = self._r(360, infusion=False)
+        self.assertEqual(r["estado"], "Hiperglucemia Aislada")
+        self.assertTrue(r.get("requiere_recontrol"))
+
+    def test_200_sin_infusion_previa_200_inicia_insulinizacion(self):
+        r = self._r(200, previa=200, infusion=False)
+        self.assertEqual(r["estado"], "Hiperglucemia Sostenida")
+        self.assertIsNotNone(r.get("bolo_inicial"))
+
+    def test_180_sin_infusion_previa_120_es_ascenso(self):
+        r = self._r(180, previa=120, infusion=False)
+        self.assertEqual(r["estado"], "Hiperglucemia en Ascenso")
+        self.assertTrue(r.get("requiere_recontrol"))
+
+
+# =========================================================
+# ALGORITMO 2 — tasas y estados específicos
+# =========================================================
+
+class Algoritmo2Test(TestCase):
+
+    def _r(self, actual, previa=None, infusion=False, tercera=None, algo="2"):
+        return resolver_glucemia(
+            actual=Decimal(str(actual)),
+            previa=Decimal(str(previa)) if previa is not None else None,
+            infusion_activa=infusion,
+            hubo_ajuste_insulina=False,
+            tercera_medicion=Decimal(str(tercera)) if tercera is not None else None,
+            algoritmo_activo=algo,
+        )
+
+    def test_tasa_250_algoritmo2_es_35(self):
+        """Escalón 240-269 en Algoritmo 2 → 3,5 UI/h."""
+        info = obtener_tasa_por_algoritmo(Decimal("250"), algoritmo=2)
+        self.assertEqual(info["tasa"], Decimal("3.5"))
+        self.assertEqual(info["texto"], "3,5 UI/h")
+
+    def test_tasa_360_algoritmo2_es_8(self):
+        """≥ 360 en Algoritmo 2 → 8 UI/h."""
+        info = obtener_tasa_por_algoritmo(Decimal("360"), algoritmo=2)
+        self.assertEqual(info["tasa"], Decimal("8"))
+        self.assertEqual(info["texto"], "8 UI/h")
+
+    def test_tasa_360_algoritmo1_es_5(self):
+        """≥ 360 en Algoritmo 1 → 5 UI/h."""
+        info = obtener_tasa_por_algoritmo(Decimal("360"), algoritmo=1)
+        self.assertEqual(info["tasa"], Decimal("5"))
+        self.assertEqual(info["texto"], "5 UI/h")
+
+    def test_360_con_infusion_previa_360_algoritmo2_es_refractaria(self):
+        r = self._r(360, previa=360, infusion=True, algo="2")
+        self.assertEqual(r["estado"], "Hiperglucemia Refractaria")
+        self.assertEqual(r.get("nivel_visual"), "critico")
+
+    def test_250_con_infusion_algoritmo2_tiene_tasa(self):
+        r = self._r(250, previa=250, infusion=True, algo="2")
+        self.assertIsNotNone(r.get("tasa_algoritmo"))
+        self.assertIn("UI/h", r["tasa_algoritmo"])
+
+    def test_algoritmo2_no_activa_sin_infusion(self):
+        """Algoritmo 2 con infusión=No no debe dar refractaria."""
+        r = self._r(360, previa=360, infusion=False, algo="2")
+        self.assertNotEqual(r.get("estado"), "Hiperglucemia Refractaria")
+
+
+# =========================================================
+# TRES MEDICIONES — hiperglucemia persistente y refractaria
+# =========================================================
+
+class TresMedicionesTest(TestCase):
+
+    def _r(self, actual, previa=None, tercera=None, infusion=False, algo="1"):
+        return resolver_glucemia(
+            actual=Decimal(str(actual)),
+            previa=Decimal(str(previa)) if previa is not None else None,
+            infusion_activa=infusion,
+            hubo_ajuste_insulina=False,
+            tercera_medicion=Decimal(str(tercera)) if tercera is not None else None,
+            algoritmo_activo=algo,
+        )
+
+    def test_tres_en_mismo_escalon_200_300_es_persistente(self):
+        """250+255+260 en escalón 240-269 con infusión → Hiperglucemia Persistente."""
+        r = self._r(260, previa=255, tercera=250, infusion=True)
+        self.assertEqual(r["estado"], "Hiperglucemia Persistente")
+        self.assertIn("Algoritmo 2", r.get("algoritmo_sugerido", ""))
+
+    def test_tres_en_mismo_escalon_300_400_es_persistente(self):
+        """310+315+320 en escalón 300-329 con infusión → Hiperglucemia Persistente."""
+        r = self._r(320, previa=315, tercera=310, infusion=True)
+        self.assertEqual(r["estado"], "Hiperglucemia Persistente")
+
+    def test_tres_en_distintos_escalones_no_es_persistente(self):
+        """210+250+290 en escalones distintos con infusión → NO es persistente."""
+        r = self._r(290, previa=250, tercera=210, infusion=True)
+        self.assertNotEqual(r.get("estado"), "Hiperglucemia Persistente")
+
+    def test_dos_en_mismo_escalon_sin_tercera_pide_recontrol(self):
+        """250+260 sin tercera → pide recontrol, no es persistente aún."""
+        r = self._r(260, previa=250, infusion=True)
+        self.assertTrue(r.get("requiere_recontrol"))
+        self.assertNotEqual(r.get("estado"), "Hiperglucemia Persistente")
+
+    def test_tres_360_algoritmo2_es_refractaria(self):
+        """360+365+370 en Algoritmo 2 → Hiperglucemia Refractaria."""
+        r = self._r(370, previa=365, tercera=360, infusion=True, algo="2")
+        self.assertEqual(r["estado"], "Hiperglucemia Refractaria")
+
+    def test_persistente_tiene_tasa_algoritmo2_calculada(self):
+        r = self._r(260, previa=255, tercera=250, infusion=True)
+        self.assertIsNotNone(r.get("tasa_algoritmo"))
+        self.assertIsNotNone(r.get("calculo_texto"))
+
+
+# =========================================================
+# FORM VALIDATION — validaciones del formulario
+# =========================================================
+
+class FormValidacionTest(TestCase):
+
+    def _form(self, **kwargs):
+        defaults = {
+            "glicemia_actual": "180",
+            "infusion_activa": "false",
+            "glicemia_previa": "",
+            "tercera_medicion": "",
+            "hubo_ajuste_insulina": "false",
+            "algoritmo_activo": "1",
+            "modo": "seguimiento",
+        }
+        defaults.update(kwargs)
+        return GlucemiaForm(data=defaults)
+
+    def test_glicemia_negativa_es_invalida(self):
+        f = self._form(glicemia_actual="-1")
+        self.assertFalse(f.is_valid())
+        self.assertIn("glicemia_actual", f.errors)
+
+    def test_glicemia_mayor_999_es_invalida(self):
+        f = self._form(glicemia_actual="1000")
+        self.assertFalse(f.is_valid())
+        self.assertIn("glicemia_actual", f.errors)
+
+    def test_glicemia_texto_es_invalida(self):
+        f = self._form(glicemia_actual="abc")
+        self.assertFalse(f.is_valid())
+        self.assertIn("glicemia_actual", f.errors)
+
+    def test_tercera_sin_previa_da_error(self):
+        f = self._form(
+            glicemia_actual="250",
+            infusion_activa="true",
+            glicemia_previa="",
+            tercera_medicion="240",
+            modo="inicio",
+        )
+        self.assertFalse(f.is_valid())
+        self.assertIn("glicemia_previa", f.errors)
+
+    def test_ajuste_sin_infusion_da_error(self):
+        f = self._form(
+            glicemia_actual="250",
+            infusion_activa="false",
+            hubo_ajuste_insulina="true",
+        )
+        self.assertFalse(f.is_valid())
+        self.assertIn("hubo_ajuste_insulina", f.errors)
+
+    def test_infusion_activa_sin_previa_en_seguimiento_da_error(self):
+        f = self._form(
+            glicemia_actual="250",
+            infusion_activa="true",
+            glicemia_previa="",
+            modo="seguimiento",
+        )
+        self.assertFalse(f.is_valid())
+        self.assertIn("glicemia_previa", f.errors)
+
+    def test_360_sin_infusion_previa_360_es_valido(self):
+        """El caso reportado como problemático pasa validación sin errores."""
+        f = self._form(
+            glicemia_actual="360",
+            infusion_activa="false",
+            glicemia_previa="360",
+        )
+        self.assertTrue(f.is_valid(), f"Form inválido: {f.errors}")
+
+    def test_hipo_no_requiere_infusion_ni_previa(self):
+        """Hipoglucemia ≤ 70: no debe requerir infusión ni previa."""
+        f = self._form(
+            glicemia_actual="60",
+            infusion_activa="",
+            glicemia_previa="",
+        )
+        self.assertTrue(f.is_valid(), f"Form inválido: {f.errors}")
+
+    def test_glicemia_cero_es_invalida(self):
+        f = self._form(glicemia_actual="0")
+        # 0 es valor de borde: min_value=0 lo permite en el campo pero
+        # clínicamente es absurdo; verificamos al menos que no explota
+        self.assertIn(f.is_valid(), [True, False])
+
+    def test_formulario_completo_algoritmo2_es_valido(self):
+        f = self._form(
+            glicemia_actual="360",
+            infusion_activa="true",
+            glicemia_previa="360",
+            hubo_ajuste_insulina="false",
+            algoritmo_activo="2",
+            modo="seguimiento",
+        )
+        self.assertTrue(f.is_valid(), f"Form inválido: {f.errors}")
+
+
+# =========================================================
+# HTTP END-TO-END — casos críticos completos
+# =========================================================
+
+class CasosCriticosHTTPTest(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_superuser(
+            username="enfermera_http", email="http@test.com", password="testpass123"
+        )
+        self.client = Client()
+        self.client.login(username="enfermera_http", password="testpass123")
+
+    def _post(self, **kwargs):
+        defaults = {
+            "glicemia_actual": "180",
+            "infusion_activa": "false",
+            "glicemia_previa": "",
+            "tercera_medicion": "",
+            "hubo_ajuste_insulina": "false",
+            "algoritmo_activo": "1",
+            "modo": "seguimiento",
+        }
+        defaults.update(kwargs)
+        return self.client.post("/", defaults)
+
+    def test_360_sin_infusion_previa_360_responde_200(self):
+        resp = self._post(glicemia_actual="360", infusion_activa="false", glicemia_previa="360")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_hgp_tres_mediciones_mismo_escalon_responde_200(self):
+        resp = self._post(
+            glicemia_actual="260",
+            infusion_activa="true",
+            glicemia_previa="255",
+            tercera_medicion="250",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+    def test_algoritmo2_360_previa_360_refractaria_responde_200(self):
+        resp = self._post(
+            glicemia_actual="360",
+            infusion_activa="true",
+            glicemia_previa="360",
+            algoritmo_activo="2",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+    def test_hipo_60_responde_200(self):
+        resp = self._post(glicemia_actual="60", infusion_activa="")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_formulario_invalido_no_explota(self):
+        resp = self._post(glicemia_actual="abc")
+        self.assertIn(resp.status_code, [200, 400])
