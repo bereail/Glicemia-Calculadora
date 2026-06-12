@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GLUCINUTRIC — Instructivo Visual de Uso</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --azul:     #1a3c5e;
+      --azul-med: #2563a8;
+      --azul-cl:  #dbeafe;
+      --verde:    #16a34a;
+      --verde-cl: #dcfce7;
+      --rojo:     #dc2626;
+      --rojo-cl:  #fee2e2;
+      --amarillo: #ca8a04;
+      --amarillo-cl: #fef9c3;
+      --gris:     #f8fafc;
+      --gris-med: #94a3b8;
+      --texto:    #1e293b;
+      --blanco:   #ffffff;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: var(--texto);
+      background: var(--blanco);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* ── PORTADA ── */
+    .portada {
+      background: linear-gradient(135deg, #0f2544 0%, #1a3c5e 50%, #1e4a7a 100%);
+      color: var(--blanco);
+      padding: 60px 60px 50px;
+    }
+    .portada__kicker {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #93c5fd;
+      margin-bottom: 14px;
+    }
+    .portada__titulo { font-size: 44px; font-weight: 800; line-height: 1.1; margin-bottom: 10px; }
+    .portada__titulo span { color: #60a5fa; }
+    .portada__sub   { font-size: 16px; color: #bfdbfe; max-width: 540px; }
+
+    /* ── NAV LATERAL DE ÍNDICE ── */
+    .layout { max-width: 960px; margin: 0 auto; padding: 48px 40px; }
+
+    /* ── PASO ── */
+    .paso {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 48px;
+      align-items: flex-start;
+    }
+    .paso__num {
+      flex-shrink: 0;
+      width: 44px; height: 44px;
+      background: var(--azul);
+      color: var(--blanco);
+      border-radius: 50%;
+      font-size: 18px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .paso__contenido { flex: 1; }
+    .paso__titulo {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--azul);
+      margin-bottom: 8px;
+    }
+    .paso__desc { color: #475569; margin-bottom: 14px; }
+
+    /* ── SEPARADOR DE SECCIÓN ── */
+    .seccion-titulo {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--azul-med);
+      margin: 52px 0 6px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--azul-cl);
+    }
+
+    /* ── PANTALLA / MOCKUP ── */
+    .mockup {
+      background: var(--gris);
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 14px 0 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .mockup__barra {
+      background: #1a3c5e;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .mockup__dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+    .mockup__dot--r { background: #f87171; }
+    .mockup__dot--y { background: #fbbf24; }
+    .mockup__dot--g { background: #4ade80; }
+    .mockup__url {
+      background: rgba(255,255,255,0.1);
+      color: #bfdbfe;
+      border-radius: 4px;
+      padding: 2px 12px;
+      font-size: 12px;
+      margin-left: 8px;
+    }
+    .mockup__body { padding: 22px; }
+
+    /* ── CAMPOS DE FORMULARIO (simulados) ── */
+    .form-sim { display: flex; flex-direction: column; gap: 14px; }
+    .field-sim label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: block;
+      margin-bottom: 5px;
+    }
+    .input-sim {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 15px;
+      background: var(--blanco);
+      width: 220px;
+      color: var(--texto);
+    }
+    .radio-group-sim { display: flex; gap: 10px; flex-wrap: wrap; }
+    .radio-card-sim {
+      border: 2px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 8px 18px;
+      font-size: 14px;
+      cursor: pointer;
+      background: var(--blanco);
+    }
+    .radio-card-sim--sel {
+      border-color: var(--azul-med);
+      background: var(--azul-cl);
+      color: var(--azul);
+      font-weight: 700;
+    }
+    .btn-sim {
+      display: inline-block;
+      background: var(--azul);
+      color: var(--blanco);
+      padding: 11px 28px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 15px;
+      width: fit-content;
+      margin-top: 6px;
+    }
+
+    /* ── RESULTADO SIMULADO ── */
+    .resultado-sim {
+      border-radius: 12px;
+      padding: 22px;
+      margin: 14px 0 20px;
+    }
+    .resultado-sim--hipo   { background: #fee2e2; border: 2px solid #fca5a5; }
+    .resultado-sim--rango  { background: #f0fdf4; border: 2px solid #86efac; }
+    .resultado-sim--hiper  { background: #fef9c3; border: 2px solid #fde047; }
+    .resultado-sim--critico{ background: #fce7f3; border: 2px solid #f9a8d4; }
+
+    .resultado-sim__estado {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .resultado-sim--hipo   .resultado-sim__estado { color: #b91c1c; }
+    .resultado-sim--rango  .resultado-sim__estado { color: #15803d; }
+    .resultado-sim--hiper  .resultado-sim__estado { color: #78350f; }
+    .resultado-sim--critico .resultado-sim__estado { color: #9d174d; }
+
+    .resultado-sim__fila {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+    .resultado-sim__label { font-weight: 700; min-width: 140px; flex-shrink: 0; color: #374151; }
+    .resultado-sim__val   { color: #1e293b; }
+
+    .tasa-badge {
+      display: inline-block;
+      font-size: 28px;
+      font-weight: 900;
+      padding: 8px 20px;
+      border-radius: 10px;
+      margin: 8px 0;
+    }
+    .tasa-badge--hiper  { background: #dc2626; color: #fff; }
+    .tasa-badge--rango  { background: #16a34a; color: #fff; }
+    .tasa-badge--critico{ background: #9d174d; color: #fff; }
+
+    /* ── DIAGRAMA DE FLUJO ── */
+    .diagrama {
+      text-align: center;
+      margin: 20px 0;
+      background: var(--gris);
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .diagrama img {
+      max-width: 100%;
+      max-height: 420px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .diagrama__caption {
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--gris-med);
+      font-style: italic;
+    }
+
+    /* ── ALERTA BOX ── */
+    .alerta-box {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin: 14px 0;
+      font-size: 14px;
+    }
+    .alerta-box--info    { background: var(--azul-cl); border-left: 4px solid var(--azul-med); }
+    .alerta-box--warn    { background: var(--amarillo-cl); border-left: 4px solid #fbbf24; }
+    .alerta-box--peligro { background: var(--rojo-cl); border-left: 4px solid var(--rojo); }
+    .alerta-box--ok      { background: var(--verde-cl); border-left: 4px solid var(--verde); }
+    .alerta-box__icono   { font-size: 20px; flex-shrink: 0; }
+    .alerta-box strong   { display: block; margin-bottom: 2px; }
+
+    /* ── TABLA ── */
+    table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14px; }
+    th {
+      background: var(--azul);
+      color: var(--blanco);
+      padding: 10px 14px;
+      text-align: left;
+    }
+    td { padding: 9px 14px; border-bottom: 1px solid #e2e8f0; }
+    tr:nth-child(even) td { background: #f8fafc; }
+
+    /* ── HISTORIAL MOCK ── */
+    .historial-metrica-group { display: flex; gap: 12px; flex-wrap: wrap; margin: 14px 0; }
+    .metrica-card {
+      flex: 1;
+      min-width: 120px;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+    .metrica-card--total  { background: #eff6ff; border: 1px solid #bfdbfe; }
+    .metrica-card--hipo   { background: #fee2e2; border: 1px solid #fecaca; }
+    .metrica-card--ok     { background: #f0fdf4; border: 1px solid #bbf7d0; }
+    .metrica-card--hiper  { background: #fef9c3; border: 1px solid #fde68a; }
+    .metrica-card__val    { font-size: 28px; font-weight: 900; }
+    .metrica-card--total  .metrica-card__val { color: #1e40af; }
+    .metrica-card--hipo   .metrica-card__val { color: #b91c1c; }
+    .metrica-card--ok     .metrica-card__val { color: #15803d; }
+    .metrica-card--hiper  .metrica-card__val { color: #78350f; }
+    .metrica-card__label  { font-size: 12px; color: #475569; margin-top: 2px; }
+
+    /* ── CHECKLIST ── */
+    .checklist { list-style: none; margin: 12px 0; }
+    .checklist li {
+      display: flex;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 14px;
+      align-items: flex-start;
+    }
+    .checklist li::before {
+      content: '✓';
+      color: var(--verde);
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    /* ── COLORES DE ESTADO ── */
+    .estado-ref {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 14px 0;
+    }
+    .estado-chip {
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 12px;
+      color: var(--gris-med);
+      border-top: 1px solid #e2e8f0;
+      margin-top: 60px;
+    }
+
+    /* ── PRINT ── */
+    @media print {
+      .portada { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .diagrama img { max-height: 320px; }
+      .paso { break-inside: avoid; }
+    }
+
+    @media (max-width: 600px) {
+      .portada { padding: 36px 24px; }
+      .portada__titulo { font-size: 32px; }
+      .layout { padding: 32px 18px; }
+      .paso { flex-direction: column; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ PORTADA ══════════════ -->
+<div class="portada">
+  <div style="max-width:920px; margin:0 auto;">
+    <div class="portada__kicker">Instructivo visual · Versión 1.0</div>
+    <div class="portada__titulo">
+      METANUTRIC<br>
+      <span>GLUCINUTRIC</span>
+    </div>
+    <div class="portada__sub" style="margin-top:12px;">
+      Guía paso a paso para el uso del sistema de control de glicemia en UCI.
+      Con ejemplos reales, diagramas de flujo del protocolo y referencias visuales.
+    </div>
+    <div style="margin-top:24px; font-size:13px; color:#7dd3fc;">
+      Dirigido a: enfermería de UCI · Nutricionistas · Jefes de servicio
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ CONTENIDO ══════════════ -->
+<div class="layout">
+
+  <!-- ÍNDICE -->
+  <div style="background:#f8fafc; border-radius:12px; padding:24px; margin-bottom:40px; border:1px solid #e2e8f0;">
+    <div style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--azul-med); margin-bottom:12px;">Contenido</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px 24px; font-size:14px;">
+      <div>1. Acceso al sistema (login)</div>
+      <div>5. Entender el resultado: Hipoglucemia</div>
+      <div>2. Pantalla principal</div>
+      <div>6. Entender el resultado: En rango</div>
+      <div>3. Completar la evaluación</div>
+      <div>7. Entender el resultado: Hiperglucemia</div>
+      <div>4. ¿Qué campos llenar según el caso?</div>
+      <div>8. Historial y exportación</div>
+    </div>
+  </div>
+
+  <!-- ══ SECCIÓN A: ACCESO ══ -->
+  <div class="seccion-titulo">A · Ingreso al sistema</div>
+
+  <div class="paso">
+    <div class="paso__num">1</div>
+    <div class="paso__contenido">
+      <div class="paso__titulo">Acceso al sistema — Login</div>
+      <div class="paso__desc">
+        Abrí el navegador web (Chrome, Firefox, Edge) en la PC o tablet del servicio
+        e ingresá la dirección de la aplicación. Vas a ver la pantalla de inicio de sesión.
+      </div>
+
+      <div class="mockup">
+        <div class="mockup__barra">
+          <div class="mockup__dot mockup__dot--r"></div>
+          <div class="mockup__dot mockup__dot--y"></div>
+          <div class="mockup__dot mockup__dot--g"></div>
+          <span class="mockup__url">gluciheep.tuinstitución.com/login</span>
+        </div>
+        <div class="mockup__body">
+          <div style="text-align:center; padding:30px 0 20px;">
+            <div style="font-size:22px; font-weight:800; color:var(--azul); margin-bottom:24px;">
+              METANUTRIC · GLUCINUTRIC
+            </div>
+            <div class="form-sim" style="max-width:300px; margin:0 auto;">
+              <div class="field-sim">
+                <label>Usuario</label>
+                <div class="input-sim" style="color:#9ca3af;">ej: enfermeria_turi1</div>
+              </div>
+              <div class="field-sim">
+                <label>Contraseña</label>
+                <div class="input-sim" style="color:#9ca3af;">••••••••</div>
+              </div>
+              <div class="btn-sim" style="width:100%; text-align:center;">Iniciar sesión</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="alerta-box alerta-box--info">
+        <div class="alerta-box__icono">ℹ️</div>
+        <div>
+          <strong>Credenciales</strong>
+          El usuario y contraseña los asigna el administrador de la institución.
+          Si no tenés acceso, contactar al responsable del sistema o al administrador de informática.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECCIÓN B: PANTALLA PRINCIPAL ══ -->
+  <div class="seccion-titulo">B · Pantalla principal</div>
+
+  <div class="paso">
+    <div class="paso__num">2</div>
+    <div class="paso__contenido">
+      <div class="paso__titulo">Pantalla principal — Control de glicemia</div>
+      <div class="paso__desc">
+        Al ingresar, vas a ver el formulario principal. La barra superior incluye accesos a:
+        <strong>Inicio</strong> (formulario), <strong>Historial</strong> (solo para superusuarios),
+        <strong>Ver protocolo</strong> (PDF del protocolo clínico) e <strong>Instructivo</strong>.
+      </div>
+
+      <div class="mockup">
+        <div class="mockup__barra">
+          <div class="mockup__dot mockup__dot--r"></div>
+          <div class="mockup__dot mockup__dot--y"></div>
+          <div class="mockup__dot mockup__dot--g"></div>
+          <span class="mockup__url">gluciheep.tuinstitución.com/</span>
+        </div>
+        <div class="mockup__body">
+          <div style="background:var(--azul); color:#fff; padding:10px 16px; border-radius:8px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:700;">METANUTRIC · GLUCINUTRIC</span>
+            <span style="font-size:13px; color:#93c5fd;">⌂ Inicio &nbsp;·&nbsp; ⊞ Protocolo &nbsp;·&nbsp; ☷ Instructivo &nbsp;·&nbsp; ↪ Salir</span>
+          </div>
+          <div style="font-size:18px; font-weight:700; color:var(--azul); margin-bottom:6px;">
+            Control de glicemia e infusión de insulina — UCI
+          </div>
+          <div style="font-size:13px; background:#fef9c3; border:1px solid #fde047; border-radius:6px; padding:8px 12px; color:#78350f; margin-bottom:16px;">
+            ⚠ Aplicable solo a pacientes UCI con Terapia Nutricional Médica, sin CAD ni EHH
+          </div>
+          <div class="form-sim">
+            <div class="field-sim">
+              <label>Glicemia actual (mg/dL)</label>
+              <div class="input-sim" style="color:#9ca3af;">Ingresá el valor</div>
+            </div>
+            <div class="btn-sim">Evaluar</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="alerta-box alerta-box--warn">
+        <div class="alerta-box__icono">⚠️</div>
+        <div>
+          <strong>Indicación clínica</strong>
+          Esta herramienta es exclusiva para pacientes de UCI que reciben Terapia Nutricional Médica (TNM).
+          No utilizar en pacientes con Cetoacidosis Diabética (CAD) ni Estado Hiperosmolar Hiperglucémico (EHH).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECCIÓN C: COMPLETAR EL FORMULARIO ══ -->
+  <div class="seccion-titulo">C · Completar la evaluación</div>
+
+  <div class="paso">
+    <div class="paso__num">3</div>
+    <div class="paso__contenido">
+      <div class="paso__titulo">¿Qué campos aparecen y cuándo?</div>
+      <div class="paso__desc">
+        El formulario es dinámico: los campos aparecen progresivamente según lo que ingresás.
+        El primer campo siempre es la <strong>glicemia actual</strong>.
+        Al completarlo, aparecen los campos de contexto.
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Campo</th>
+            <th>¿Cuándo aparece?</th>
+            <th>¿Qué informar?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Glicemia actual</strong></td>
+            <td>Siempre</td>
+            <td>Valor de la medición actual en mg/dL</td>
+          </tr>
+          <tr>
+            <td><strong>¿Infusión de insulina activa?</strong></td>
+            <td>Siempre (tras ingresar la actual)</td>
+            <td>Sí / No — si el paciente tiene goteo de insulina corriendo</td>
+          </tr>
+          <tr>
+            <td><strong>Algoritmo activo</strong></td>
+            <td>Si hay infusión activa</td>
+            <td>Algoritmo 1 (default) o Algoritmo 2 (si ya se escaló)</td>
+          </tr>
+          <tr>
+            <td><strong>Glicemia previa</strong></td>
+            <td>Si hay infusión activa o glicemia ≥ 180</td>
+            <td>Valor de la medición anterior (puede dejarse vacío si es primera vez)</td>
+          </tr>
+          <tr>
+            <td><strong>¿Hubo ajuste de insulina?</strong></td>
+            <td>Si hay infusión activa</td>
+            <td>Sí / No — si en el control anterior se ajustó la tasa</td>
+          </tr>
+          <tr>
+            <td><strong>Glicemia anterior</strong></td>
+            <td>Si hay dos mediciones previas disponibles</td>
+            <td>Valor de hace dos controles (para detectar HGP)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="alerta-box alerta-box--ok">
+        <div class="alerta-box__icono">✅</div>
+        <div>
+          <strong>Tip práctico</strong>
+          Si es la primera evaluación del turno o del paciente, alcanza con ingresar la
+          <strong>glicemia actual</strong> y responder <strong>infusión activa: Sí o No</strong>.
+          El sistema ya da un resultado útil.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="paso__num">4</div>
+    <div class="paso__contenido">
+      <div class="paso__titulo">Ejemplo de llenado completo</div>
+
+      <div class="mockup">
+        <div class="mockup__barra">
+          <div class="mockup__dot mockup__dot--r"></div>
+          <div class="mockup__dot mockup__dot--y"></div>
+          <div class="mockup__dot mockup__dot--g"></div>
+          <span class="mockup__url">Ejemplo: paciente insulinizado con glucemia alta</span>
+        </div>
+        <div class="mockup__body">
+          <div class="form-sim">
+            <div class="field-sim">
+              <label>Glicemia actual (mg/dL)</label>
+              <div class="input-sim">245</div>
+            </div>
+            <div class="field-sim">
+              <label>¿Infusión de insulina activa?</label>
+              <div class="radio-group-sim">
+                <div class="radio-card-sim radio-card-sim--sel">Sí</div>
+                <div class="radio-card-sim">No</div>
+              </div>
+            </div>
+            <div class="field-sim">
+              <label>Algoritmo activo</label>
+              <div class="radio-group-sim">
+                <div class="radio-card-sim radio-card-sim--sel">Algoritmo 1</div>
+                <div class="radio-card-sim">Algoritmo 2</div>
+              </div>
+            </div>
+            <div class="field-sim">
+              <label>Glicemia previa (mg/dL)</label>
+              <div class="input-sim">220</div>
+            </div>
+            <div class="field-sim">
+              <label>¿Hubo ajuste de insulina?</label>
+              <div class="radio-group-sim">
+                <div class="radio-card-sim">Sí</div>
+                <div class="radio-card-sim radio-card-sim--sel">No</div>
+              </div>
+            </div>
+            <div class="btn-sim">Evaluar</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECCIÓN D: RESULTADOS ══ -->
+  <div class="seccion-titulo">D · Interpretar el resultado</div>
+
+  <div class="paso">
+    <div class="paso__num">5</div>
+    <div class="paso__contenido">
+      <div class="paso__titulo">Resultado: Hipoglucemia (≤ 70 mg/dL)</div>
+      <div class="paso__desc">
+        El sistema detecta hipoglucemia cuando la glucemia actual es igual o menor a 70 mg/dL.
+        El resultado aparece en <strong>rojo</strong> y exige acción inmediata.
+      </div>
+
+      <div class="diagrama">
+        <img src="DIAGRAMA GLICEMIA/HIPOGLICEMIA.png" alt="Diagrama de hipoglicemia">
+        <div class="diagrama__caption">Diagrama del protocolo para manejo de hipoglucemia e hipoglucemia rebote</div>
+      </div>
+
+      <div class="resultado-sim resultado-sim--hipo">
+        <div class="resultado-sim__estado">🔴 Hipoglucemia</div>
+        <div class="resultado-sim__fila">
+          <span class="resultado-sim__label">Situación actual</span>
+          <span class="resultado-sim__val">Glucemia actual ≤ 70 mg/dL</span>
+        </div>
+        <div class="resultado-sim__fila">
+          <span class="resultado-sim__label">Conducta inmediata</span>
+          <span class="resultado-sim__val">Suspender insulina + Administrar 50 ml de Dextrosa 25%</span>
+        </div>
+        <div class="resultado-sim__fila">
+          <span class="resultado-sim__label">Próximo control</span>
+          <span class="resultado-sim__val">⏱ Controlar glucemia nuevamente en 30 minutos</span>
+        </div>
+        <div class="resultado-sim__fila">
+          <span class="resultado-sim__label">Observación</span>
+          <span class="resultado-sim__val">Priorizar corrección inmediata. Evaluar aviso al médico.</span>
+        </div>
+      </div>
+
+      <div class="alerta-box alerta-box--peligro">
+        <div class="alerta-box__icono">🚨</div>
+        <div>
+          <strong>Acción inmediata requerida</strong>
+          Ante hipoglucemia no demores en actuar. Si la glucemia continúa ≤ 70 mg/dL a los
+          30 minutos, repetir dextrosa según protocolo y avisar al médico.
+        </div>
+      </div>
+
+      <div style="margin-top:16px;">
+        <strong style="font-size:14px; color:var(--azul);">¿Qué hace el sistema si el recontrol post-hipo sigue bajo?</strong>
+        <p style="font-size:14px; margin-top:6px; color:#475569;">
+          Si en la siguiente evaluación la previa era ≤ 70 y la actual sigue baja, el sistema lo
+          reconoce como <strong>Recontrol post-hipoglucemia</strong> y ajusta la conducta:
+          mantener insulina suspendida, controlar cada 1 hora hasta estabilización.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="paso__num">6</div>
+    <div class="paso__contenido">
+      <div class="paso__titulo">Resultado: En rango / Objetivo</div>
+      <div class="paso__desc">
+        Cuando la glucemia está dentro del rango objetivo, el resultado es <strong>verde</strong>.
+        El sistema igual analiza la tendencia y puede indicar vigilancia si hay descenso.
+      </div>
+
+      <div class="diagrama">
+        <img src="DIAGRAMA GLICEMIA/ENRANGO.png" alt="Diagrama glicemia en rango 70-180">
+        <div class="diagrama__caption">Diagrama del protocolo para glicemia en rango 70–180 mg/dL</div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:14px 0;">
+        <div class="resultado-sim resultado-sim--rango">
+          <div class="resultado-sim__estado">🟢 En rango</div>
+          <div style="font-size:13px; margin-bottom:8px; color:#15803d; font-weight:700;">Paciente sin infusión</div>
+          <div class="resultado-sim__fila">
+            <span class="resultado-sim__label">Objetivo</span>
+            <span class="resultado-sim__val">70 – 180 mg/dL</span>
+          </div>
+          <div class="resultado-sim__fila">
+            <span class="resultado-sim__label">Conducta</span>
+            <span class="resultado-sim__val">Continuar monitoreo habitual</span>
+          </div>
+        </div>
+        <div class="resultado-sim resultado-sim--rango" style="border-color:#6ee7b7;">
+          <div class="resultado-sim__estado">🟢 En objetivo</div>
+          <div style="font-size:13px; margin-bottom:8px; color:#065f46; font-weight:700;">Paciente insulinizado</div>
+          <div class="resultado-sim__fila">
+            <span class="resultado-sim__label">Objetivo</span>
+            <span class="resultado-sim__val">140 – 200 mg/dL</span>
+          </div>
+          <div class="resultado-sim__fila">
+            <span class="resultado-sim__label">Conducta</span>
+            <span class="resultado-sim__val">Mantener tasa actual</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="alerta-box alerta-box--info">
+        <div class="alerta-box__icono">📌</div>
+        <div>
+          <strong>Rangos objetivo según estado del paciente</strong>
+          <ul style="margin-top:6px; padding-left:16px; font-size:14px;">
+            <li><strong>Sin insulina:</strong> objetivo 70 – 180 mg/dL</li>
+            <li><strong>Con infusión activa:</strong> objetivo 140 – 200 mg/dL</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="paso">
+    <div class="paso__num">7</div>
+    <div class="paso__contenido">
+      <div class="paso__titulo">Resultado: Hiperglucemia y situaciones críticas</div>
+      <div class="paso__desc">
+        Cuando la glucemia supera el rango objetivo, el resultado es <strong>amarillo (alerta)</strong>
+        o <strong>rojo/fucsia (crítico)</strong> según la gravedad.
+        El sistema distingue varias situaciones del protocolo.
+      </div>
+
+      <div class="diagrama">
+        <img src="DIAGRAMA GLICEMIA/HIPERGLICEMIA.png" alt="Diagrama de hiperglicemia">
+        <div class="diagrama__caption">Diagrama del protocolo para manejo de hiperglucemia</div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Estado</th>
+            <th>Criterio</th>
+            <th>Conducta del sistema</th>
+            <th>Visual</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Hiperglucemia aislada</td>
+            <td>≥ 180 sin previa disponible</td>
+            <td>Solicitar nueva medición para confirmar</td>
+            <td style="background:#fef9c3;">⚠ Alerta</td>
+          </tr>
+          <tr>
+            <td>Hiperglucemia sostenida</td>
+            <td>2 controles ≥ 180 sin insulina</td>
+            <td>Iniciar protocolo de insulinización (bolo + tasa Alg. 1)</td>
+            <td style="background:#fef9c3;">⚠ Alerta</td>
+          </tr>
+          <tr>
+            <td>Glucemia fuera de objetivo</td>
+            <td>&gt; 200 con infusión activa</td>
+            <td>Ajustar tasa según algoritmo activo</td>
+            <td style="background:#fef9c3;">⚠ Alerta</td>
+          </tr>
+          <tr>
+            <td>HGP — Hipergluc. Persistente</td>
+            <td>3 mediciones &gt; 200 mismo escalón en Alg. 1</td>
+            <td>Escalar a Algoritmo 2 + aviso médico</td>
+            <td style="background:#fce7f3;">🔴 Crítico</td>
+          </tr>
+          <tr>
+            <td>HGR — Hipergluc. Refractaria</td>
+            <td>2 mediciones &gt; 360 en Alg. 2</td>
+            <td>Aviso médico inmediato — fallo de Algoritmo 2</td>
+            <td style="background:#fce7f3;">🔴 Crítico</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="diagrama" style="margin-top:20px;">
+        <img src="DIAGRAMA GLICEMIA/HIPERGPERSISTENTE.png" alt="Diagrama hiperglicemia persistente">
+        <div class="diagrama__caption">Diagrama del protocolo: Hiperglucemia Persistente y Refractaria</div>
+      </div>
+
+      <div style="margin-top:18px;">
+        <strong style="font-size:15px; color:var(--azul); display:block; margin-bottom:10px;">
+          Ejemplo de resultado: Hiperglucemia con tasa sugerida
+        </strong>
+        <div class="resultado-sim resultado-sim--hiper">
+          <div class="resultado-sim__estado">⚠️ Glucemia fuera de objetivo</div>
+          <div class="resultado-sim__fila">
+            <span class="resultado-sim__label">Tasa sugerida</span>
+            <span class="resultado-sim__val">
+              <span class="tasa-badge tasa-badge--hiper">2,5 UI/h</span>
+              &nbsp; Algoritmo 1
+            </span>
+          </div>
+          <div class="resultado-sim__fila">
+            <span class="resultado-sim__label">Conducta</span>
+            <span class="resultado-sim__val">Ajustar tasa de infusión. Recontrol en 4 horas.</span>
+          </div>
+          <div class="resultado-sim__fila">
+            <span class="resultado-sim__label">Tendencia</span>
+            <span class="resultado-sim__val">↑ Ascendente &nbsp; (Δ +25 mg/dL)</span>
+          </div>
+          <div class="resultado-sim__fila">
+            <span class="resultado-sim__label">Próximo control</span>
+            <span class="resultado-sim__val">⏱ En 4 horas</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECCIÓN E: HISTORIAL ══ -->
+  <div class="seccion-titulo">E · Historial y exportación</div>
+
+  <div class="paso">
+    <div class="paso__num">8</div>
+    <div class="paso__contenido">
+      <div class="paso__titulo">Sección Historial (acceso para superusuarios)</div>
+      <div class="paso__desc">
+        El <strong>Historial</strong> está disponible para superusuarios (jefe de servicio, administrador, nutricionista responsable).
+        Permite ver todas las evaluaciones del equipo con filtros y métricas globales.
+      </div>
+
+      <div class="mockup">
+        <div class="mockup__barra">
+          <div class="mockup__dot mockup__dot--r"></div>
+          <div class="mockup__dot mockup__dot--y"></div>
+          <div class="mockup__dot mockup__dot--g"></div>
+          <span class="mockup__url">gluciheep.tuinstitución.com/historial/</span>
+        </div>
+        <div class="mockup__body">
+          <div style="font-size:18px; font-weight:700; color:var(--azul); margin-bottom:16px;">
+            Historial de mediciones
+          </div>
+
+          <!-- Filtros simulados -->
+          <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; padding:14px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0;">
+            <div>
+              <div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">USUARIO</div>
+              <div style="border:1px solid #cbd5e1; border-radius:6px; padding:6px 12px; font-size:14px; background:#fff;">Todos los usuarios ▾</div>
+            </div>
+            <div>
+              <div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">ESTADO</div>
+              <div style="border:1px solid #cbd5e1; border-radius:6px; padding:6px 12px; font-size:14px; background:#fff;">Todos los estados ▾</div>
+            </div>
+            <div>
+              <div style="font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">PERÍODO</div>
+              <div style="border:1px solid #cbd5e1; border-radius:6px; padding:6px 12px; font-size:14px; background:#fff;">Completo ▾</div>
+            </div>
+            <div style="align-self:flex-end;">
+              <div class="btn-sim" style="padding:8px 18px;">Filtrar</div>
+            </div>
+          </div>
+
+          <!-- Métricas -->
+          <div class="historial-metrica-group">
+            <div class="metrica-card metrica-card--total">
+              <div class="metrica-card__val">148</div>
+              <div class="metrica-card__label">Total mediciones</div>
+            </div>
+            <div class="metrica-card metrica-card--hipo">
+              <div class="metrica-card__val">7</div>
+              <div class="metrica-card__label">Hipoglucemias</div>
+            </div>
+            <div class="metrica-card metrica-card--ok">
+              <div class="metrica-card__val">89</div>
+              <div class="metrica-card__label">En objetivo</div>
+            </div>
+            <div class="metrica-card metrica-card--hiper">
+              <div class="metrica-card__val">52</div>
+              <div class="metrica-card__label">Hiperglucemias</div>
+            </div>
+          </div>
+
+          <!-- Exportar -->
+          <div style="display:flex; gap:10px; margin-top:16px;">
+            <div style="border:1px solid #cbd5e1; border-radius:8px; padding:8px 16px; font-size:14px; font-weight:700; color:var(--verde); background:#f0fdf4; cursor:pointer;">
+              ↓ Exportar Excel
+            </div>
+            <div style="border:1px solid #cbd5e1; border-radius:8px; padding:8px 16px; font-size:14px; font-weight:700; color:var(--rojo); background:#fff0f0; cursor:pointer;">
+              ↓ Exportar PDF
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ul class="checklist">
+        <li>Filtrá por <strong>usuario</strong> para ver las evaluaciones de un enfermero o nutricionista específico.</li>
+        <li>Filtrá por <strong>estado</strong> (hipoglucemia, hiperglucemia, en rango, etc.) para análisis clínico.</li>
+        <li>Filtrá por <strong>período</strong>: semanal o mensual para informes de servicio.</li>
+        <li>Exportá a <strong>Excel</strong> para análisis en planilla, o a <strong>PDF</strong> para presentaciones y auditorías.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══ SECCIÓN F: REFERENCIA RÁPIDA ══ -->
+  <div class="seccion-titulo">F · Referencia rápida</div>
+
+  <div style="background:var(--gris); border-radius:12px; padding:24px; border:1px solid #e2e8f0; margin-bottom:40px;">
+    <div style="font-size:16px; font-weight:700; color:var(--azul); margin-bottom:16px;">
+      Resumen de rangos y conductas
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Glucemia</th>
+          <th>Estado</th>
+          <th>Rango objetivo</th>
+          <th>Acción clave</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-weight:700; color:#b91c1c;">≤ 70 mg/dL</td>
+          <td>Hipoglucemia</td>
+          <td>–</td>
+          <td>Suspender insulina + Dextrosa 25% + recontrol 30 min</td>
+        </tr>
+        <tr>
+          <td>71 – 139 mg/dL</td>
+          <td>En rango (sin insulina) / Bajo objetivo (con insulina)</td>
+          <td>70–180 / 140–200</td>
+          <td>Monitoreo. Si insulinizado: evaluar ajuste o suspensión</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700; color:#15803d;">140 – 180 mg/dL</td>
+          <td>En objetivo (insulinizado)</td>
+          <td>140–200 mg/dL</td>
+          <td>Mantener tasa actual</td>
+        </tr>
+        <tr>
+          <td>181 – 199 mg/dL</td>
+          <td>Límite objetivo (insulinizado)</td>
+          <td>140–200 mg/dL</td>
+          <td>Mantener tasa y monitorear tendencia</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700; color:#92400e;">≥ 180 mg/dL (sin insulina)</td>
+          <td>Hiperglucemia</td>
+          <td>–</td>
+          <td>Confirmar con 2do control → iniciar insulinización</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700; color:#92400e;">&gt; 200 mg/dL (insulinizado)</td>
+          <td>Fuera de objetivo</td>
+          <td>140–200 mg/dL</td>
+          <td>Ajustar tasa según Algoritmo 1 o 2</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700; color:#9d174d;">&gt; 200 x3 mismo escalón</td>
+          <td>HGP — Persistente</td>
+          <td>–</td>
+          <td>Escalar a Algoritmo 2 + aviso médico</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700; color:#9d174d;">&gt; 360 x2 en Alg. 2</td>
+          <td>HGR — Refractaria</td>
+          <td>–</td>
+          <td>Aviso médico inmediato</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:20px;">
+      <div style="font-size:14px; font-weight:700; color:var(--azul); margin-bottom:8px;">Colores del resultado</div>
+      <div class="estado-ref">
+        <span class="estado-chip" style="background:#dcfce7; color:#15803d; border:1px solid #86efac;">🟢 Verde — En rango / En objetivo</span>
+        <span class="estado-chip" style="background:#fef9c3; color:#78350f; border:1px solid #fde047;">🟡 Amarillo — Alerta / Fuera de objetivo</span>
+        <span class="estado-chip" style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5;">🔴 Rojo — Hipoglucemia</span>
+        <span class="estado-chip" style="background:#fce7f3; color:#9d174d; border:1px solid #f9a8d4;">🟣 Fucsia — Crítico (HGP / HGR)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Diagrama general del algoritmo -->
+  <div class="diagrama">
+    <img src="Glicemia Control Algorithm-2026-03-19-134933.png" alt="Diagrama general del algoritmo de control">
+    <div class="diagrama__caption">Diagrama completo del algoritmo de control glucémico</div>
+  </div>
+
+</div>
+
+<div class="footer">
+  METANUTRIC · GLUCINUTRIC &nbsp;|&nbsp; Instructivo visual de uso &nbsp;|&nbsp; Versión 1.0 &nbsp;|&nbsp; 2026
+  <br>
+  Para dudas o soporte: berenicesolohaga@gmail.com
+</div>
+
+</body>
+</html>

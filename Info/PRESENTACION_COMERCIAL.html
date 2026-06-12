@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GLUCINUTRIC — Presentación Comercial</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --azul:     #1a3c5e;
+      --azul-med: #2563a8;
+      --azul-cl:  #dbeafe;
+      --verde:    #16a34a;
+      --verde-cl: #dcfce7;
+      --rojo:     #dc2626;
+      --rojo-cl:  #fee2e2;
+      --gris:     #f1f5f9;
+      --gris-med: #94a3b8;
+      --texto:    #1e293b;
+      --blanco:   #ffffff;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: var(--texto);
+      background: var(--blanco);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* ── PORTADA ── */
+    .portada {
+      background: linear-gradient(135deg, var(--azul) 0%, #0f2544 60%, #1a4a7a 100%);
+      color: var(--blanco);
+      padding: 80px 60px 60px;
+      min-height: 260px;
+      position: relative;
+      overflow: hidden;
+    }
+    .portada::after {
+      content: '';
+      position: absolute;
+      right: -80px; top: -80px;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+    }
+    .portada__badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #93c5fd;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+    .portada__titulo {
+      font-size: 52px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.1;
+      margin-bottom: 10px;
+    }
+    .portada__titulo span { color: #60a5fa; }
+    .portada__subtitulo {
+      font-size: 18px;
+      color: #bfdbfe;
+      margin-bottom: 30px;
+      max-width: 580px;
+    }
+    .portada__tags { display: flex; flex-wrap: wrap; gap: 10px; }
+    .portada__tag {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #e0f2fe;
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+    }
+
+    /* ── CONTENIDO ── */
+    .contenido { max-width: 900px; margin: 0 auto; padding: 60px 40px; }
+
+    /* ── SECCIONES ── */
+    .seccion { margin-bottom: 60px; }
+    .seccion__titulo {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--azul);
+      margin-bottom: 8px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--azul-cl);
+    }
+    .seccion__lead {
+      color: #475569;
+      font-size: 16px;
+      margin-bottom: 24px;
+    }
+
+    /* ── PROBLEMA / SOLUCIÓN ── */
+    .dos-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .card {
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .card--problema {
+      background: var(--rojo-cl);
+      border: 1px solid #fecaca;
+    }
+    .card--solucion {
+      background: var(--verde-cl);
+      border: 1px solid #bbf7d0;
+    }
+    .card__icono { font-size: 28px; margin-bottom: 10px; }
+    .card__titulo { font-weight: 700; font-size: 15px; margin-bottom: 8px; }
+    .card--problema .card__titulo { color: var(--rojo); }
+    .card--solucion .card__titulo { color: var(--verde); }
+    .card p, .card li { font-size: 14px; color: #374151; }
+    .card ul { padding-left: 18px; }
+    .card li { margin-bottom: 4px; }
+
+    /* ── FEATURES ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .feature {
+      background: var(--gris);
+      border-radius: 10px;
+      padding: 20px;
+      border: 1px solid #e2e8f0;
+    }
+    .feature__icono { font-size: 24px; margin-bottom: 10px; }
+    .feature__nombre {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--azul);
+      margin-bottom: 6px;
+    }
+    .feature__desc { font-size: 13px; color: #475569; }
+
+    /* ── PROTOCOLO ── */
+    .protocolo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 20px;
+    }
+    .estado-card {
+      border-radius: 10px;
+      padding: 18px;
+      text-align: center;
+    }
+    .estado-card--hipo   { background: #fee2e2; border: 2px solid #fca5a5; }
+    .estado-card--rango  { background: #dcfce7; border: 2px solid #86efac; }
+    .estado-card--hiper  { background: #fef9c3; border: 2px solid #fde047; }
+    .estado-card--severo { background: #fce7f3; border: 2px solid #f9a8d4; }
+    .estado-card__valor  { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+    .estado-card--hipo   .estado-card__valor { color: #b91c1c; }
+    .estado-card--rango  .estado-card__valor { color: #15803d; }
+    .estado-card--hiper  .estado-card__valor { color: #92400e; }
+    .estado-card--severo .estado-card__valor { color: #9d174d; }
+    .estado-card__nombre { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+    .estado-card__desc   { font-size: 12px; color: #475569; }
+
+    /* ── TABLA ALGORITMOS ── */
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 14px; }
+    th {
+      background: var(--azul);
+      color: var(--blanco);
+      padding: 10px 14px;
+      text-align: left;
+    }
+    td { padding: 9px 14px; border-bottom: 1px solid #e2e8f0; }
+    tr:nth-child(even) td { background: var(--gris); }
+    tr:hover td { background: var(--azul-cl); }
+
+    /* ── AUDIENCIA ── */
+    .audiencia-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .audiencia-item {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: var(--gris);
+      border-radius: 10px;
+      padding: 18px;
+    }
+    .audiencia-item__icono { font-size: 28px; flex-shrink: 0; }
+    .audiencia-item__nombre { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+    .audiencia-item__desc   { font-size: 13px; color: #475569; }
+
+    /* ── STACK TÉCNICO ── */
+    .tech-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .tech-pill {
+      background: var(--azul-cl);
+      color: var(--azul);
+      border: 1px solid #93c5fd;
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* ── MODELOS DE NEGOCIO ── */
+    .negocio-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .negocio-card {
+      border-radius: 12px;
+      padding: 22px;
+      border: 2px solid transparent;
+      text-align: center;
+    }
+    .negocio-card--saas    { background: #eff6ff; border-color: #93c5fd; }
+    .negocio-card--on      { background: #f0fdf4; border-color: #86efac; }
+    .negocio-card--licencia{ background: #faf5ff; border-color: #d8b4fe; }
+    .negocio-card__icono   { font-size: 30px; margin-bottom: 10px; }
+    .negocio-card__nombre  { font-weight: 700; font-size: 15px; margin-bottom: 6px; color: var(--azul); }
+    .negocio-card__desc    { font-size: 13px; color: #475569; }
+
+    /* ── BENEFICIOS ── */
+    .beneficios-lista { margin-top: 16px; }
+    .beneficio {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 14px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .beneficio__icono { font-size: 20px; flex-shrink: 0; }
+    .beneficio__texto strong { font-weight: 700; display: block; margin-bottom: 2px; }
+    .beneficio__texto span   { font-size: 13px; color: #475569; }
+
+    /* ── CTA / CONTACTO ── */
+    .cta {
+      background: linear-gradient(135deg, var(--azul) 0%, var(--azul-med) 100%);
+      color: var(--blanco);
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+      margin-top: 20px;
+    }
+    .cta h3    { font-size: 26px; font-weight: 800; margin-bottom: 10px; }
+    .cta p     { color: #bfdbfe; font-size: 16px; margin-bottom: 24px; }
+    .cta__dato {
+      display: inline-block;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: var(--blanco);
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-size: 15px;
+      margin: 6px;
+    }
+    .cta__dato strong { display: block; font-size: 11px; text-transform: uppercase;
+      letter-spacing: 1px; color: #93c5fd; margin-bottom: 2px; }
+
+    /* ── FOOTER ── */
+    .footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 12px;
+      color: var(--gris-med);
+      border-top: 1px solid #e2e8f0;
+      margin-top: 60px;
+    }
+
+    /* ── DESTACADO ── */
+    .destacado {
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+      border-left: 4px solid var(--azul-med);
+      border-radius: 0 10px 10px 0;
+      padding: 18px 22px;
+      margin: 20px 0;
+      font-size: 15px;
+      color: #1e3a5f;
+    }
+    .destacado strong { display: block; font-size: 16px; margin-bottom: 4px; }
+
+    /* ── PRINT ── */
+    @media print {
+      .portada { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .contenido { padding: 30px 20px; }
+      .seccion { margin-bottom: 40px; }
+      .features-grid, .protocolo-grid, .negocio-grid { break-inside: avoid; }
+    }
+
+    @media (max-width: 700px) {
+      .portada { padding: 40px 24px 40px; }
+      .portada__titulo { font-size: 36px; }
+      .contenido { padding: 36px 20px; }
+      .dos-col, .features-grid, .protocolo-grid,
+      .audiencia-grid, .negocio-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ PORTADA ══════════════ -->
+<div class="portada">
+  <div style="max-width:900px; margin:0 auto;">
+    <div class="portada__badge">Producto de software clínico · Versión 1.0</div>
+    <div class="portada__titulo">METANUTRIC<br><span>GLUCINUTRIC</span></div>
+    <div class="portada__subtitulo">
+      Sistema web de soporte a la decisión clínica para el control de la glicemia
+      e infusión de insulina en pacientes críticos bajo terapia nutricional médica.
+    </div>
+    <div class="portada__tags">
+      <span class="portada__tag">UCI / Terapia Intensiva</span>
+      <span class="portada__tag">Protocolo validado</span>
+      <span class="portada__tag">Algoritmo 1 y 2</span>
+      <span class="portada__tag">Multi-usuario</span>
+      <span class="portada__tag">Historial + Exportación</span>
+      <span class="portada__tag">Responsive / Bedside</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ CONTENIDO ══════════════ -->
+<div class="contenido">
+
+  <!-- 1. RESUMEN EJECUTIVO -->
+  <section class="seccion">
+    <h2 class="seccion__titulo">¿Qué es GLUCINUTRIC?</h2>
+    <p class="seccion__lead">
+      GLUCINUTRIC es una aplicación web médica que digitaliza y automatiza el protocolo de manejo
+      de la glucemia en pacientes internados en Unidades de Cuidados Intensivos (UCI) que reciben
+      Terapia Nutricional Médica (TNM). Elimina el margen de error en el cálculo manual de la
+      tasa de infusión de insulina y guía al equipo de enfermería y nutrición en cada paso clínico,
+      en tiempo real.
+    </p>
+    <div class="destacado">
+      <strong>Indicación clínica específica</strong>
+      Aplicable exclusivamente a pacientes UCI con TNM activa, excluyendo Cetoacidosis Diabética
+      (CAD) y Estado Hiperosmolar Hiperglucémico (EHH), en concordancia con las guías internacionales
+      de soporte nutricional crítico (ASPEN / ESPEN).
+    </div>
+  </section>
+
+  <!-- 2. PROBLEMA / SOLUCIÓN -->
+  <section class="seccion">
+    <h2 class="seccion__titulo">Problema que resuelve</h2>
+    <div class="dos-col">
+      <div class="card card--problema">
+        <div class="card__icono">⚠️</div>
+        <div class="card__titulo">El problema actual</div>
+        <ul>
+          <li>Cálculo manual de dosis de insulina → errores humanos</li>
+          <li>Protocolos impresos o en papel → desactualizados, perdibles</li>
+          <li>Sin registro histórico sistemático por paciente</li>
+          <li>Dificultad para detectar tendencias (hipoglucemia rebote, HGP, HGR)</li>
+          <li>Alta dependencia del criterio del turno de guardia</li>
+          <li>Sin alarmas automáticas ante situaciones críticas</li>
+        </ul>
+      </div>
+      <div class="card card--solucion">
+        <div class="card__icono">✅</div>
+        <div class="card__titulo">Lo que ofrece GLUCINUTRIC</div>
+        <ul>
+          <li>Cálculo automático de la tasa de infusión por algoritmo</li>
+          <li>Protocolo digitalizado, siempre disponible y actualizable</li>
+          <li>Historial completo con filtros, métricas y exportación</li>
+          <li>Detección automática de tendencias y situaciones críticas</li>
+          <li>Conducta clínica sugerida en cada evaluación</li>
+          <li>Alertas visuales codificadas por nivel de riesgo</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. FUNCIONALIDADES -->
+  <section class="seccion">
+    <h2 class="seccion__titulo">Funcionalidades principales</h2>
+    <div class="features-grid">
+
+      <div class="feature">
+        <div class="feature__icono">🩸</div>
+        <div class="feature__nombre">Calculadora de glicemia</div>
+        <div class="feature__desc">
+          Ingresá la glucemia actual y contextual. El sistema calcula el estado clínico,
+          la tasa de infusión y el próximo control en segundos.
+        </div>
+      </div>
+
+      <div class="feature">
+        <div class="feature__icono">📊</div>
+        <div class="feature__nombre">Algoritmo 1 y 2 integrados</div>
+        <div class="feature__desc">
+          Tablas de dosis exactas según protocolo. Escalado automático de Algoritmo 1
+          a Algoritmo 2 ante hiperglucemia persistente.
+        </div>
+      </div>
+
+      <div class="feature">
+        <div class="feature__icono">🚨</div>
+        <div class="feature__nombre">Alertas por severidad</div>
+        <div class="feature__desc">
+          Colores y mensajes diferenciados: hipoglucemia crítica, en rango objetivo,
+          hiperglucemia leve / severa / persistente / refractaria.
+        </div>
+      </div>
+
+      <div class="feature">
+        <div class="feature__icono">📈</div>
+        <div class="feature__nombre">Tendencia glucémica</div>
+        <div class="feature__desc">
+          Calcula la variación entre mediciones consecutivas y muestra
+          la dirección (↑ ascenso / ↓ descenso / → estable) con el delta.
+        </div>
+      </div>
+
+      <div class="feature">
+        <div class="feature__icono">📋</div>
+        <div class="feature__nombre">Historial con métricas</div>
+        <div class="feature__desc">
+          Panel de estadísticas: total de mediciones, hipoglucemias, valores en objetivo
+          e hiperglucemias. Filtros por usuario, estado y período.
+        </div>
+      </div>
+
+      <div class="feature">
+        <div class="feature__icono">📥</div>
+        <div class="feature__nombre">Exportación Excel / PDF</div>
+        <div class="feature__desc">
+          Descargá el historial completo o filtrado en formato Excel o PDF,
+          listo para auditoría clínica e informes.
+        </div>
+      </div>
+
+      <div class="feature">
+        <div class="feature__icono">👤</div>
+        <div class="feature__nombre">Multiusuario con roles</div>
+        <div class="feature__desc">
+          Cada miembro del equipo tiene su acceso. Los superusuarios
+          acceden al historial global; el resto solo a sus propias evaluaciones.
+        </div>
+      </div>
+
+      <div class="feature">
+        <div class="feature__icono">📱</div>
+        <div class="feature__nombre">Responsive / Bedside</div>
+        <div class="feature__desc">
+          Funciona en tablets y celulares de pie de cama. Diseño pensado
+          para uso en el contexto hospitalario real.
+        </div>
+      </div>
+
+      <div class="feature">
+        <div class="feature__icono">📄</div>
+        <div class="feature__nombre">Protocolo integrado</div>
+        <div class="feature__desc">
+          Acceso directo al protocolo de glicemia en PDF e instructivo de usuario
+          desde la barra de navegación. Sin salir de la app.
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 4. PROTOCOLO CLÍNICO -->
+  <section class="seccion">
+    <h2 class="seccion__titulo">Protocolo clínico implementado</h2>
+    <p class="seccion__lead">
+      El sistema evalúa la glucemia actual en contexto con mediciones previas, estado de
+      infusión y algoritmo activo, clasificando el caso en uno de los siguientes estados:
+    </p>
+
+    <div class="protocolo-grid">
+      <div class="estado-card estado-card--hipo">
+        <div class="estado-card__valor">&lt; 70 mg/dL</div>
+        <div class="estado-card__nombre">Hipoglucemia</div>
+        <div class="estado-card__desc">Suspender insulina + Dextrosa 25% 50 ml + Recontrol a 30 min</div>
+      </div>
+      <div class="estado-card estado-card--rango">
+        <div class="estado-card__valor">70 – 180 mg/dL</div>
+        <div class="estado-card__nombre">En rango (sin insulina)</div>
+        <div class="estado-card__desc">Continuar monitoreo. Evaluar tendencia y ajustes según contexto</div>
+      </div>
+      <div class="estado-card estado-card--rango" style="border-color:#6ee7b7; background:#d1fae5;">
+        <div class="estado-card__valor" style="color:#065f46;">140 – 200 mg/dL</div>
+        <div class="estado-card__nombre">En objetivo (insulinizado)</div>
+        <div class="estado-card__desc">Rango objetivo para paciente con infusión activa</div>
+      </div>
+      <div class="estado-card estado-card--hiper">
+        <div class="estado-card__valor">&gt; 180 mg/dL</div>
+        <div class="estado-card__nombre">Hiperglucemia</div>
+        <div class="estado-card__desc">Evaluar 2 controles consecutivos → iniciar protocolo de insulinización</div>
+      </div>
+      <div class="estado-card estado-card--severo">
+        <div class="estado-card__valor">&gt; 200 (x3)</div>
+        <div class="estado-card__nombre">HGP — Persistente</div>
+        <div class="estado-card__desc">3 mediciones > 200 en mismo escalón → escalar a Algoritmo 2</div>
+      </div>
+      <div class="estado-card estado-card--severo" style="border-color:#f87171; background:#ffe4e6;">
+        <div class="estado-card__valor" style="color:#9f1239;">&gt; 360 (x2)</div>
+        <div class="estado-card__nombre">HGR — Refractaria</div>
+        <div class="estado-card__desc">2 mediciones > 360 en Alg. 2 → aviso médico inmediato</div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:30px; margin-bottom:12px; font-size:17px; color:var(--azul);">
+      Tablas de infusión de insulina (extracto)
+    </h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Glucemia (mg/dL)</th>
+          <th>Algoritmo 1 (UI/h)</th>
+          <th>Algoritmo 2 (UI/h)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>&lt; 120</td><td>Suspender</td><td>Suspender</td></tr>
+        <tr><td>120 – 149</td><td>0,5 UI/h</td><td>1 UI/h</td></tr>
+        <tr><td>150 – 179</td><td>1 UI/h</td><td>1,5 UI/h</td></tr>
+        <tr><td>180 – 209</td><td>1,5 UI/h</td><td>2,5 UI/h</td></tr>
+        <tr><td>210 – 239</td><td>2 UI/h</td><td>3 UI/h</td></tr>
+        <tr><td>240 – 269</td><td>2,5 UI/h</td><td>3,5 UI/h</td></tr>
+        <tr><td>270 – 299</td><td>3 UI/h</td><td>4 UI/h</td></tr>
+        <tr><td>300 – 329</td><td>3,5 UI/h</td><td>5 UI/h</td></tr>
+        <tr><td>330 – 359</td><td>4 UI/h</td><td>6 UI/h</td></tr>
+        <tr><td>≥ 360</td><td>5 UI/h</td><td>8 UI/h</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 5. AUDIENCIA OBJETIVO -->
+  <section class="seccion">
+    <h2 class="seccion__titulo">¿Quiénes pueden implementarlo?</h2>
+    <div class="audiencia-grid">
+      <div class="audiencia-item">
+        <div class="audiencia-item__icono">🏥</div>
+        <div>
+          <div class="audiencia-item__nombre">Hospitales con UCI</div>
+          <div class="audiencia-item__desc">
+            Públicos o privados con unidades de cuidados intensivos generales,
+            cardiológicos o neurológicos que apliquen TNM.
+          </div>
+        </div>
+      </div>
+      <div class="audiencia-item">
+        <div class="audiencia-item__icono">🏢</div>
+        <div>
+          <div class="audiencia-item__nombre">Clínicas privadas</div>
+          <div class="audiencia-item__desc">
+            Clínicas y sanatorios con internación crítica y equipos de nutrición
+            clínica activos.
+          </div>
+        </div>
+      </div>
+      <div class="audiencia-item">
+        <div class="audiencia-item__icono">🔗</div>
+        <div>
+          <div class="audiencia-item__nombre">Redes de salud</div>
+          <div class="audiencia-item__desc">
+            Grupos de hospitales o redes privadas que busquen estandarizar
+            el manejo glucémico en todos sus efectores.
+          </div>
+        </div>
+      </div>
+      <div class="audiencia-item">
+        <div class="audiencia-item__icono">🎓</div>
+        <div>
+          <div class="audiencia-item__nombre">Instituciones educativas</div>
+          <div class="audiencia-item__desc">
+            Facultades de Medicina, Nutrición y Enfermería para formación
+            en soporte nutricional intensivo.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. STACK TÉCNICO -->
+  <section class="seccion">
+    <h2 class="seccion__titulo">Arquitectura técnica</h2>
+    <p class="seccion__lead">
+      Desarrollado con tecnologías robustas, probadas y de código abierto.
+      Sin licencias de terceros. Preparado para despliegue en la nube o servidores propios.
+    </p>
+    <div class="tech-list">
+      <span class="tech-pill">Python 3.12</span>
+      <span class="tech-pill">Django 5.2</span>
+      <span class="tech-pill">Django REST Framework</span>
+      <span class="tech-pill">PostgreSQL / MySQL</span>
+      <span class="tech-pill">Gunicorn + WhiteNoise</span>
+      <span class="tech-pill">JWT Auth</span>
+      <span class="tech-pill">OpenPyXL (Excel)</span>
+      <span class="tech-pill">ReportLab (PDF)</span>
+      <span class="tech-pill">Responsive CSS</span>
+      <span class="tech-pill">41 tests automatizados</span>
+    </div>
+
+    <table style="margin-top:20px;">
+      <thead>
+        <tr><th>Aspecto</th><th>Detalle</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Tipo de aplicación</td><td>Web (acceso desde cualquier navegador, sin instalación)</td></tr>
+        <tr><td>Base de datos</td><td>PostgreSQL (producción) / SQLite (desarrollo)</td></tr>
+        <tr><td>Autenticación</td><td>Sesión web + JWT API — roles de usuario y superusuario</td></tr>
+        <tr><td>API REST</td><td>Disponible para integración con HIS/sistemas hospitalarios</td></tr>
+        <tr><td>Despliegue</td><td>Nube (AWS, Azure, Railway, Heroku) o servidor propio</td></tr>
+        <tr><td>Escalabilidad</td><td>Preparado para múltiples servicios y sedes simultáneas</td></tr>
+        <tr><td>Testing</td><td>Suite de 41 pruebas automatizadas que cubren toda la lógica clínica</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 7. MODELOS DE NEGOCIO -->
+  <section class="seccion">
+    <h2 class="seccion__titulo">Modelos de implementación</h2>
+    <div class="negocio-grid">
+      <div class="negocio-card negocio-card--saas">
+        <div class="negocio-card__icono">☁️</div>
+        <div class="negocio-card__nombre">SaaS / Nube</div>
+        <div class="negocio-card__desc">
+          La institución accede vía web sin infraestructura propia.
+          Mantenimiento, actualizaciones y backups incluidos.
+          Ideal para comenzar rápido.
+        </div>
+      </div>
+      <div class="negocio-card negocio-card--on">
+        <div class="negocio-card__icono">🖥️</div>
+        <div class="negocio-card__nombre">On-Premise</div>
+        <div class="negocio-card__desc">
+          Instalación en los servidores propios de la institución.
+          Control total de los datos. Recomendado para hospitales
+          con políticas estrictas de datos.
+        </div>
+      </div>
+      <div class="negocio-card negocio-card--licencia">
+        <div class="negocio-card__icono">📋</div>
+        <div class="negocio-card__nombre">Licencia + Personalización</div>
+        <div class="negocio-card__desc">
+          Adaptación del protocolo a los valores institucionales propios.
+          Personalización de rangos, algoritmos, branding y roles.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. BENEFICIOS CLAVE -->
+  <section class="seccion">
+    <h2 class="seccion__titulo">Beneficios clave para la institución</h2>
+    <div class="beneficios-lista">
+      <div class="beneficio">
+        <div class="beneficio__icono">🛡️</div>
+        <div class="beneficio__texto">
+          <strong>Reducción de errores de medicación</strong>
+          <span>La tasa de insulina se calcula automáticamente: el personal solo ingresa la glucemia.</span>
+        </div>
+      </div>
+      <div class="beneficio">
+        <div class="beneficio__icono">⏱️</div>
+        <div class="beneficio__texto">
+          <strong>Ahorro de tiempo por evaluación</strong>
+          <span>Una evaluación completa toma menos de 30 segundos frente a los 3–5 minutos del cálculo manual.</span>
+        </div>
+      </div>
+      <div class="beneficio">
+        <div class="beneficio__icono">📊</div>
+        <div class="beneficio__texto">
+          <strong>Trazabilidad y auditoría</strong>
+          <span>Registro permanente de cada evaluación: quién, cuándo, qué valor, qué decisión se tomó.</span>
+        </div>
+      </div>
+      <div class="beneficio">
+        <div class="beneficio__icono">🎯</div>
+        <div class="beneficio__texto">
+          <strong>Estandarización del protocolo</strong>
+          <span>Todo el equipo aplica exactamente el mismo criterio clínico, sin variabilidad inter-turno.</span>
+        </div>
+      </div>
+      <div class="beneficio">
+        <div class="beneficio__icono">🔔</div>
+        <div class="beneficio__texto">
+          <strong>Detección temprana de situaciones críticas</strong>
+          <span>El sistema detecta HGP, HGR y riesgo de hipoglucemia rebote antes de que el clínico los identifique manualmente.</span>
+        </div>
+      </div>
+      <div class="beneficio">
+        <div class="beneficio__icono">💻</div>
+        <div class="beneficio__texto">
+          <strong>Cero instalación para el usuario final</strong>
+          <span>Solo se necesita un navegador web. Funciona en PC, tablet o celular del servicio.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. CONTACTO -->
+  <section class="seccion">
+    <h2 class="seccion__titulo">Contacto comercial</h2>
+    <div class="cta">
+      <h3>¿Querés implementar GLUCINUTRIC?</h3>
+      <p>Contactanos para coordinar una demo, una propuesta técnica o una prueba piloto en tu institución.</p>
+      <div>
+        <div class="cta__dato">
+          <strong>Desarrolladora</strong>
+          Berenice Solohaga
+        </div>
+        <div class="cta__dato">
+          <strong>E-mail</strong>
+          berenicesolohaga@gmail.com
+        </div>
+        <div class="cta__dato">
+          <strong>Especialidad</strong>
+          Nutrición Clínica · Desarrollo de software
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="footer">
+  METANUTRIC · GLUCINUTRIC &nbsp;|&nbsp; Sistema de soporte a la decisión clínica en UCI
+  &nbsp;|&nbsp; Versión 1.0 &nbsp;|&nbsp; 2026
+  <br>
+  Documento de presentación comercial — confidencial
+</div>
+
+</body>
+</html>
