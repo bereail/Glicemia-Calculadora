@@ -33,7 +33,6 @@ CSRF_TRUSTED_ORIGINS = os.environ.get(
 # =========================================================
 
 INSTALLED_APPS = [
-    "pacientes",
     "calculadora",
 
     "django.contrib.admin",

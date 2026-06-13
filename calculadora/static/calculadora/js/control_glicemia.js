@@ -330,20 +330,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   function limpiarFormulario() {
-    btnLimpiar?.classList.add("is-clearing");
-    setTimeout(() => btnLimpiar?.classList.remove("is-clearing"), 500);
-
-    document.getElementById("form-glicemia")?.reset();
-
-    if (inputActual) {
-      inputActual.classList.add("input-cleared");
-      inputActual.addEventListener("animationend", () => {
-        inputActual.classList.remove("input-cleared");
-      }, { once: true });
-      inputActual.focus();
-    }
-
-    actualizarFormulario();
+    window.location.replace(window.location.pathname);
   }
 
   btnLimpiar?.addEventListener("click", limpiarFormulario);
