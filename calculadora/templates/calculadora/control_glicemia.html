@@ -23,7 +23,7 @@
         <p>Completá los campos para obtener una orientación clínica inicial.</p>
       </div>
 
-      <form method="post" novalidate id="form-glicemia">
+      <form method="post" novalidate id="form-glicemia" autocomplete="off">
         {% csrf_token %}
 
         {% if form.non_field_errors %}
@@ -127,10 +127,10 @@
 
         <div class="actions">
           <button type="submit" class="btn-primary">Evaluar</button>
-          <button type="button" class="btn-limpiar hidden" id="btn-limpiar" aria-label="Limpiar todos los campos del formulario">
+          <a href="/" class="btn-limpiar hidden" id="btn-limpiar" role="button" aria-label="Limpiar todos los campos del formulario">
             <span class="btn-limpiar__icon" aria-hidden="true">↺</span>
             Limpiar campos
-          </button>
+          </a>
         </div>
       </form>
 
@@ -223,5 +223,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=20260613-2"></script>
+<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=20260613-3"></script>
 {% endblock %}

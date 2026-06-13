@@ -329,12 +329,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  function limpiarFormulario() {
-    window.location.replace(window.location.pathname);
-  }
-
-  btnLimpiar?.addEventListener("click", limpiarFormulario);
-
   inputActual?.addEventListener("input", actualizarFormulario);
   radiosInfusion.forEach((r) => r.addEventListener("change", actualizarFormulario));
 
