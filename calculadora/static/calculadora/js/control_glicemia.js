@@ -376,10 +376,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function abrirModalResultado() {
     if (!modalResultado) return;
+    modalResultado.style.display = "";
     modalResultado.classList.remove("hidden");
     modalResultado.setAttribute("aria-hidden", "false");
     body.classList.add("modal-open");
-    // Forzar reflow para que la animación CSS de entrada se ejecute
     void modalResultado.offsetWidth;
     modalResultado.classList.add("modal-resultado--entrando");
     modalResultado.addEventListener("animationend", function handler() {
@@ -392,6 +392,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!modalResultado) return;
     modalResultado.classList.add("hidden");
     modalResultado.setAttribute("aria-hidden", "true");
+    modalResultado.style.display = "none";
     body.classList.remove("modal-open");
   }
 
