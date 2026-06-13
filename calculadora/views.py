@@ -4,7 +4,7 @@ from io import BytesIO
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.utils import timezone
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
@@ -128,9 +128,6 @@ def _guardar_medicion(request, cleaned_data, resultado):
 @login_required
 @user_passes_test(tiene_acceso_home, login_url="/login/")
 def control_glicemia(request):
-    resultado = None
-    medicion_guardada = None
-
     if request.method == "POST":
         form = GlucemiaForm(request.POST)
 
@@ -172,24 +169,42 @@ def control_glicemia(request):
             elif "hipergluc" in estado_lower:
                 resultado["clase_visual"] = "alerta"
 
-            medicion_guardada = _guardar_medicion(
-                request, form.cleaned_data, resultado
-            )
+            _guardar_medicion(request, form.cleaned_data, resultado)
 
+            request.session["glicemia_resultado"] = resultado
+            request.session["glicemia_post_data"] = request.POST.dict()
+            return redirect("control_glicemia")
+
+        return render(
+            request,
+            "calculadora/control_glicemia.html",
+            {
+                "form": form,
+                "resultado": None,
+                "medicion_guardada": None,
+                "es_medico": request.user.groups.filter(name="Medicos").exists(),
+            },
+        )
+
+    resultado = request.session.pop("glicemia_resultado", None)
+    post_data = request.session.pop("glicemia_post_data", None)
+
+    if post_data:
+        form = GlucemiaForm(post_data)
+        form.is_valid()
     else:
         form = GlucemiaForm()
 
     return render(
         request,
         "calculadora/control_glicemia.html",
-
-    {
-        "form": form,
-        "resultado": resultado,
-        "medicion_guardada": medicion_guardada,
-        "es_medico": request.user.groups.filter(name="Medicos").exists(),
-    },
-)
+        {
+            "form": form,
+            "resultado": resultado,
+            "medicion_guardada": None,
+            "es_medico": request.user.groups.filter(name="Medicos").exists(),
+        },
+    )
 
 
 
