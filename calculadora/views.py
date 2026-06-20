@@ -296,6 +296,7 @@ def historial(request):
     estados = (
         MedicionGlucemia.objects.values_list("estado", flat=True)
         .distinct()
+        .exclude(estado="Hiperglucemia Severa")
         .order_by("estado")
     )
 
