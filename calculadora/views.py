@@ -1,4 +1,5 @@
 from datetime import timedelta
+from django.db.models import Count
 from decimal import Decimal
 from io import BytesIO
 
@@ -270,6 +271,18 @@ def historial(request):
     uso_enfermeria = MedicionGlucemia.objects.filter(usuario__groups__name="Enfermeria").count()
     uso_sin_grupo = MedicionGlucemia.objects.filter(usuario__groups__isnull=True).count()
 
+    turnos = {"manana": 0, "tarde": 0, "noche": 0, "madrugada": 0}
+    for fecha in MedicionGlucemia.objects.values_list("fecha_hora", flat=True):
+        h = timezone.localtime(fecha).hour
+        if 6 <= h < 12:
+            turnos["manana"] += 1
+        elif 12 <= h < 18:
+            turnos["tarde"] += 1
+        elif 18 <= h < 24:
+            turnos["noche"] += 1
+        else:
+            turnos["madrugada"] += 1
+
     paginator = Paginator(mediciones_qs, 5)
     page_number = request.GET.get("page")
     mediciones = paginator.get_page(page_number)
@@ -312,6 +325,10 @@ def historial(request):
             "uso_medicos": uso_medicos,
             "uso_enfermeria": uso_enfermeria,
             "uso_sin_grupo": uso_sin_grupo,
+            "turno_manana": turnos["manana"],
+            "turno_tarde": turnos["tarde"],
+            "turno_noche": turnos["noche"],
+            "turno_madrugada": turnos["madrugada"],
         },
     )
 

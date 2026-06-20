@@ -127,6 +127,52 @@
       </div>
     </details>
 
+    <!-- GRÁFICO USO POR TURNO -->
+    <details class="card historial-uso-roles" id="detalleUsoTurnos">
+      <summary class="historial-uso-roles__summary">
+        <span class="historial-uso-roles__summary-text">
+          <span class="historial-uso-roles__title">Uso por turno</span>
+          <span class="historial-uso-roles__subtitle">Mediciones registradas según el turno horario (06–12 / 12–18 / 18–24 / 00–06)</span>
+        </span>
+        <span class="historial-uso-roles__chevron" aria-hidden="true">▾</span>
+      </summary>
+      <div class="historial-uso-roles__body">
+        <div class="historial-uso-roles__chart-wrap">
+          <canvas id="chartUsoTurnos" width="220" height="220"></canvas>
+        </div>
+        <ul class="historial-uso-roles__leyenda">
+          {% if turno_manana %}
+          <li>
+            <span class="historial-uso-roles__dot historial-uso-roles__dot--manana"></span>
+            <span class="historial-uso-roles__rol">Mañana (06:00–12:00)</span>
+            <span class="historial-uso-roles__count">{{ turno_manana }}</span>
+          </li>
+          {% endif %}
+          {% if turno_tarde %}
+          <li>
+            <span class="historial-uso-roles__dot historial-uso-roles__dot--tarde"></span>
+            <span class="historial-uso-roles__rol">Tarde (12:00–18:00)</span>
+            <span class="historial-uso-roles__count">{{ turno_tarde }}</span>
+          </li>
+          {% endif %}
+          {% if turno_noche %}
+          <li>
+            <span class="historial-uso-roles__dot historial-uso-roles__dot--noche"></span>
+            <span class="historial-uso-roles__rol">Noche (18:00–00:00)</span>
+            <span class="historial-uso-roles__count">{{ turno_noche }}</span>
+          </li>
+          {% endif %}
+          {% if turno_madrugada %}
+          <li>
+            <span class="historial-uso-roles__dot historial-uso-roles__dot--madrugada"></span>
+            <span class="historial-uso-roles__rol">Madrugada (00:00–06:00)</span>
+            <span class="historial-uso-roles__count">{{ turno_madrugada }}</span>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+    </details>
+
     <!-- TABLA / EXPORTACIÓN -->
     <section class="card historial-tabla-panel">
       <div class="historial-tabla-panel__top">
@@ -273,6 +319,65 @@
   }
 
   var detalle = document.getElementById("detalleUsoRoles");
+  detalle.addEventListener("toggle", function () {
+    if (detalle.open) iniciarChart();
+  });
+})();
+
+(function () {
+  var manana    = {{ turno_manana }};
+  var tarde     = {{ turno_tarde }};
+  var noche     = {{ turno_noche }};
+  var madrugada = {{ turno_madrugada }};
+
+  var labels  = [];
+  var datos   = [];
+  var colores = [];
+
+  if (manana)    { labels.push("Mañana (06–12)");     datos.push(manana);    colores.push("#fbbf24"); }
+  if (tarde)     { labels.push("Tarde (12–18)");      datos.push(tarde);     colores.push("#f97316"); }
+  if (noche)     { labels.push("Noche (18–24)");      datos.push(noche);     colores.push("#818cf8"); }
+  if (madrugada) { labels.push("Madrugada (00–06)");  datos.push(madrugada); colores.push("#334155"); }
+
+  if (!datos.length) return;
+
+  var chartIniciado = false;
+
+  function iniciarChart() {
+    if (chartIniciado) return;
+    chartIniciado = true;
+    var ctx = document.getElementById("chartUsoTurnos").getContext("2d");
+    new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: labels,
+        datasets: [{
+          data: datos,
+          backgroundColor: colores,
+          borderColor: "rgba(8, 24, 46, 0.9)",
+          borderWidth: 3,
+          hoverOffset: 6
+        }]
+      },
+      options: {
+        cutout: "68%",
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                var total = ctx.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                var pct = total ? Math.round(ctx.parsed / total * 100) : 0;
+                return " " + ctx.label + ": " + ctx.parsed + " (" + pct + "%)";
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  var detalle = document.getElementById("detalleUsoTurnos");
   detalle.addEventListener("toggle", function () {
     if (detalle.open) iniciarChart();
   });
