@@ -403,3 +403,91 @@
     font-size: 1.7rem;
   }
 }
+
+/* =========================================================
+   CARD: USO POR ROL
+   ========================================================= */
+
+.historial-uso-roles {
+  padding: 20px 22px;
+}
+
+.historial-uso-roles__header {
+  margin-bottom: 18px;
+}
+
+.historial-uso-roles__title {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.historial-uso-roles__subtitle {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.historial-uso-roles__body {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.historial-uso-roles__chart-wrap {
+  flex-shrink: 0;
+  width: 160px;
+  height: 160px;
+}
+
+.historial-uso-roles__chart-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.historial-uso-roles__leyenda {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.historial-uso-roles__leyenda li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.historial-uso-roles__dot {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.historial-uso-roles__dot--medicos    { background: #60a5fa; }
+.historial-uso-roles__dot--enfermeria { background: #34d399; }
+.historial-uso-roles__dot--sin-grupo  { background: #9db3cc; }
+
+.historial-uso-roles__rol {
+  font-size: 0.88rem;
+  color: #d8e5f8;
+  flex: 1;
+}
+
+.historial-uso-roles__count {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+@media (max-width: 520px) {
+  .historial-uso-roles__body {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+}

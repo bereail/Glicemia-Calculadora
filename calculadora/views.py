@@ -266,6 +266,10 @@ def historial(request):
     en_objetivo = mediciones_qs.filter(clase="en_rango").count()
     hiperglucemias = mediciones_qs.filter(clase="hiperglucemia").count()
 
+    uso_medicos = MedicionGlucemia.objects.filter(usuario__groups__name="Medicos").count()
+    uso_enfermeria = MedicionGlucemia.objects.filter(usuario__groups__name="Enfermeria").count()
+    uso_sin_grupo = MedicionGlucemia.objects.filter(usuario__groups__isnull=True).count()
+
     paginator = Paginator(mediciones_qs, 5)
     page_number = request.GET.get("page")
     mediciones = paginator.get_page(page_number)
@@ -305,6 +309,9 @@ def historial(request):
             "post_hipoglucemias": post_hipoglucemias,
             "en_objetivo": en_objetivo,
             "hiperglucemias": hiperglucemias,
+            "uso_medicos": uso_medicos,
+            "uso_enfermeria": uso_enfermeria,
+            "uso_sin_grupo": uso_sin_grupo,
         },
     )
 
