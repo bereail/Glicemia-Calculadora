@@ -132,11 +132,11 @@
               </td>
               <td class="historial-table__modo">{{ m.get_modo_display }}</td>
               <td>
-                {% if m.estado == "En objetivo" or m.estado == "Objetivo con Infusión" or m.estado == "Objetivo con alerta" %}
+                {% if "en objetivo" in m.estado|lower %}
                   <span class="status-pill status-pill-ok">{{ m.estado }}</span>
-                {% elif m.estado == "Hipoglucemia" %}
+                {% elif "hipogluc" in m.estado|lower %}
                   <span class="status-pill status-pill-hypo">{{ m.estado }}</span>
-                {% elif "Hiperglucemia" in m.estado %}
+                {% elif "hipergluc" in m.estado|lower or "encima" in m.estado|lower %}
                   <span class="status-pill status-pill-hyper">{{ m.estado }}</span>
                 {% else %}
                   <span class="status-pill status-pill-neutral">{{ m.estado }}</span>

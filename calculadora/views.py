@@ -263,7 +263,7 @@ def historial(request):
     total = mediciones_qs.count()
     hipoglucemias = mediciones_qs.filter(clase="hipoglucemia").count()
     post_hipoglucemias = mediciones_qs.filter(clase="post_hipoglucemia").count()
-    en_rango = mediciones_qs.filter(clase="en_rango").count()
+    en_objetivo = mediciones_qs.filter(clase="en_rango").count()
     hiperglucemias = mediciones_qs.filter(clase="hiperglucemia").count()
 
     paginator = Paginator(mediciones_qs, 5)
@@ -303,7 +303,7 @@ def historial(request):
             "total": total,
             "hipoglucemias": hipoglucemias,
             "post_hipoglucemias": post_hipoglucemias,
-            "en_rango": en_rango,
+            "en_objetivo": en_objetivo,
             "hiperglucemias": hiperglucemias,
         },
     )

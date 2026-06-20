@@ -19,21 +19,20 @@ def normalizar_clase_desde_estado(estado):
         return "post_hipoglucemia"
 
     if (
-        "rango" in estado
-        or "objetivo" in estado
-        or "estable en rango" in estado
-        or "objetivo con infusión" in estado.lower()
-        or "en objetivo" in estado.lower()
-    ):
-        return "en_rango"
-
-    if (
         "hipergluc" in estado
         or "fuera de objetivo" in estado
+        or "encima de objetivo" in estado
         or "refractaria" in estado
         or "persistente" in estado
     ):
         return "hiperglucemia"
+
+    if (
+        "en objetivo" in estado
+        or "rango" in estado
+        or "estable en rango" in estado
+    ):
+        return "en_rango"
 
     return "sin_clasificacion"
 
