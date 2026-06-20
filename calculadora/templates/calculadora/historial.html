@@ -184,27 +184,36 @@
       </div>
     </details>
 
-    <!-- EXPORTAR -->
-    <details class="card historial-uso-roles">
+    <!-- LÍNEA DE TIEMPO -->
+    <details class="card historial-uso-roles" id="detalleLineaTiempo">
       <summary class="historial-uso-roles__summary">
         <span class="historial-uso-roles__summary-text">
-          <span class="historial-uso-roles__title">Exportar reporte</span>
-          <span class="historial-uso-roles__subtitle">Descargá el historial filtrado en Excel o PDF</span>
+          <span class="historial-uso-roles__title">Evolución de resultados</span>
+          <span class="historial-uso-roles__subtitle">% de glucemias en objetivo, hipo e hiperglucemia por semana</span>
         </span>
         <span class="historial-uso-roles__chevron" aria-hidden="true">▾</span>
       </summary>
-      <div class="historial-export-body">
-        <a href="{% url 'exportar_historial_excel' %}?periodo={{ periodo_seleccionado }}&usuario={{ usuario_seleccionado }}&estado={{ estado_seleccionado }}&turno={{ turno_seleccionado }}" class="btn">
-          Exportar Excel
-        </a>
-        <a href="{% url 'exportar_historial_pdf' %}?periodo={{ periodo_seleccionado }}&usuario={{ usuario_seleccionado }}&estado={{ estado_seleccionado }}&turno={{ turno_seleccionado }}" class="btn">
-          Exportar PDF
-        </a>
+      <div class="historial-lt__body">
+        <canvas id="chartLineaTiempo"></canvas>
       </div>
     </details>
 
-    <!-- TABLA -->
+    <!-- TABLA / EXPORTACIÓN -->
     <section class="card historial-tabla-panel">
+      <div class="historial-tabla-panel__top">
+        <div>
+          <h2 class="historial-tabla-panel__title">Exportar reporte</h2>
+          <p class="historial-tabla-panel__subtitle">Descargá el historial filtrado en Excel o PDF.</p>
+        </div>
+        <div class="historial-export-actions">
+          <a href="{% url 'exportar_historial_excel' %}?periodo={{ periodo_seleccionado }}&usuario={{ usuario_seleccionado }}&estado={{ estado_seleccionado }}&turno={{ turno_seleccionado }}" class="btn">
+            Exportar Excel
+          </a>
+          <a href="{% url 'exportar_historial_pdf' %}?periodo={{ periodo_seleccionado }}&usuario={{ usuario_seleccionado }}&estado={{ estado_seleccionado }}&turno={{ turno_seleccionado }}" class="btn">
+            Exportar PDF
+          </a>
+        </div>
+      </div>
       <div class="historial-table-wrap">
         <table class="historial-table">
           <thead>
@@ -389,6 +398,101 @@
   }
 
   var detalle = document.getElementById("detalleUsoTurnos");
+  detalle.addEventListener("toggle", function () {
+    if (detalle.open) iniciarChart();
+  });
+})();
+
+(function () {
+  var labels   = {{ lt_labels|safe }};
+  var objetivo = {{ lt_objetivo|safe }};
+  var hipo     = {{ lt_hipo|safe }};
+  var hiper    = {{ lt_hiper|safe }};
+
+  if (!labels.length) return;
+
+  var iniciado = false;
+
+  function iniciarChart() {
+    if (iniciado) return;
+    iniciado = true;
+    var ctx = document.getElementById("chartLineaTiempo").getContext("2d");
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "En objetivo (%)",
+            data: objetivo,
+            borderColor: "#34d399",
+            backgroundColor: "rgba(52,211,153,0.1)",
+            fill: true,
+            tension: 0.35,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            borderWidth: 2.5,
+          },
+          {
+            label: "Hiperglucemias (%)",
+            data: hiper,
+            borderColor: "#fbbf24",
+            backgroundColor: "rgba(251,191,36,0.07)",
+            fill: false,
+            tension: 0.35,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            borderWidth: 2,
+          },
+          {
+            label: "Hipoglucemias (%)",
+            data: hipo,
+            borderColor: "#f87171",
+            backgroundColor: "rgba(248,113,113,0.07)",
+            fill: false,
+            tension: 0.35,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            borderWidth: 2,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+          x: {
+            ticks: { color: "#9db3cc", font: { size: 11 } },
+            grid:  { color: "rgba(95,148,224,0.08)" }
+          },
+          y: {
+            min: 0,
+            max: 100,
+            ticks: {
+              color: "#9db3cc",
+              font: { size: 11 },
+              callback: function(v) { return v + "%"; }
+            },
+            grid: { color: "rgba(95,148,224,0.08)" }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: { color: "#d8e5f8", font: { size: 12 }, boxWidth: 14 }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                return " " + ctx.dataset.label + ": " + ctx.parsed.y + "%";
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  var detalle = document.getElementById("detalleLineaTiempo");
   detalle.addEventListener("toggle", function () {
     if (detalle.open) iniciarChart();
   });

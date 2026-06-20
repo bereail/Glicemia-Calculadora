@@ -1,5 +1,5 @@
+import json
 from datetime import timedelta
-from django.db.models import Count
 from decimal import Decimal
 from io import BytesIO
 
@@ -290,8 +290,10 @@ def historial(request):
     uso_sin_grupo = MedicionGlucemia.objects.filter(usuario__groups__isnull=True).count()
 
     turnos = {"manana": 0, "tarde": 0, "noche": 0, "madrugada": 0}
-    for fecha in MedicionGlucemia.objects.values_list("fecha_hora", flat=True):
-        h = timezone.localtime(fecha).hour
+    semanas = {}
+    for fecha, clase_m in MedicionGlucemia.objects.values_list("fecha_hora", "clase"):
+        fecha_local = timezone.localtime(fecha)
+        h = fecha_local.hour
         if 6 <= h < 12:
             turnos["manana"] += 1
         elif 12 <= h < 18:
@@ -300,6 +302,26 @@ def historial(request):
             turnos["noche"] += 1
         else:
             turnos["madrugada"] += 1
+
+        lunes = (fecha_local - timedelta(days=fecha_local.weekday())).date()
+        if lunes not in semanas:
+            semanas[lunes] = {"total": 0, "objetivo": 0, "hipo": 0, "hiper": 0}
+        semanas[lunes]["total"] += 1
+        if clase_m == "en_rango":
+            semanas[lunes]["objetivo"] += 1
+        elif clase_m == "hipoglucemia":
+            semanas[lunes]["hipo"] += 1
+        elif clase_m == "hiperglucemia":
+            semanas[lunes]["hiper"] += 1
+
+    lt_labels, lt_objetivo, lt_hipo, lt_hiper = [], [], [], []
+    for lunes in sorted(semanas):
+        d = semanas[lunes]
+        t = d["total"] or 1
+        lt_labels.append(lunes.strftime("%d/%m"))
+        lt_objetivo.append(round(d["objetivo"] / t * 100, 1))
+        lt_hipo.append(round(d["hipo"] / t * 100, 1))
+        lt_hiper.append(round(d["hiper"] / t * 100, 1))
 
     paginator = Paginator(mediciones_qs, 5)
     page_number = request.GET.get("page")
@@ -349,6 +371,10 @@ def historial(request):
             "turno_tarde": turnos["tarde"],
             "turno_noche": turnos["noche"],
             "turno_madrugada": turnos["madrugada"],
+            "lt_labels": json.dumps(lt_labels),
+            "lt_objetivo": json.dumps(lt_objetivo),
+            "lt_hipo": json.dumps(lt_hipo),
+            "lt_hiper": json.dumps(lt_hiper),
         },
     )
 

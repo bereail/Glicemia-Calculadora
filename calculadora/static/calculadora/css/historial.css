@@ -545,6 +545,14 @@
   color: #ffffff;
 }
 
+.historial-lt__body {
+  padding: 16px 22px 22px;
+}
+
+.historial-lt__body canvas {
+  max-height: 280px;
+}
+
 .historial-export-body {
   display: flex;
   gap: 12px;
