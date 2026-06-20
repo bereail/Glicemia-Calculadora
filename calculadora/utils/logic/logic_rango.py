@@ -76,7 +76,7 @@ def evaluar_rango_70_180(
 
         # 70 a 90
         if UMBRAL_HIPO <= actual < Decimal("90"):
-            resultado["estado"] = "Glucemia con alerta"
+            resultado["estado"] = "Glucemia en objetivo con alerta"
             resultado["subestado"] = "Cercano a hipoglucemia"
             resultado["resumen_objetivo"] = "Dentro de rango"
             resultado["conducta"] = "Mantener vigilancia clínica"

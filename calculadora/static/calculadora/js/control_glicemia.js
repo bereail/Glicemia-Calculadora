@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const helperPreviaContainer = document.getElementById("helper_previa_container");
   const helperPrevia = document.getElementById("helper_previa");
 
-  const ajusteContainer = document.getElementById("ajuste_container");
   const previasBox = document.getElementById("previas_box");
   const btnLimpiar = document.getElementById("btn-limpiar");
   const anteriorContainer = document.getElementById("anterior_container");
@@ -48,7 +47,6 @@ document.addEventListener("DOMContentLoaded", function () {
     "anterior_container",
     "algoritmo_container",
     "helper_previa_container",
-    "ajuste_container",
     "secuencia_mediciones",
     "hipo_helper_box",
   ]);
@@ -228,7 +226,6 @@ document.addEventListener("DOMContentLoaded", function () {
       ocultar(hipoHelperBox);
       ocultar(bloqueContexto);
       ocultar(helperPreviaContainer);
-      ocultar(ajusteContainer);
       ocultar(previasBox);
       ocultar(anteriorContainer);
       ocultar(algoritmoContainer);
@@ -243,7 +240,6 @@ document.addEventListener("DOMContentLoaded", function () {
       mostrar(hipoHelperBox);
       ocultar(bloqueContexto);
       ocultar(helperPreviaContainer);
-      ocultar(ajusteContainer);
       ocultar(previasBox);
       ocultar(anteriorContainer);
       ocultar(algoritmoContainer);
@@ -256,7 +252,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (infusion === null) {
       ocultar(helperPreviaContainer);
-      ocultar(ajusteContainer);
       ocultar(previasBox);
       ocultar(anteriorContainer);
       ocultar(algoritmoContainer);
@@ -268,7 +263,6 @@ document.addEventListener("DOMContentLoaded", function () {
     mostrar(previasBox);
 
     if (infusion) {
-      mostrar(ajusteContainer);
       if (helperPrevia) {
         helperPrevia.textContent = "La glicemia previa es obligatoria para evaluar tendencia.";
       }
@@ -301,8 +295,6 @@ document.addEventListener("DOMContentLoaded", function () {
         labelPreviaHint.textContent = "(opcional)";
       }
 
-      ajusteContainer.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
-      ocultar(ajusteContainer);
       ocultar(anteriorContainer);
       ocultar(algoritmoContainer);
       ocultar(secuenciaMediciones);

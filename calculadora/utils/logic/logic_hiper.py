@@ -122,7 +122,6 @@ def evaluar_hiperglucemia(
     actual,
     previa=None,
     infusion_activa=False,
-    hubo_ajuste_insulina=False,
     tercera_medicion=None,
     algoritmo_activo=1,
     horas_desde_inicio=None,
@@ -131,7 +130,6 @@ def evaluar_hiperglucemia(
     actual = _a_decimal(actual)
     previa = _a_decimal(previa, permitir_none=True)
     infusion_activa = _a_bool(infusion_activa)
-    hubo_ajuste_insulina = _a_bool(hubo_ajuste_insulina)
     tercera_medicion = _a_decimal(tercera_medicion, permitir_none=True)
     algoritmo_activo = int(algoritmo_activo or 1)
     estable = _a_bool(estable)
@@ -312,7 +310,7 @@ def evaluar_hiperglucemia(
         resultado["tasa_inicial"] = None
 
         if previa is None:
-            resultado["estado"] = "Hiperglucemia Marcada"
+            resultado["estado"] = "Hiperglucemia"
             resultado["subestado"] = "Actual ≥ 360 mg/dL con infusión activa"
             resultado["mensaje"] = "Hiperglucemia marcada."
             resultado["resumen_objetivo"] = "Fuera de rango objetivo"
@@ -337,7 +335,7 @@ def evaluar_hiperglucemia(
                 nivel_visual="alerta"
             )
 
-        resultado["estado"] = "Hiperglucemia Severa"
+        resultado["estado"] = "Hiperglucemia"
 
         resultado["subestado"] = (
             "Glucemia ≥ 360 mg/dL con infusión activa"
@@ -380,8 +378,7 @@ def evaluar_hiperglucemia(
             tercera_medicion is None
             and estan_en_mismo_escalon_300_400(previa, actual)
         ):
-            resultado["estado"] = "Glucemia Fuera de Objetivo"
-            resultado["estado_display"] = "Glucemia por encima de objetivo"
+            resultado["estado"] = "Glucemia por encima de objetivo"
             resultado["subestado"] = (
                 "Dos mediciones consecutivas entre 300 y 400 mg/dL "
                 "en el mismo escalón con infusión activa"
@@ -419,8 +416,7 @@ def evaluar_hiperglucemia(
             return _marcar_visual(resultado, es_critico=False, nivel_visual="alerta")
 
         if previa is not None and tercera_medicion is None:
-            resultado["estado"] = "Glucemia Fuera de Objetivo"
-            resultado["estado_display"] = "Glucemia por encima de objetivo"
+            resultado["estado"] = "Glucemia por encima de objetivo"
             resultado["subestado"] = (
                 "Dos mediciones consecutivas entre 300 y 400 mg/dL "
                 "con infusión activa"
@@ -452,8 +448,7 @@ def evaluar_hiperglucemia(
             
         ):
             
-            resultado["estado"] = "Glucemia Fuera de Objetivo"
-            resultado["estado_display"] = "Glucemia por encima de objetivo" 
+            resultado["estado"] = "Glucemia por encima de objetivo"
             resultado["subestado"] = (
                 "Dos mediciones consecutivas > 200 mg/dL en el mismo escalón con infusión activa"
             )
@@ -486,8 +481,7 @@ def evaluar_hiperglucemia(
             return _marcar_visual(resultado, es_critico=False, nivel_visual="alerta")
 
         if previa is not None and tercera_medicion is None:
-            resultado["estado"] = "Glucemia Fuera de Objetivo"
-            resultado["estado_display"] = "Glucemia por encima de objetivo"  # texto visible
+            resultado["estado"] = "Glucemia por encima de objetivo"
             resultado["subestado"] = (
                 "Dos mediciones consecutivas > 200 mg/dL con infusión activa"
             )
@@ -504,7 +498,7 @@ def evaluar_hiperglucemia(
             )
             return _marcar_visual(resultado, es_critico=False, nivel_visual="alerta")
 
-        resultado["estado"] = "Hiperglucemia Marcada"
+        resultado["estado"] = "Glucemia por encima de objetivo"
         resultado["subestado"] = "Actual > 200 mg/dL con infusión activa"
         resultado["mensaje"] = "Hiperglucemia fuera del rango objetivo."
         resultado["resumen_objetivo"] = "Fuera de rango objetivo"

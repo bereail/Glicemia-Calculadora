@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Protocolos de Control de Glicemia — UCI HEEP</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 13px;
+      color: #1a1a2e;
+      background: #f5f7fa;
+      padding: 32px 24px;
+    }
+
+    .page {
+      max-width: 960px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 10px;
+      padding: 40px 48px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+    }
+
+    header {
+      border-bottom: 3px solid #1a3a6b;
+      padding-bottom: 18px;
+      margin-bottom: 32px;
+    }
+
+    header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a3a6b;
+      letter-spacing: 0.02em;
+    }
+
+    header p {
+      font-size: 12px;
+      color: #555;
+      margin-top: 4px;
+    }
+
+    h2 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      background: #1a3a6b;
+      padding: 8px 14px;
+      border-radius: 5px;
+      margin: 28px 0 12px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    h3 {
+      font-size: 12px;
+      font-weight: 700;
+      color: #1a3a6b;
+      margin: 18px 0 8px;
+      padding-left: 8px;
+      border-left: 3px solid #1a3a6b;
+    }
+
+    .objetivo-tag {
+      display: inline-block;
+      background: #e8f0fe;
+      color: #1a3a6b;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+
+    thead tr { background: #e8f0fe; }
+
+    thead th {
+      padding: 8px 10px;
+      text-align: left;
+      font-weight: 700;
+      color: #1a3a6b;
+      border-bottom: 2px solid #c5d4f0;
+    }
+
+    tbody tr:nth-child(even) { background: #f8f9ff; }
+
+    tbody td {
+      padding: 7px 10px;
+      border-bottom: 1px solid #e8ecf5;
+      vertical-align: middle;
+      line-height: 1.4;
+    }
+
+    .estado-hipo    { background: #fde8e8; color: #8b0000; font-weight: 700; border-radius: 3px; padding: 2px 6px; }
+    .estado-critico { background: #ffe0e0; color: #b00020; font-weight: 700; border-radius: 3px; padding: 2px 6px; }
+    .estado-alerta  { background: #fff3cd; color: #7d5a00; font-weight: 700; border-radius: 3px; padding: 2px 6px; }
+    .estado-ok      { background: #d4edda; color: #155724; font-weight: 700; border-radius: 3px; padding: 2px 6px; }
+    .estado-bajo    { background: #fff0e0; color: #7d3a00; font-weight: 700; border-radius: 3px; padding: 2px 6px; }
+
+    .nota {
+      font-size: 11px;
+      color: #555;
+      background: #f0f4ff;
+      border-left: 3px solid #7b9cda;
+      padding: 8px 12px;
+      margin: 10px 0;
+      border-radius: 0 4px 4px 0;
+    }
+
+    .grid-tablas {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 8px;
+    }
+
+    .tabla-alg h3 { margin-top: 0; }
+
+    footer {
+      margin-top: 36px;
+      padding-top: 14px;
+      border-top: 1px solid #dde3f0;
+      font-size: 11px;
+      color: #888;
+      text-align: center;
+    }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .page { box-shadow: none; border-radius: 0; padding: 20px 28px; }
+      h2 { break-after: avoid; }
+      table { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>Protocolos de Control de Glicemia — UCI HEEP</h1>
+    <p>Aplicable solo a pacientes UCI con Terapia Nutricional Médica, sin Cetoacidosis Diabética ni Estado Hiperosmolar no Cetósico.</p>
+  </header>
+
+  <!-- ============================================================ -->
+  <h2>Hipoglucemia</h2>
+
+  <table>
+    <thead>
+      <tr><th>Condición</th><th>Estado</th><th>Conducta</th><th>Próximo control</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Actual <strong>≤ 70 mg/dL</strong></td>
+        <td><span class="estado-hipo">Hipoglucemia</span></td>
+        <td>Suspender insulina + administrar 50 ml de dextrosa al 25%.<br>Si continúa ≤ 70 mg/dL, repetir tratamiento.</td>
+        <td>30 minutos</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ============================================================ -->
+  <h2>Sin infusión activa <span class="objetivo-tag">Objetivo: 70–179 mg/dL</span></h2>
+
+  <h3>Dentro de rango</h3>
+  <table>
+    <thead>
+      <tr><th>Condición</th><th>Estado</th><th>Conducta</th><th>Próximo control</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>70–89 mg/dL</td>
+        <td><span class="estado-alerta">Glucemia en objetivo con alerta</span></td>
+        <td>Mantener vigilancia clínica (cercano a hipoglucemia)</td>
+        <td>4 horas</td>
+      </tr>
+      <tr>
+        <td>90–179 mg/dL</td>
+        <td><span class="estado-ok">Glucemia en objetivo</span></td>
+        <td>Mantener conducta actual</td>
+        <td>6 horas</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Hiperglucemia</h3>
+  <table>
+    <thead>
+      <tr><th>Condición</th><th>Estado</th><th>Conducta</th><th>Próximo control</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>≥ 180 mg/dL, <strong>sin previa</strong></td>
+        <td><span class="estado-alerta">Hiperglucemia Aislada</span></td>
+        <td>Solicitar nueva medición para confirmar persistencia</td>
+        <td>30 minutos</td>
+      </tr>
+      <tr>
+        <td>Actual ≥ 180, previa <strong>&lt; 180</strong></td>
+        <td><span class="estado-alerta">Hiperglucemia en Ascenso</span></td>
+        <td>Repetir glucemia para confirmar persistencia</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td>Actual ≥ 180 <strong>y</strong> previa ≥ 180</td>
+        <td><span class="estado-critico">→ Iniciar protocolo de insulinización</span></td>
+        <td>Bolo inicial + tasa inicial = glucemia actual ÷ 100</td>
+        <td>Según algoritmo</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ============================================================ -->
+  <h2>Con infusión activa <span class="objetivo-tag">Objetivo: 140–200 mg/dL</span></h2>
+
+  <h3>Por debajo de objetivo</h3>
+  <table>
+    <thead>
+      <tr><th>Condición</th><th>Estado</th><th>Conducta</th><th>Próximo control</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>71–90 mg/dL</td>
+        <td><span class="estado-hipo">Glucemia por debajo de objetivo</span></td>
+        <td>Suspender insulina</td>
+        <td>1 hora</td>
+      </tr>
+      <tr>
+        <td>91–119 mg/dL</td>
+        <td><span class="estado-bajo">Glucemia por debajo de objetivo</span></td>
+        <td>Suspender insulina</td>
+        <td>2 horas</td>
+      </tr>
+      <tr>
+        <td>120–139 mg/dL</td>
+        <td><span class="estado-bajo">Glucemia por debajo de objetivo</span></td>
+        <td>Evaluar riesgo de hipoglucemia. Mantener tasa según algoritmo.</td>
+        <td>2 horas</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>En objetivo</h3>
+  <table>
+    <thead>
+      <tr><th>Condición</th><th>Estado</th><th>Conducta</th><th>Próximo control</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>140–200 mg/dL</td>
+        <td><span class="estado-ok">Glucemia en objetivo con infusión</span></td>
+        <td>Mantener tasa de infusión actual</td>
+        <td><strong>4 h</strong> (primeras 24 h o no estable) / <strong>6 h</strong> (después de 24 h y estable)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Por encima de objetivo — 201 a 359 mg/dL</h3>
+  <table>
+    <thead>
+      <tr><th>Condición</th><th>Estado</th><th>Conducta</th><th>Próximo control</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>&gt; 200, <strong>sin previa</strong></td>
+        <td><span class="estado-alerta">Glucemia por encima de objetivo</span></td>
+        <td>Obtener glicemia previa para evaluar evolución</td>
+        <td>4 horas</td>
+      </tr>
+      <tr>
+        <td>&gt; 200, previa en <strong>distinto escalón</strong></td>
+        <td><span class="estado-alerta">Glucemia por encima de objetivo</span></td>
+        <td>Ajustar infusión según tasa del algoritmo</td>
+        <td>4 horas</td>
+      </tr>
+      <tr>
+        <td>&gt; 200, previa en <strong>mismo escalón</strong>, sin 3ra medición</td>
+        <td><span class="estado-alerta">Glucemia por encima de objetivo</span></td>
+        <td>Ajustar tasa <strong>+0,5 UI/h</strong>. Obtener 3ra medición para evaluar persistencia.</td>
+        <td>4 horas</td>
+      </tr>
+      <tr>
+        <td>300–400, previa en <strong>mismo escalón</strong>, sin 3ra medición</td>
+        <td><span class="estado-alerta">Glucemia por encima de objetivo</span></td>
+        <td>Ajustar tasa <strong>+0,5 UI/h</strong>. Obtener 3ra medición para evaluar persistencia.</td>
+        <td><strong>2 horas</strong></td>
+      </tr>
+      <tr>
+        <td>300–400, previa en <strong>distinto escalón</strong></td>
+        <td><span class="estado-alerta">Glucemia por encima de objetivo</span></td>
+        <td>Ajustar infusión según tasa del algoritmo</td>
+        <td>2 horas</td>
+      </tr>
+      <tr>
+        <td><strong>3 mediciones</strong> &gt; 200 en <strong>mismo escalón</strong> (Algoritmo 1)</td>
+        <td><span class="estado-critico">Hiperglucemia Persistente</span></td>
+        <td>Dar aviso médico. Continuar con <strong>Algoritmo 2</strong>.</td>
+        <td>Según Algoritmo 2</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Por encima de objetivo — ≥ 360 mg/dL</h3>
+  <table>
+    <thead>
+      <tr><th>Condición</th><th>Estado</th><th>Conducta</th><th>Próximo control</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>≥ 360, <strong>sin previa</strong></td>
+        <td><span class="estado-alerta">Hiperglucemia</span></td>
+        <td>Obtener glicemia previa</td>
+        <td>2 horas</td>
+      </tr>
+      <tr>
+        <td>≥ 360, con previa (no dos consecutivas ≥ 360)</td>
+        <td><span class="estado-critico">Hiperglucemia</span></td>
+        <td>Seguimiento estrecho. Reevaluación inmediata.</td>
+        <td>1 hora</td>
+      </tr>
+      <tr>
+        <td><strong>Dos</strong> consecutivas ≥ 360 en <strong>Algoritmo 1</strong></td>
+        <td><span class="estado-critico">Hiperglucemia Persistente</span></td>
+        <td>Dar aviso médico. Continuar con <strong>Algoritmo 2</strong>.</td>
+        <td>Según Algoritmo 2</td>
+      </tr>
+      <tr>
+        <td><strong>Dos</strong> consecutivas ≥ 360 en <strong>Algoritmo 2</strong></td>
+        <td><span class="estado-critico">Hiperglucemia Refractaria</span></td>
+        <td>Dar aviso médico de guardia para conducta individualizada.</td>
+        <td>Según médico</td>
+      </tr>
+      <tr>
+        <td><strong>3 mediciones</strong> &gt; 200 mismo escalón en <strong>Algoritmo 2</strong></td>
+        <td><span class="estado-critico">Hiperglucemia Refractaria</span></td>
+        <td>Dar aviso médico de guardia para conducta individualizada.</td>
+        <td>Según médico</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ============================================================ -->
+  <h2>Tablas de tasas de infusión</h2>
+
+  <div class="grid-tablas">
+    <div class="tabla-alg">
+      <h3>Algoritmo 1</h3>
+      <table>
+        <thead>
+          <tr><th>Glucemia (mg/dL)</th><th>Tasa</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>&lt; 120</td><td>Suspender</td></tr>
+          <tr><td>120–149</td><td>0,5 UI/h</td></tr>
+          <tr><td>150–179</td><td>1 UI/h</td></tr>
+          <tr><td>180–209</td><td>1,5 UI/h</td></tr>
+          <tr><td>210–239</td><td>2 UI/h</td></tr>
+          <tr><td>240–269</td><td>2,5 UI/h</td></tr>
+          <tr><td>270–299</td><td>3 UI/h</td></tr>
+          <tr><td>300–329</td><td>3,5 UI/h</td></tr>
+          <tr><td>330–359</td><td>4 UI/h</td></tr>
+          <tr><td>≥ 360</td><td>5 UI/h</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tabla-alg">
+      <h3>Algoritmo 2</h3>
+      <table>
+        <thead>
+          <tr><th>Glucemia (mg/dL)</th><th>Tasa</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>&lt; 120</td><td>Suspender</td></tr>
+          <tr><td>120–149</td><td>1 UI/h</td></tr>
+          <tr><td>150–179</td><td>1,5 UI/h</td></tr>
+          <tr><td>180–209</td><td>2,5 UI/h</td></tr>
+          <tr><td>210–239</td><td>3 UI/h</td></tr>
+          <tr><td>240–269</td><td>3,5 UI/h</td></tr>
+          <tr><td>270–299</td><td>4 UI/h</td></tr>
+          <tr><td>300–329</td><td>5 UI/h</td></tr>
+          <tr><td>330–359</td><td>6 UI/h</td></tr>
+          <tr><td>≥ 360</td><td>8 UI/h</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="nota">
+    <strong>Mismo escalón:</strong> dos o tres mediciones consecutivas caen dentro del mismo rango de la tabla (ej. ambas entre 210–239 mg/dL).
+    El ajuste de +0,5 UI/h se suma a la tasa base del escalón correspondiente.<br>
+    <strong>Reinstaurar infusión post-hipo:</strong> solo cuando glucemia &gt; 180 mg/dL, siempre iniciando en Algoritmo 1.
+  </div>
+
+  <footer>
+    UCI HEEP — Generado desde Glicemia Calculadora &nbsp;|&nbsp; Junio 2026
+  </footer>
+
+</div>
+</body>
+</html>

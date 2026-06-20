@@ -22,12 +22,11 @@ from .utils.ui.presentation import enriquecer_resultado_ui
 
 class ResolverGlucemiaTest(TestCase):
 
-    def _r(self, actual, previa=None, infusion=False, ajuste=False, tercera=None, algo="1"):
+    def _r(self, actual, previa=None, infusion=False, tercera=None, algo="1"):
         return resolver_glucemia(
             actual=Decimal(str(actual)),
             previa=Decimal(str(previa)) if previa is not None else None,
             infusion_activa=infusion,
-            hubo_ajuste_insulina=ajuste,
             tercera_medicion=Decimal(str(tercera)) if tercera is not None else None,
             algoritmo_activo=algo,
         )
@@ -79,15 +78,6 @@ class ResolverGlucemiaTest(TestCase):
         r = self._r(420)
         self.assertIn("estado", r)
 
-    def test_hiper_con_ajuste_previo_genera_alerta(self):
-        r = self._r(250, previa=250, infusion=True, ajuste=True)
-        self.assertTrue(r.get("alerta_ajuste_previo"), "Debe marcarse alerta_ajuste_previo")
-        self.assertIn("observacion", r)
-
-    def test_hiper_sin_ajuste_no_genera_alerta(self):
-        r = self._r(250, previa=250, infusion=True, ajuste=False)
-        self.assertFalse(r.get("alerta_ajuste_previo", False))
-
     # --- Resultado siempre tiene campos mínimos ---
 
     def test_resultado_siempre_tiene_estado_y_conducta(self):
@@ -104,19 +94,18 @@ class ResolverGlucemiaTest(TestCase):
 
 class EvaluarHiperglucemiaTest(TestCase):
 
-    def _h(self, actual, previa=None, infusion=False, ajuste=False, tercera=None, algo=1):
+    def _h(self, actual, previa=None, infusion=False, tercera=None, algo=1):
         return evaluar_hiperglucemia(
             actual=Decimal(str(actual)),
             previa=Decimal(str(previa)) if previa is not None else None,
             infusion_activa=infusion,
-            hubo_ajuste_insulina=ajuste,
             tercera_medicion=Decimal(str(tercera)) if tercera is not None else None,
             algoritmo_activo=algo,
         )
 
     def test_360_con_infusion_sin_previa_estado_marcada(self):
         r = self._h(360, infusion=True)
-        self.assertEqual(r["estado"], "Hiperglucemia Marcada")
+        self.assertEqual(r["estado"], "Hiperglucemia")
 
     def test_hiper_300_400_mismo_escalon_pide_tercera(self):
         r = self._h(320, previa=310, infusion=True)
@@ -295,30 +284,25 @@ class VistasSmokeTest(TestCase):
             "glicemia_actual": "180",
             "modo": "seguimiento",
             "infusion_activa": "False",
-            "hubo_ajuste_insulina": "False",
             "algoritmo_activo": "1",
         })
         self.assertIn(resp.status_code, [200, 302])
 
     def test_dos_180_sin_infusion_no_da_error_validacion(self):
-        """Bug: hubo_ajuste_insulina=false sin infusión no debe generar error de validación."""
         resp = self.client.post("/", {
             "glicemia_actual": "180",
             "glicemia_previa": "180",
             "modo": "seguimiento",
             "infusion_activa": "false",
-            "hubo_ajuste_insulina": "false",
             "algoritmo_activo": "1",
-        })
+        }, follow=True)
         self.assertEqual(resp.status_code, 200)
-        self.assertNotContains(resp, "ajuste de insulina solo aplica")
 
     def test_evaluar_glucemia_post_hipo(self):
         resp = self.client.post("/", {
             "glicemia_actual": "60",
             "modo": "seguimiento",
             "infusion_activa": "False",
-            "hubo_ajuste_insulina": "False",
             "algoritmo_activo": "1",
         })
         self.assertIn(resp.status_code, [200, 302])
@@ -330,12 +314,11 @@ class VistasSmokeTest(TestCase):
 
 class CasosCriticosSinInfusionTest(TestCase):
 
-    def _r(self, actual, previa=None, infusion=False, ajuste=False, tercera=None, algo="1"):
+    def _r(self, actual, previa=None, infusion=False, tercera=None, algo="1"):
         return resolver_glucemia(
             actual=Decimal(str(actual)),
             previa=Decimal(str(previa)) if previa is not None else None,
             infusion_activa=infusion,
-            hubo_ajuste_insulina=ajuste,
             tercera_medicion=Decimal(str(tercera)) if tercera is not None else None,
             algoritmo_activo=algo,
         )
@@ -379,7 +362,6 @@ class Algoritmo2Test(TestCase):
             actual=Decimal(str(actual)),
             previa=Decimal(str(previa)) if previa is not None else None,
             infusion_activa=infusion,
-            hubo_ajuste_insulina=False,
             tercera_medicion=Decimal(str(tercera)) if tercera is not None else None,
             algoritmo_activo=algo,
         )
@@ -429,7 +411,6 @@ class TresMedicionesTest(TestCase):
             actual=Decimal(str(actual)),
             previa=Decimal(str(previa)) if previa is not None else None,
             infusion_activa=infusion,
-            hubo_ajuste_insulina=False,
             tercera_medicion=Decimal(str(tercera)) if tercera is not None else None,
             algoritmo_activo=algo,
         )
@@ -479,7 +460,6 @@ class FormValidacionTest(TestCase):
             "infusion_activa": "false",
             "glicemia_previa": "",
             "tercera_medicion": "",
-            "hubo_ajuste_insulina": "false",
             "algoritmo_activo": "1",
             "modo": "seguimiento",
         }
@@ -511,15 +491,6 @@ class FormValidacionTest(TestCase):
         )
         self.assertFalse(f.is_valid())
         self.assertIn("glicemia_previa", f.errors)
-
-    def test_ajuste_sin_infusion_da_error(self):
-        f = self._form(
-            glicemia_actual="250",
-            infusion_activa="false",
-            hubo_ajuste_insulina="true",
-        )
-        self.assertFalse(f.is_valid())
-        self.assertIn("hubo_ajuste_insulina", f.errors)
 
     def test_infusion_activa_sin_previa_en_seguimiento_da_error(self):
         f = self._form(
@@ -560,7 +531,6 @@ class FormValidacionTest(TestCase):
             glicemia_actual="360",
             infusion_activa="true",
             glicemia_previa="360",
-            hubo_ajuste_insulina="false",
             algoritmo_activo="2",
             modo="seguimiento",
         )
@@ -586,12 +556,11 @@ class CasosCriticosHTTPTest(TestCase):
             "infusion_activa": "false",
             "glicemia_previa": "",
             "tercera_medicion": "",
-            "hubo_ajuste_insulina": "false",
             "algoritmo_activo": "1",
             "modo": "seguimiento",
         }
         defaults.update(kwargs)
-        return self.client.post("/", defaults)
+        return self.client.post("/", defaults, follow=True)
 
     def test_360_sin_infusion_previa_360_responde_200(self):
         resp = self._post(glicemia_actual="360", infusion_activa="false", glicemia_previa="360")

@@ -77,13 +77,6 @@ class GlucemiaForm(forms.Form):
         ),
     )
 
-    hubo_ajuste_insulina = forms.ChoiceField(
-        label="¿Hubo ajuste de insulina?",
-        required=False,
-        choices=SI_NO_CHOICES,
-        widget=forms.RadioSelect(attrs={"class": "radio-inline"}),
-    )
-
     algoritmo_activo = forms.ChoiceField(
         label="¿Algoritmo en uso?",
         required=False,
@@ -124,10 +117,6 @@ class GlucemiaForm(forms.Form):
         infusion_activa = None if infusion_raw in (None, "") else infusion_raw == "true"
         cleaned_data["infusion_activa"] = infusion_activa
 
-        ajuste_raw = cleaned_data.get("hubo_ajuste_insulina")
-        hubo_ajuste = None if ajuste_raw in (None, "") else ajuste_raw == "true"
-        cleaned_data["hubo_ajuste_insulina"] = hubo_ajuste
-
         algoritmo_activo = cleaned_data.get("algoritmo_activo") or "1"
         cleaned_data["algoritmo_activo"] = algoritmo_activo
 
@@ -138,7 +127,6 @@ class GlucemiaForm(forms.Form):
         if actual <= 70:
             cleaned_data["glicemia_previa"] = None
             cleaned_data["tercera_medicion"] = None
-            cleaned_data["hubo_ajuste_insulina"] = None
             cleaned_data["algoritmo_activo"] = "1"
             return cleaned_data
 
@@ -152,14 +140,7 @@ class GlucemiaForm(forms.Form):
                 "Para usar la glicemia anterior, primero debés cargar la glicemia previa.",
             )
 
-        if hubo_ajuste is True and not infusion_activa:
-            self.add_error(
-                "hubo_ajuste_insulina",
-                "El ajuste de insulina solo aplica si hay infusión activa.",
-            )
-
-        modo = cleaned_data.get("modo", "seguimiento")
-        if infusion_activa and previa is None and modo != "inicio":
+        if infusion_activa and previa is None:
             self.add_error(
                 "glicemia_previa",
                 "La glicemia previa es obligatoria si hay infusión activa.",

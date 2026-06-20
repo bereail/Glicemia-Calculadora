@@ -1,4 +1,5 @@
 from datetime import timedelta
+from decimal import Decimal
 from io import BytesIO
 
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -81,7 +82,6 @@ def _guardar_medicion(request, cleaned_data, resultado):
             else None
         ),
         infusion_activa=_a_bool(cleaned_data.get("infusion_activa")),
-        hubo_ajuste_insulina=_a_bool(cleaned_data.get("hubo_ajuste_insulina")),
         tercera_medicion=(
             int(cleaned_data["tercera_medicion"])
             if cleaned_data.get("tercera_medicion") is not None
@@ -123,6 +123,16 @@ def _guardar_medicion(request, cleaned_data, resultado):
 
 # =========================================================
 # VIEW PRINCIPAL
+def _json_safe(obj):
+    if isinstance(obj, dict):
+        return {k: _json_safe(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_json_safe(v) for v in obj]
+    if isinstance(obj, Decimal):
+        return float(obj)
+    return obj
+
+
 # =========================================================
 
 @login_required
@@ -135,7 +145,6 @@ def control_glicemia(request):
             actual = form.cleaned_data["glicemia_actual"]
             previa = form.cleaned_data.get("glicemia_previa")
             infusion_activa = form.cleaned_data.get("infusion_activa")
-            hubo_ajuste_insulina = form.cleaned_data.get("hubo_ajuste_insulina")
             tercera_medicion = form.cleaned_data.get("tercera_medicion")
             algoritmo_activo = form.cleaned_data.get("algoritmo_activo", "1")
 
@@ -145,7 +154,6 @@ def control_glicemia(request):
                 actual=actual,
                 previa=previa,
                 infusion_activa=infusion_activa,
-                hubo_ajuste_insulina=hubo_ajuste_insulina,
                 tercera_medicion=tercera_medicion,
                 algoritmo_activo=algoritmo_activo,
                 horas_desde_inicio=horas_desde_inicio,
@@ -171,7 +179,7 @@ def control_glicemia(request):
 
             _guardar_medicion(request, form.cleaned_data, resultado)
 
-            request.session["glicemia_resultado"] = resultado
+            request.session["glicemia_resultado"] = _json_safe(resultado)
             request.session["glicemia_post_data"] = request.POST.dict()
             return redirect("control_glicemia")
 

@@ -85,25 +85,7 @@
             <span id="helper_previa"></span>
           </div>
 
-          <div id="ajuste_container" class="field-group hidden">
-            <label class="field-label">{{ form.hubo_ajuste_insulina.label }}</label>
-            <div class="glicemia-radio-group">
-              {% for radio in form.hubo_ajuste_insulina %}
-                <label class="glicemia-radio-card">
-                  {{ radio.tag }}
-                  <span>{{ radio.choice_label }}</span>
-                </label>
-              {% endfor %}
-            </div>
-            <div class="field-helper">
-              Indicar si en el control anterior se realizó un ajuste de la infusión de insulina.
-            </div>
-            {% if form.hubo_ajuste_insulina.errors %}
-              <div class="field-error">{{ form.hubo_ajuste_insulina.errors }}</div>
-            {% endif %}
-          </div>
-
-          <div id="previas_box" class="hidden">
+<div id="previas_box" class="hidden">
             <div class="field-group">
               <label for="id_glicemia_previa">Glicemia previa</label>
               {{ form.glicemia_previa }}
@@ -223,5 +205,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=20260613-3"></script>
+<script src="{% static 'calculadora/js/control_glicemia.js' %}?v=20260620-1"></script>
 {% endblock %}
