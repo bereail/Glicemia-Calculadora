@@ -54,6 +54,17 @@
           </select>
         </div>
 
+        <div class="historial-filtros__field">
+          <label for="turno" class="label">Turno</label>
+          <select name="turno" id="turno">
+            <option value="" {% if not turno_seleccionado %}selected{% endif %}>Todos los turnos</option>
+            <option value="manana"    {% if turno_seleccionado == "manana"    %}selected{% endif %}>Mañana (06–12)</option>
+            <option value="tarde"     {% if turno_seleccionado == "tarde"     %}selected{% endif %}>Tarde (12–18)</option>
+            <option value="noche"     {% if turno_seleccionado == "noche"     %}selected{% endif %}>Noche (18–00)</option>
+            <option value="madrugada" {% if turno_seleccionado == "madrugada" %}selected{% endif %}>Madrugada (00–06)</option>
+          </select>
+        </div>
+
         <div class="historial-filtros__actions">
           <button type="submit" class="btn primary">Filtrar</button>
           <a href="{% url 'historial' %}" class="btn">Limpiar</a>
@@ -63,29 +74,29 @@
 
     <!-- MÉTRICAS -->
     <section class="historial-metricas">
-      <article class="historial-metrica historial-metrica--total">
+      <a href="{% url 'historial' %}" class="historial-metrica historial-metrica--total historial-metrica--link">
         <p class="historial-metrica__label">Total</p>
         <p class="historial-metrica__value">{{ total }}</p>
         <p class="historial-metrica__desc">Mediciones encontradas</p>
-      </article>
+      </a>
 
-      <article class="historial-metrica historial-metrica--hipo">
+      <a href="{% url 'historial' %}?clase=hipoglucemia" class="historial-metrica historial-metrica--hipo historial-metrica--link">
         <p class="historial-metrica__label">Hipoglucemias</p>
         <p class="historial-metrica__value">{{ hipoglucemias }}</p>
         <p class="historial-metrica__desc">Valores críticos bajos</p>
-      </article>
+      </a>
 
-      <article class="historial-metrica historial-metrica--ok">
+      <a href="{% url 'historial' %}?clase=en_rango" class="historial-metrica historial-metrica--ok historial-metrica--link">
         <p class="historial-metrica__label">En objetivo</p>
         <p class="historial-metrica__value">{{ en_objetivo }}</p>
         <p class="historial-metrica__desc">Dentro del rango esperado</p>
-      </article>
+      </a>
 
-      <article class="historial-metrica historial-metrica--hiper">
+      <a href="{% url 'historial' %}?clase=hiperglucemia" class="historial-metrica historial-metrica--hiper historial-metrica--link">
         <p class="historial-metrica__label">Hiperglucemias</p>
         <p class="historial-metrica__value">{{ hiperglucemias }}</p>
         <p class="historial-metrica__desc">Valores por encima del objetivo</p>
-      </article>
+      </a>
     </section>
 
     <!-- GRÁFICO USO POR ROL -->
@@ -173,27 +184,27 @@
       </div>
     </details>
 
-    <!-- TABLA / EXPORTACIÓN -->
-    <section class="card historial-tabla-panel">
-      <div class="historial-tabla-panel__top">
-        <div>
-          <h2 class="historial-tabla-panel__title">Exportar reporte</h2>
-          <p class="historial-tabla-panel__subtitle">
-            Descargá el historial filtrado en Excel o PDF.
-          </p>
-        </div>
-
-        <div class="historial-export-actions">
-          <a href="{% url 'exportar_historial_excel' %}?periodo={{ periodo_seleccionado }}&usuario={{ usuario_seleccionado }}&estado={{ estado_seleccionado }}" class="btn">
-            Exportar Excel
-          </a>
-
-          <a href="{% url 'exportar_historial_pdf' %}?periodo={{ periodo_seleccionado }}&usuario={{ usuario_seleccionado }}&estado={{ estado_seleccionado }}" class="btn">
-            Exportar PDF
-          </a>
-        </div>
+    <!-- EXPORTAR -->
+    <details class="card historial-uso-roles">
+      <summary class="historial-uso-roles__summary">
+        <span class="historial-uso-roles__summary-text">
+          <span class="historial-uso-roles__title">Exportar reporte</span>
+          <span class="historial-uso-roles__subtitle">Descargá el historial filtrado en Excel o PDF</span>
+        </span>
+        <span class="historial-uso-roles__chevron" aria-hidden="true">▾</span>
+      </summary>
+      <div class="historial-export-body">
+        <a href="{% url 'exportar_historial_excel' %}?periodo={{ periodo_seleccionado }}&usuario={{ usuario_seleccionado }}&estado={{ estado_seleccionado }}&turno={{ turno_seleccionado }}" class="btn">
+          Exportar Excel
+        </a>
+        <a href="{% url 'exportar_historial_pdf' %}?periodo={{ periodo_seleccionado }}&usuario={{ usuario_seleccionado }}&estado={{ estado_seleccionado }}&turno={{ turno_seleccionado }}" class="btn">
+          Exportar PDF
+        </a>
       </div>
+    </details>
 
+    <!-- TABLA -->
+    <section class="card historial-tabla-panel">
       <div class="historial-table-wrap">
         <table class="historial-table">
           <thead>
@@ -242,7 +253,7 @@
       {% if mediciones.paginator.num_pages > 1 %}
         <div class="pagination">
           {% if mediciones.has_previous %}
-            <a href="?page={{ mediciones.previous_page_number }}{% if usuario_seleccionado %}&usuario={{ usuario_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if clase_seleccionada %}&clase={{ clase_seleccionada }}{% endif %}{% if periodo_seleccionado %}&periodo={{ periodo_seleccionado }}{% endif %}" class="btn">
+            <a href="?page={{ mediciones.previous_page_number }}{% if usuario_seleccionado %}&usuario={{ usuario_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if clase_seleccionada %}&clase={{ clase_seleccionada }}{% endif %}{% if periodo_seleccionado %}&periodo={{ periodo_seleccionado }}{% endif %}{% if turno_seleccionado %}&turno={{ turno_seleccionado }}{% endif %}" class="btn">
               ← Anterior
             </a>
           {% endif %}
@@ -252,7 +263,7 @@
           </span>
 
           {% if mediciones.has_next %}
-            <a href="?page={{ mediciones.next_page_number }}{% if usuario_seleccionado %}&usuario={{ usuario_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if clase_seleccionada %}&clase={{ clase_seleccionada }}{% endif %}{% if periodo_seleccionado %}&periodo={{ periodo_seleccionado }}{% endif %}" class="btn">
+            <a href="?page={{ mediciones.next_page_number }}{% if usuario_seleccionado %}&usuario={{ usuario_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if clase_seleccionada %}&clase={{ clase_seleccionada }}{% endif %}{% if periodo_seleccionado %}&periodo={{ periodo_seleccionado }}{% endif %}{% if turno_seleccionado %}&turno={{ turno_seleccionado }}{% endif %}" class="btn">
               Siguiente →
             </a>
           {% endif %}

@@ -217,11 +217,20 @@ def control_glicemia(request):
 
 
 
+_TURNOS = {
+    "manana":    (6, 12),
+    "tarde":     (12, 18),
+    "noche":     (18, 24),
+    "madrugada": (0, 6),
+}
+
+
 def _filtrar_mediciones_desde_request(request):
     usuario = request.GET.get("usuario", "").strip()
     estado = request.GET.get("estado", "").strip()
     clase = request.GET.get("clase", "").strip()
     periodo = request.GET.get("periodo", "").strip().lower()
+    turno = request.GET.get("turno", "").strip().lower()
 
     mediciones = (
         MedicionGlucemia.objects.select_related("usuario")
@@ -247,7 +256,15 @@ def _filtrar_mediciones_desde_request(request):
         desde = ahora - timedelta(days=30)
         mediciones = mediciones.filter(fecha_hora__gte=desde)
 
-    return mediciones, usuario, estado, clase, periodo
+    if turno and turno in _TURNOS:
+        h_ini, h_fin = _TURNOS[turno]
+        ids = [
+            pk for pk, fecha in mediciones.values_list("pk", "fecha_hora")
+            if h_ini <= timezone.localtime(fecha).hour < h_fin
+        ]
+        mediciones = mediciones.filter(pk__in=ids)
+
+    return mediciones, usuario, estado, clase, periodo, turno
 
 
 @login_required
@@ -259,6 +276,7 @@ def historial(request):
         estado_seleccionado,
         clase_seleccionada,
         periodo,
+        turno_seleccionado,
     ) = _filtrar_mediciones_desde_request(request)
 
     total = mediciones_qs.count()
@@ -318,6 +336,7 @@ def historial(request):
             "estado_seleccionado": estado_seleccionado,
             "clase_seleccionada": clase_seleccionada,
             "periodo_seleccionado": periodo,
+            "turno_seleccionado": turno_seleccionado,
             "total": total,
             "hipoglucemias": hipoglucemias,
             "post_hipoglucemias": post_hipoglucemias,
@@ -337,7 +356,7 @@ def historial(request):
 @login_required
 @user_passes_test(tiene_acceso_historial, login_url="/login/")
 def exportar_historial_excel(request):
-    mediciones, usuario, estado, clase, periodo = _filtrar_mediciones_desde_request(
+    mediciones, usuario, estado, clase, periodo, turno = _filtrar_mediciones_desde_request(
         request
     )
 
@@ -380,47 +399,41 @@ def exportar_historial_excel(request):
         cell.font = header_font
         cell.alignment = Alignment(horizontal="center", vertical="center")
 
+    fill_par = PatternFill("solid", fgColor="EBF3FB")
+    fill_impar = PatternFill("solid", fgColor="FFFFFF")
+    wrap = Alignment(wrap_text=True, vertical="top")
+    center_top = Alignment(horizontal="center", vertical="top")
+
     fila = 5
     for m in mediciones:
-        ws.cell(
-            row=fila,
-            column=1,
-            value=timezone.localtime(m.fecha_hora).strftime("%d/%m/%Y %H:%M"),
-        )
-        ws.cell(row=fila, column=2, value=m.usuario.username if m.usuario else "")
-        ws.cell(row=fila, column=3, value=f"{m.glicemia_actual} mg/dL")
-        ws.cell(
-            row=fila,
-            column=4,
-            value=f"{m.glicemia_previa} mg/dL" if m.glicemia_previa is not None else "",
-        )
-        ws.cell(row=fila, column=5, value="Sí" if m.infusion_activa else "No")
-        ws.cell(row=fila, column=6, value=m.get_modo_display())
-        ws.cell(row=fila, column=7, value=m.estado)
-        ws.cell(row=fila, column=8, value=m.subestado)
-        ws.cell(row=fila, column=9, value=m.clase)
-        ws.cell(row=fila, column=10, value=m.conducta)
-        ws.cell(row=fila, column=11, value=m.proximo_control)
-        ws.cell(row=fila, column=12, value=m.tendencia or "")
-        ws.cell(row=fila, column=13, value=m.flecha_tendencia or "")
+        fill = fill_par if fila % 2 == 0 else fill_impar
+        valores = [
+            timezone.localtime(m.fecha_hora).strftime("%d/%m/%Y %H:%M"),
+            m.usuario.username if m.usuario else "",
+            f"{m.glicemia_actual} mg/dL",
+            f"{m.glicemia_previa} mg/dL" if m.glicemia_previa is not None else "",
+            "Sí" if m.infusion_activa else "No",
+            m.get_modo_display(),
+            m.estado,
+            m.subestado,
+            m.clase,
+            m.conducta,
+            m.proximo_control,
+            m.tendencia or "",
+            m.flecha_tendencia or "",
+        ]
+        for col, valor in enumerate(valores, start=1):
+            cell = ws.cell(row=fila, column=col, value=valor)
+            cell.fill = fill
+            cell.alignment = wrap if col == 10 else center_top
+        ws.row_dimensions[fila].height = 28
         fila += 1
 
     widths = {
-        "A": 18,
-        "B": 18,
-        "C": 16,
-        "D": 16,
-        "E": 14,
-        "F": 18,
-        "G": 24,
-        "H": 30,
-        "I": 18,
-        "J": 38,
-        "K": 24,
-        "L": 18,
-        "M": 10,
+        "A": 18, "B": 18, "C": 16, "D": 16, "E": 14,
+        "F": 18, "G": 26, "H": 30, "I": 18, "J": 42,
+        "K": 26, "L": 18, "M": 10,
     }
-
     for col, width in widths.items():
         ws.column_dimensions[col].width = width
 
@@ -446,7 +459,7 @@ def exportar_historial_pdf(request):
     from reportlab.lib.units import mm
     from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
-    mediciones, usuario, estado, clase, periodo = _filtrar_mediciones_desde_request(
+    mediciones, usuario, estado, clase, periodo, turno = _filtrar_mediciones_desde_request(
         request
     )
 
@@ -478,6 +491,10 @@ def exportar_historial_pdf(request):
     )
     elements.append(Spacer(1, 12))
 
+    estilo_conducta = styles["Normal"].clone("conducta")
+    estilo_conducta.fontSize = 7.5
+    estilo_conducta.leading = 10
+
     data = [[
         "Fecha", "Usuario", "Actual", "Previa", "Infusión",
         "Estado", "Clase", "Conducta", "Tendencia"
@@ -486,49 +503,41 @@ def exportar_historial_pdf(request):
     for m in mediciones:
         data.append(
             [
-                timezone.localtime(m.fecha_hora).strftime("%d/%m/%Y %H:%M"),
+                timezone.localtime(m.fecha_hora).strftime("%d/%m/%Y\n%H:%M"),
                 m.usuario.username if m.usuario else "",
                 f"{m.glicemia_actual}",
                 f"{m.glicemia_previa}" if m.glicemia_previa is not None else "",
                 "Sí" if m.infusion_activa else "No",
                 m.estado,
                 m.clase,
-                m.conducta,
+                Paragraph(m.conducta or "", estilo_conducta),
                 f"{m.tendencia or ''} {m.flecha_tendencia or ''}".strip(),
             ]
         )
 
-    table = Table(
-        data,
-        colWidths=[
-            28 * mm,
-            28 * mm,
-            18 * mm,
-            18 * mm,
-            18 * mm,
-            34 * mm,
-            24 * mm,
-            60 * mm,
-            24 * mm,
-        ],
-    )
+    col_widths = [28*mm, 24*mm, 16*mm, 16*mm, 16*mm, 36*mm, 22*mm, 62*mm, 20*mm]
+    table = Table(data, colWidths=col_widths, repeatRows=1)
 
-    table.setStyle(
-        TableStyle(
-            [
-                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1F4E78")),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#C7D3E0")),
-                ("BACKGROUND", (0, 1), (-1, -1), colors.whitesmoke),
-                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                ("FONTSIZE", (0, 0), (-1, -1), 8),
-                ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
-                ("TOPPADDING", (0, 0), (-1, 0), 8),
-            ]
-        )
-    )
+    style_cmds = [
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1F4E78")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, 0), 8.5),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 9),
+        ("TOPPADDING", (0, 0), (-1, 0), 9),
+        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("FONTSIZE", (0, 1), (-1, -1), 7.5),
+        ("TOPPADDING", (0, 1), (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 1), (-1, -1), 5),
+        ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#C7D3E0")),
+        ("LINEBELOW", (0, 0), (-1, 0), 1, colors.HexColor("#0F2E52")),
+    ]
+    for i, _ in enumerate(data[1:], start=1):
+        bg = colors.HexColor("#EBF3FB") if i % 2 == 0 else colors.white
+        style_cmds.append(("BACKGROUND", (0, i), (-1, i), bg))
+
+    table.setStyle(TableStyle(style_cmds))
 
     elements.append(table)
     doc.build(elements)

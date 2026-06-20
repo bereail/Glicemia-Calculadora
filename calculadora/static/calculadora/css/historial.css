@@ -52,7 +52,7 @@
 
 .historial-filtros__grid {
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) minmax(180px, 180px) auto auto;
+  grid-template-columns: minmax(150px, 1fr) minmax(150px, 1fr) minmax(140px, 1fr) minmax(150px, 1fr) auto;
   gap: 12px;
   align-items: end;
 }
@@ -91,6 +91,23 @@
   background: linear-gradient(180deg, rgba(12, 37, 68, 0.94) 0%, rgba(8, 24, 46, 0.98) 100%);
   border: 1px solid rgba(95, 148, 224, 0.18);
   box-shadow: var(--shadow-md);
+}
+
+.historial-metrica--link {
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.historial-metrica--link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+}
+
+.historial-metrica__label,
+.historial-metrica__value,
+.historial-metrica__desc {
+  color: inherit;
 }
 
 .historial-metrica::before {
@@ -528,10 +545,25 @@
   color: #ffffff;
 }
 
+.historial-export-body {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 16px 22px 20px;
+}
+
 @media (max-width: 520px) {
   .historial-uso-roles__body {
     flex-direction: column;
     align-items: flex-start;
     gap: 20px;
+  }
+
+  .historial-export-body {
+    flex-direction: column;
+  }
+
+  .historial-export-body .btn {
+    width: 100%;
   }
 }
