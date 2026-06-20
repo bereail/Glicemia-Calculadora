@@ -409,30 +409,70 @@
    ========================================================= */
 
 .historial-uso-roles {
-  padding: 20px 22px;
+  padding: 0;
 }
 
-.historial-uso-roles__header {
-  margin-bottom: 18px;
+.historial-uso-roles summary {
+  list-style: none;
+}
+
+.historial-uso-roles summary::-webkit-details-marker {
+  display: none;
+}
+
+.historial-uso-roles__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 22px;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 18px;
+  transition: background 0.15s;
+}
+
+.historial-uso-roles__summary:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.historial-uso-roles[open] .historial-uso-roles__summary {
+  border-bottom: 1px solid rgba(95, 148, 224, 0.12);
+  border-radius: 18px 18px 0 0;
+}
+
+.historial-uso-roles__summary-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .historial-uso-roles__title {
-  margin: 0;
   font-size: 1.02rem;
   font-weight: 900;
   color: #ffffff;
 }
 
 .historial-uso-roles__subtitle {
-  margin: 4px 0 0;
   color: var(--muted);
   font-size: 0.82rem;
+}
+
+.historial-uso-roles__chevron {
+  font-size: 1.1rem;
+  color: #9db3cc;
+  transition: transform 0.2s;
+}
+
+.historial-uso-roles[open] .historial-uso-roles__chevron {
+  transform: rotate(180deg);
 }
 
 .historial-uso-roles__body {
   display: flex;
   align-items: center;
   gap: 32px;
+  padding: 20px 22px;
 }
 
 .historial-uso-roles__chart-wrap {

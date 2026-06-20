@@ -89,11 +89,14 @@
     </section>
 
     <!-- GRÁFICO USO POR ROL -->
-    <section class="card historial-uso-roles">
-      <div class="historial-uso-roles__header">
-        <h2 class="historial-uso-roles__title">Uso por rol</h2>
-        <p class="historial-uso-roles__subtitle">Distribución de mediciones según el rol del usuario</p>
-      </div>
+    <details class="card historial-uso-roles" id="detalleUsoRoles">
+      <summary class="historial-uso-roles__summary">
+        <span class="historial-uso-roles__summary-text">
+          <span class="historial-uso-roles__title">Uso por rol</span>
+          <span class="historial-uso-roles__subtitle">Distribución de mediciones según el rol del usuario</span>
+        </span>
+        <span class="historial-uso-roles__chevron" aria-hidden="true">▾</span>
+      </summary>
       <div class="historial-uso-roles__body">
         <div class="historial-uso-roles__chart-wrap">
           <canvas id="chartUsoRoles" width="220" height="220"></canvas>
@@ -122,7 +125,7 @@
           {% endif %}
         </ul>
       </div>
-    </section>
+    </details>
 
     <!-- TABLA / EXPORTACIÓN -->
     <section class="card historial-tabla-panel">
@@ -233,34 +236,45 @@
 
   if (!datos.length) return;
 
-  var ctx = document.getElementById("chartUsoRoles").getContext("2d");
-  new Chart(ctx, {
-    type: "doughnut",
-    data: {
-      labels: labels,
-      datasets: [{
-        data: datos,
-        backgroundColor: colores,
-        borderColor: "rgba(8, 24, 46, 0.9)",
-        borderWidth: 3,
-        hoverOffset: 6
-      }]
-    },
-    options: {
-      cutout: "68%",
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: function(ctx) {
-              var total = ctx.dataset.data.reduce(function(a, b) { return a + b; }, 0);
-              var pct = total ? Math.round(ctx.parsed / total * 100) : 0;
-              return " " + ctx.label + ": " + ctx.parsed + " (" + pct + "%)";
+  var chartIniciado = false;
+
+  function iniciarChart() {
+    if (chartIniciado) return;
+    chartIniciado = true;
+    var ctx = document.getElementById("chartUsoRoles").getContext("2d");
+    new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: labels,
+        datasets: [{
+          data: datos,
+          backgroundColor: colores,
+          borderColor: "rgba(8, 24, 46, 0.9)",
+          borderWidth: 3,
+          hoverOffset: 6
+        }]
+      },
+      options: {
+        cutout: "68%",
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                var total = ctx.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                var pct = total ? Math.round(ctx.parsed / total * 100) : 0;
+                return " " + ctx.label + ": " + ctx.parsed + " (" + pct + "%)";
+              }
             }
           }
         }
       }
-    }
+    });
+  }
+
+  var detalle = document.getElementById("detalleUsoRoles");
+  detalle.addEventListener("toggle", function () {
+    if (detalle.open) iniciarChart();
   });
 })();
 </script>
