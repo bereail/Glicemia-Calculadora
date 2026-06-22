@@ -536,7 +536,7 @@ def exportar_historial_pdf(request):
                 "Sí" if m.infusion_activa else "No",
                 m.estado,
                 m.clase,
-                Paragraph(m.conducta or "", estilo_conducta),
+                Paragraph((m.conducta or "").replace("<br>", "<br/>"), estilo_conducta),
                 f"{m.tendencia or ''} {m.flecha_tendencia or ''}".strip(),
             ]
         )
