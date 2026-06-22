@@ -443,7 +443,7 @@ def exportar_historial_excel(request):
             m.estado,
             m.subestado,
             m.clase,
-            m.conducta,
+            (m.conducta or "").replace("<br>", " / ").replace("<br/>", " / "),
             m.proximo_control,
             m.tendencia or "",
             m.flecha_tendencia or "",
