@@ -94,7 +94,7 @@
 }
 
 .historial-metrica--link {
-  text-decoration: none;
+  text-decoration: none !important;
   cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s;
 }
