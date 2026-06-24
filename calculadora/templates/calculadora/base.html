@@ -90,6 +90,14 @@
       </a>
     {% endif %}
 
+    {% if es_admin_analytics %}
+      <a href="{% url 'analytics:panel_admin' %}"
+         class="btn {% if request.resolver_match.app_name == 'analytics' %}btn-current{% endif %}">
+        <span class="nav-icon">⚙</span>
+        <span>Admin</span>
+      </a>
+    {% endif %}
+
     <a href="{% static 'calculadora/docs/protocolo-glicemia.pdf' %}"
        target="_blank"
        class="btn">
@@ -200,6 +208,27 @@
   }
 
 </script>
+
+{% if visita_id %}
+<script>
+(function () {
+  var VISITA_ID = {{ visita_id }};
+  var inicio = Date.now();
+  function enviarDuracion() {
+    var duracion = Math.round((Date.now() - inicio) / 1000);
+    if (duracion < 1) return;
+    navigator.sendBeacon(
+      "{% url 'analytics:ping_visita' %}",
+      new URLSearchParams({ visita_id: VISITA_ID, duracion: duracion })
+    );
+  }
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "hidden") enviarDuracion();
+  });
+  window.addEventListener("beforeunload", enviarDuracion);
+})();
+</script>
+{% endif %}
 
 </body>
 </html>
