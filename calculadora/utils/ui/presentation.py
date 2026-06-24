@@ -43,8 +43,8 @@ def asignar_clase_visual(resultado):
 
     estado = str(resultado.get("estado") or "").strip().lower()
 
-    # Prioridad máxima: flags clínicas
-    if resultado.get("es_critico") or resultado.get("nivel_visual") == "critico":
+    # Prioridad máxima: flags clínicas (incluye nivel_visual="alerta" de _marcar_visual)
+    if resultado.get("es_critico") or resultado.get("nivel_visual") in ("critico", "alerta"):
         resultado["clase_visual"] = "alerta"
         return resultado
 
@@ -53,7 +53,7 @@ def asignar_clase_visual(resultado):
         resultado["clase_visual"] = "critico"
         return resultado
 
-    # Hiperglucemia persistente / refractaria / sostenida / marcada
+    # Hiperglucemia persistente / refractaria / sostenida / marcada / encima de objetivo
     if (
         "persistente" in estado
         or "refractaria" in estado
@@ -61,16 +61,16 @@ def asignar_clase_visual(resultado):
         or "fuera de objetivo" in estado
         or "sostenida" in estado
         or "marcada" in estado
+        or "encima de objetivo" in estado
     ):
         resultado["clase_visual"] = "alerta"
         return resultado
 
-    # En rango / objetivo
+    # En rango / objetivo — "en objetivo" es específico y no matchea "encima de objetivo"
     if (
-        "rango" in estado
-        or "objetivo" in estado
-        or "en objetivo" in estado
+        "en objetivo" in estado
         or "objetivo con infusión" in estado
+        or "debajo de objetivo" in estado
     ):
         resultado["clase_visual"] = "rango"
         return resultado

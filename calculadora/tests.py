@@ -12,6 +12,7 @@ from .utils.helpers import (
     estan_en_mismo_escalon_200_300,
     estan_en_mismo_escalon_300_400,
     obtener_tasa_por_algoritmo,
+    aplicar_presentacion_terapia,
 )
 from .utils.ui.presentation import enriquecer_resultado_ui
 
@@ -591,3 +592,263 @@ class CasosCriticosHTTPTest(TestCase):
     def test_formulario_invalido_no_explota(self):
         resp = self._post(glicemia_actual="abc")
         self.assertIn(resp.status_code, [200, 400])
+
+
+# =========================================================
+# TERAPIA — mostrar infusión según protocolo
+# =========================================================
+
+class TerapiaDisplayTest(TestCase):
+    """
+    Verifica que la sección de terapia muestre la infusión recomendada
+    según protocolo en todos los casos con infusión activa o fuera de objetivo.
+    La única excepción es paciente en objetivo sin infusión.
+    """
+
+    def _rango(self, actual, previa=None, infusion=False, algo="1"):
+        return evaluar_rango_70_180(
+            actual=Decimal(str(actual)),
+            previa=Decimal(str(previa)) if previa is not None else None,
+            infusion_activa=infusion,
+            algoritmo_activo=algo,
+        )
+
+    # --- Con infusión activa: siempre debe mostrar terapia ---
+
+    def test_71_90_con_infusion_muestra_terapia(self):
+        r = self._rango(80, infusion=True)
+        self.assertIsNotNone(r)
+        self.assertTrue(r.get("mostrar_terapia"), "71-90 con infusión debe mostrar terapia")
+
+    def test_71_90_con_infusion_tipo_es_infusion_activa(self):
+        r = self._rango(80, infusion=True)
+        self.assertEqual(r.get("terapia_tipo"), "infusion_activa")
+
+    def test_71_90_con_infusion_terapia_valor_es_suspender(self):
+        r = self._rango(80, infusion=True)
+        self.assertEqual(r.get("terapia_valor"), "Suspender")
+
+    def test_91_119_con_infusion_muestra_terapia(self):
+        r = self._rango(100, infusion=True)
+        self.assertIsNotNone(r)
+        self.assertTrue(r.get("mostrar_terapia"), "91-119 con infusión debe mostrar terapia")
+
+    def test_91_119_con_infusion_tipo_es_infusion_activa(self):
+        r = self._rango(100, infusion=True)
+        self.assertEqual(r.get("terapia_tipo"), "infusion_activa")
+
+    def test_91_119_con_infusion_terapia_valor_es_suspender(self):
+        r = self._rango(100, infusion=True)
+        self.assertEqual(r.get("terapia_valor"), "Suspender")
+
+    def test_120_139_con_infusion_muestra_terapia(self):
+        r = self._rango(130, previa=125, infusion=True)
+        self.assertIsNotNone(r)
+        self.assertTrue(r.get("mostrar_terapia"), "120-139 con infusión debe mostrar terapia")
+
+    def test_120_139_con_infusion_tipo_es_infusion_activa(self):
+        r = self._rango(130, previa=125, infusion=True)
+        self.assertEqual(r.get("terapia_tipo"), "infusion_activa")
+
+    def test_120_139_con_infusion_terapia_tiene_tasa_ui(self):
+        r = self._rango(130, previa=125, infusion=True)
+        self.assertIn("UI/h", r.get("terapia_valor", ""), "120-139 debe mostrar tasa en UI/h")
+
+    def test_140_200_con_infusion_muestra_terapia(self):
+        r = self._rango(160, previa=155, infusion=True)
+        self.assertIsNotNone(r)
+        self.assertTrue(r.get("mostrar_terapia"), "140-200 con infusión debe mostrar terapia")
+
+    def test_140_200_con_infusion_tipo_es_infusion_activa(self):
+        r = self._rango(160, previa=155, infusion=True)
+        self.assertEqual(r.get("terapia_tipo"), "infusion_activa")
+
+    def test_140_200_con_infusion_terapia_tiene_tasa_ui(self):
+        r = self._rango(160, previa=155, infusion=True)
+        self.assertIn("UI/h", r.get("terapia_valor", ""), "140-200 debe mostrar tasa en UI/h")
+
+    # --- Sin infusión en objetivo: NO debe mostrar infusión en terapia ---
+
+    def test_en_objetivo_sin_infusion_no_muestra_terapia_insulina(self):
+        r = self._rango(120)
+        self.assertIsNotNone(r)
+        self.assertNotEqual(r.get("terapia_tipo"), "infusion_activa")
+        self.assertFalse(r.get("mostrar_terapia"), "En objetivo sin infusión no debe mostrar terapia")
+
+    def test_borde_hipo_sin_infusion_no_muestra_terapia_insulina(self):
+        r = self._rango(75)
+        self.assertIsNotNone(r)
+        self.assertNotEqual(r.get("terapia_tipo"), "infusion_activa")
+        self.assertFalse(r.get("mostrar_terapia"), "Borde hipo sin infusión no debe mostrar terapia")
+
+    def test_objetivo_alto_sin_infusion_no_muestra_terapia_insulina(self):
+        r = self._rango(150)
+        self.assertIsNotNone(r)
+        self.assertNotEqual(r.get("terapia_tipo"), "infusion_activa")
+        self.assertFalse(r.get("mostrar_terapia"), "En objetivo sin infusión no debe mostrar terapia")
+
+    # --- Verificar tasa algoritmo correcta por rango ---
+
+    def test_80_con_infusion_tasa_algoritmo_es_suspender(self):
+        r = self._rango(80, infusion=True)
+        self.assertEqual(r.get("tasa_algoritmo"), "Suspender")
+
+    def test_110_con_infusion_tasa_algoritmo_es_suspender(self):
+        r = self._rango(110, infusion=True)
+        self.assertEqual(r.get("tasa_algoritmo"), "Suspender")
+
+    def test_130_con_infusion_algo1_tasa_es_05(self):
+        r = self._rango(130, previa=125, infusion=True)
+        self.assertEqual(r.get("tasa_algoritmo"), "0,5 UI/h")
+
+    def test_155_con_infusion_algo1_tasa_es_1(self):
+        r = self._rango(155, previa=150, infusion=True)
+        self.assertEqual(r.get("tasa_algoritmo"), "1 UI/h")
+
+    def test_185_con_infusion_algo1_tasa_es_15(self):
+        """185 mg/dL con infusión en Algoritmo 1 → 1,5 UI/h."""
+        r = self._rango(185, previa=180, infusion=True)
+        self.assertEqual(r.get("tasa_algoritmo"), "1,5 UI/h")
+
+    # --- aplicar_presentacion_terapia unit tests ---
+
+    def test_aplicar_terapia_con_infusion_setea_mostrar_terapia(self):
+        resultado = {"tasa_algoritmo": "1 UI/h"}
+        r = aplicar_presentacion_terapia(resultado, infusion_activa=True)
+        self.assertTrue(r.get("mostrar_terapia"))
+        self.assertEqual(r.get("terapia_tipo"), "infusion_activa")
+
+    def test_aplicar_terapia_sin_infusion_no_setea_mostrar_terapia(self):
+        resultado = {}
+        r = aplicar_presentacion_terapia(resultado, infusion_activa=False)
+        self.assertFalse(r.get("mostrar_terapia"))
+        self.assertEqual(r.get("terapia_tipo"), "general")
+
+
+# =========================================================
+# CLASE VISUAL — routing correcto al template
+# =========================================================
+
+class ClaseVisualRoutingTest(TestCase):
+    """
+    Verifica que asignar_clase_visual clasifique correctamente cada estado
+    para que el template correcto (resultado_hiper vs resultado_rango) sea usado.
+    """
+
+    def _clase(self, estado, nivel_visual=None, es_critico=False):
+        from .utils.ui.presentation import asignar_clase_visual
+        resultado = {
+            "estado": estado,
+            "nivel_visual": nivel_visual,
+            "es_critico": es_critico,
+        }
+        return asignar_clase_visual(resultado).get("clase_visual")
+
+    def test_encima_de_objetivo_es_alerta(self):
+        """'Glucemia por encima de objetivo' con nivel_visual=alerta → alerta."""
+        self.assertEqual(self._clase("Glucemia por encima de objetivo", nivel_visual="alerta"), "alerta")
+
+    def test_nivel_visual_alerta_siempre_da_alerta(self):
+        """Cualquier estado con nivel_visual=alerta → alerta (no importa el texto)."""
+        self.assertEqual(self._clase("Glucemia por encima de objetivo", nivel_visual="alerta"), "alerta")
+        self.assertEqual(self._clase("Hiperglucemia Aislada", nivel_visual="alerta"), "alerta")
+        self.assertEqual(self._clase("Hiperglucemia en Ascenso", nivel_visual="alerta"), "alerta")
+
+    def test_nivel_visual_critico_da_alerta(self):
+        self.assertEqual(self._clase("Hiperglucemia Persistente", nivel_visual="critico", es_critico=True), "alerta")
+
+    def test_en_objetivo_sin_nada_es_rango(self):
+        self.assertEqual(self._clase("Glucemia en objetivo"), "rango")
+
+    def test_en_objetivo_con_alerta_es_rango(self):
+        self.assertEqual(self._clase("Glucemia en objetivo con alerta"), "rango")
+
+    def test_en_objetivo_con_infusion_es_rango(self):
+        self.assertEqual(self._clase("Glucemia en objetivo con infusión"), "rango")
+
+    def test_debajo_de_objetivo_es_rango(self):
+        """Los casos debajo de objetivo van a resultado_rango.html."""
+        self.assertEqual(self._clase("Glucemia por debajo de objetivo"), "rango")
+
+    def test_hipoglucemia_es_critico(self):
+        self.assertEqual(self._clase("Hipoglucemia"), "critico")
+
+
+# =========================================================
+# CASOS HIPER CON INFUSIÓN — terapia siempre visible
+# =========================================================
+
+class HiperConInfusionTerapiaTest(TestCase):
+    """
+    Verifica que casos >200 con infusión activa siempre tengan
+    tasa_algoritmo asignada (requisito para mostrar terapia en resultado_hiper.html).
+    """
+
+    def _h(self, actual, previa=None, infusion=True, tercera=None, algo=1):
+        return evaluar_hiperglucemia(
+            actual=Decimal(str(actual)),
+            previa=Decimal(str(previa)) if previa is not None else None,
+            infusion_activa=infusion,
+            tercera_medicion=Decimal(str(tercera)) if tercera is not None else None,
+            algoritmo_activo=algo,
+        )
+
+    def test_347_previas_distintos_escalones_tiene_tasa_y_nivel_alerta(self):
+        """347 + infusion + previa=180 + tercera=189 (distintos escalones) → tasa asignada."""
+        r = self._h(347, previa=180, tercera=189)
+        self.assertIsNotNone(r.get("tasa_algoritmo"))
+        self.assertIn("UI/h", r.get("tasa_algoritmo", ""))
+        self.assertEqual(r.get("nivel_visual"), "alerta")
+
+    def test_347_previas_distintos_escalones_clase_visual_es_alerta(self):
+        """Integración: enriquecer_resultado_ui debe dar clase_visual=alerta."""
+        r = self._h(347, previa=180, tercera=189)
+        r = enriquecer_resultado_ui(r, actual=Decimal("347"), infusion_activa=True)
+        self.assertEqual(r.get("clase_visual"), "alerta",
+            "347 con infusion y previas distintos escalones debe usar resultado_hiper.html")
+
+    def test_250_sin_tercera_previas_mismo_escalon_tiene_tasa(self):
+        r = self._h(250, previa=245)
+        self.assertIsNotNone(r.get("tasa_algoritmo"))
+        self.assertEqual(r.get("nivel_visual"), "alerta")
+
+    def test_220_sin_previa_tiene_tasa_y_nivel_alerta(self):
+        """Sin previa, >200 con infusion → tasa asignada, nivel alerta."""
+        r = self._h(220)
+        self.assertIsNotNone(r.get("tasa_algoritmo"))
+        self.assertEqual(r.get("nivel_visual"), "alerta")
+
+    def test_320_con_tercera_tiene_tasa(self):
+        r = self._h(320, previa=310, tercera=305)
+        self.assertIsNotNone(r.get("tasa_algoritmo"))
+
+    def test_tasa_algoritmo_para_347_algo1_es_4(self):
+        """347 mg/dL en Algoritmo 1 → escalón 330-359 → 4 UI/h."""
+        r = self._h(347, previa=180, tercera=189)
+        self.assertEqual(r.get("tasa_algoritmo"), "4 UI/h")
+
+
+# =========================================================
+# HTTP — caso reportado por el usuario
+# =========================================================
+
+class CasoReportadoHTTPTest(TestCase):
+    """Test end-to-end para el caso específico reportado: 347+infusion+previa180+tercera189."""
+
+    def setUp(self):
+        self.user = User.objects.create_superuser(
+            username="enfermera_caso", email="caso@test.com", password="testpass123"
+        )
+        self.client = Client()
+        self.client.login(username="enfermera_caso", password="testpass123")
+
+    def test_347_con_infusion_previas_distintos_escalones_responde_200(self):
+        resp = self.client.post("/", {
+            "glicemia_actual": "347",
+            "infusion_activa": "true",
+            "glicemia_previa": "180",
+            "tercera_medicion": "189",
+            "algoritmo_activo": "1",
+            "modo": "seguimiento",
+        }, follow=True)
+        self.assertEqual(resp.status_code, 200)

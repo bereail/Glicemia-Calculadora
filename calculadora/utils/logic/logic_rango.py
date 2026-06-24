@@ -128,11 +128,10 @@ def evaluar_rango_70_180(
             resultado["proximo_control"] = "Controlar glucemia nuevamente en 1 hora"
             resultado["ui_variant"] = "danger"
             resultado["fuera_objetivo"] = True
-        # No mostrar Terapia en este caso
-            resultado["mostrar_terapia"] = False
-            resultado["terapia"] = None
-            resultado["tasa_infusional"] = None
 
+            tasa_data = obtener_tasa_por_algoritmo(actual, algoritmo_activo)
+            resultado["tasa_algoritmo"] = tasa_data["texto"]
+            resultado = aplicar_presentacion_terapia(resultado, infusion_activa=infusion_activa)
             return resultado
 
         # 🟠 91 a 119 con infusión activa
@@ -145,11 +144,10 @@ def evaluar_rango_70_180(
             resultado["proximo_control"] = "Controlar glucemia nuevamente en 2 horas"
             resultado["ui_variant"] = "danger"
             resultado["fuera_objetivo"] = True
-        # No mostrar Terapia en este caso
-            resultado["mostrar_terapia"] = False
-            resultado["terapia"] = None
-            resultado["tasa_infusional"] = None
 
+            tasa_data = obtener_tasa_por_algoritmo(actual, algoritmo_activo)
+            resultado["tasa_algoritmo"] = tasa_data["texto"]
+            resultado = aplicar_presentacion_terapia(resultado, infusion_activa=infusion_activa)
             return resultado
                 # 120 a 139
         if Decimal("120") <= actual < OBJETIVO_MIN_INFUSION:

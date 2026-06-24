@@ -43,22 +43,25 @@ def aplicar_presentacion_terapia(resultado, infusion_activa=False):
 
     if infusion_activa:
         resultado["terapia_tipo"] = "infusion_activa"
-        resultado["terapia_titulo"] = "Tasa de infusión actual"
+        resultado["terapia_titulo"] = "Infusión según protocolo"
         resultado["terapia_valor"] = (
             resultado.get("tasa_algoritmo")
             or resultado.get("tasa_actual")
             or resultado.get("tasa_infusion")
             or "Mantener tasa actual"
         )
+        resultado["mostrar_terapia"] = True
 
     elif inicia_protocolo:
         resultado["terapia_tipo"] = "inicio_protocolo"
         resultado["mostrar_bolo_inicial"] = True
         resultado["mostrar_tasa_infusion"] = True
+        resultado["mostrar_terapia"] = True
 
     else:
         resultado["terapia_tipo"] = "general"
         resultado["terapia_texto"] = "Mantener conducta actual según protocolo."
+        resultado["mostrar_terapia"] = False
 
     return resultado
 
