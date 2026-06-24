@@ -42,6 +42,7 @@ def aplicar_presentacion_terapia(resultado, infusion_activa=False):
     )
 
     if infusion_activa:
+        resultado["mostrar_terapia"] = True
         resultado["terapia_tipo"] = "infusion_activa"
         resultado["terapia_titulo"] = "Infusión según protocolo"
         resultado["terapia_valor"] = (

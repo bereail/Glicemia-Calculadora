@@ -1,0 +1,757 @@
+{% extends "calculadora/base.html" %}
+{% load static %}
+
+{% block title %}Panel de Administración{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Layout ──────────────────────────────────────────────────── */
+.adm {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+}
+
+.adm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.adm-header h1 {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  letter-spacing: -.3px;
+}
+
+.adm-header__meta {
+  font-size: .8rem;
+  color: var(--muted-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+}
+
+/* ── Metric cards ────────────────────────────────────────────── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.mc {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px 18px 16px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--transition);
+}
+
+.mc:hover { border-color: var(--border-strong); }
+
+.mc__icon {
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+  display: block;
+  opacity: .85;
+}
+
+.mc__value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 5px;
+}
+
+.mc__label {
+  font-size: .75rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.mc--green .mc__value  { color: #31cb6a; }
+.mc--blue  .mc__value  { color: #59a8ff; }
+.mc--amber .mc__value  { color: #f7c94b; }
+.mc--red   .mc__value  { color: #ef5a5a; }
+.mc--teal  .mc__value  { color: #4fd1c5; }
+
+/* ── Charts row ──────────────────────────────────────────────── */
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 900px) {
+  .charts-row { grid-template-columns: 1fr; }
+}
+
+.charts-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+@media (max-width: 1100px) {
+  .charts-row-3 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 700px) {
+  .charts-row-3 { grid-template-columns: 1fr; }
+}
+
+.chart-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+}
+
+.chart-card canvas {
+  max-height: 220px;
+}
+
+.chart-card h3 {
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin: 0 0 16px;
+}
+
+/* ── Tables ──────────────────────────────────────────────────── */
+.table-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.table-card h3 {
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin: 0 0 14px;
+}
+
+.adm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+}
+
+.adm-table th {
+  text-align: left;
+  padding: 8px 10px;
+  font-size: .72rem;
+  font-weight: 600;
+  color: var(--muted-2);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.adm-table td {
+  padding: 9px 10px;
+  color: var(--text-soft);
+  border-bottom: 1px solid var(--border-soft);
+  vertical-align: middle;
+}
+
+.adm-table tr:last-child td { border-bottom: none; }
+
+.adm-table tr:hover td { background: var(--surface-3); }
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: .7rem;
+  font-weight: 600;
+}
+
+.badge--mobile  { background: rgba(89,168,255,.15); color: #59a8ff; }
+.badge--desktop { background: rgba(49,203,106,.12); color: #31cb6a; }
+.badge--get     { background: rgba(49,203,106,.12); color: #31cb6a; }
+.badge--post    { background: rgba(247,201,75,.12); color: #f7c94b; }
+.badge--anon    { background: rgba(255,255,255,.06); color: var(--muted-2); }
+.badge--auth    { background: rgba(89,168,255,.15); color: #59a8ff; }
+
+.dur-null { color: var(--muted-2); font-style: italic; font-size: .75rem; }
+
+/* ── Online dot ──────────────────────────────────────────────── */
+.dot-online {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #31cb6a;
+  box-shadow: 0 0 6px #31cb6a;
+  animation: pulse 2s infinite;
+  margin-right: 6px;
+}
+
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: .4; }
+}
+
+/* ── Filters ─────────────────────────────────────────────────── */
+.filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.filters input {
+  flex: 1;
+  min-width: 140px;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 7px 12px;
+  font-size: .8rem;
+  outline: none;
+  transition: border-color var(--transition);
+}
+
+.filters input:focus { border-color: var(--input-focus); }
+
+.filters button {
+  background: var(--secondary-bg);
+  border: 1px solid var(--secondary-border);
+  border-radius: var(--radius-sm);
+  color: var(--text-soft);
+  padding: 7px 14px;
+  font-size: .8rem;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.filters button:hover { background: var(--secondary-hover); }
+
+/* ── Pagination ──────────────────────────────────────────────── */
+.pagination {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.pagination a,
+.pagination span {
+  padding: 5px 11px;
+  border-radius: var(--radius-sm);
+  font-size: .8rem;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  background: var(--surface-2);
+  transition: background var(--transition);
+}
+
+.pagination a:hover   { background: var(--secondary-hover); color: var(--text); }
+.pagination .current  { background: var(--primary); color: var(--primary-text); border-color: var(--primary); font-weight: 700; }
+
+/* ── Two-col layout ──────────────────────────────────────────── */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 800px) {
+  .two-col { grid-template-columns: 1fr; }
+}
+
+/* ── Scroll wrapper for wide tables ──────────────────────────── */
+.table-scroll { overflow-x: auto; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="adm">
+
+  <!-- Header -->
+  <div class="adm-header">
+    <h1>Panel de Administración</h1>
+    <span class="adm-header__meta">
+      Actualizado: {{ ahora|date:"d/m/Y H:i:s" }}
+    </span>
+  </div>
+
+  <!-- ── Metric cards ──────────────────────────────────────────── -->
+  <div class="metrics-grid">
+    <div class="mc mc--green">
+      <span class="mc__icon">🟢</span>
+      <div class="mc__value">{{ activos_ahora }}</div>
+      <div class="mc__label">Activos ahora (5 min)</div>
+    </div>
+    <div class="mc mc--blue">
+      <span class="mc__icon">📅</span>
+      <div class="mc__value">{{ visitas_hoy }}</div>
+      <div class="mc__label">Visitas hoy</div>
+    </div>
+    <div class="mc mc--blue">
+      <span class="mc__icon">📆</span>
+      <div class="mc__value">{{ visitas_semana }}</div>
+      <div class="mc__label">Esta semana</div>
+    </div>
+    <div class="mc mc--blue">
+      <span class="mc__icon">🗓</span>
+      <div class="mc__value">{{ visitas_mes }}</div>
+      <div class="mc__label">Este mes</div>
+    </div>
+    <div class="mc mc--amber">
+      <span class="mc__icon">🌐</span>
+      <div class="mc__value">{{ ips_unicas_hoy }}</div>
+      <div class="mc__label">IPs únicas hoy</div>
+    </div>
+    <div class="mc mc--teal">
+      <span class="mc__icon">⏱</span>
+      <div class="mc__value">
+        {% if duracion_promedio_hoy %}
+          {% if duracion_promedio_hoy >= 60 %}
+            {{ duracion_promedio_hoy|floatformat:0 }}s
+          {% else %}
+            {{ duracion_promedio_hoy }}s
+          {% endif %}
+        {% else %}
+          —
+        {% endif %}
+      </div>
+      <div class="mc__label">Duración prom. hoy</div>
+    </div>
+    <div class="mc mc--red">
+      <span class="mc__icon">👥</span>
+      <div class="mc__value">{{ total_usuarios }}</div>
+      <div class="mc__label">Usuarios activos</div>
+    </div>
+    <div class="mc">
+      <span class="mc__icon">📱</span>
+      <div class="mc__value">{{ movil_count }}</div>
+      <div class="mc__label">Visitas móvil</div>
+    </div>
+  </div>
+
+  <!-- ── Charts row 1 ──────────────────────────────────────────── -->
+  <div class="charts-row">
+    <div class="chart-card">
+      <h3>Visitas por hora — hoy</h3>
+      <canvas id="chartHoras" height="140"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Últimos 7 días</h3>
+      <canvas id="chart7d" height="140"></canvas>
+    </div>
+  </div>
+
+  <!-- ── Charts row 2 ──────────────────────────────────────────── -->
+  <div class="charts-row-3">
+    <div class="chart-card">
+      <h3>Páginas más visitadas</h3>
+      <canvas id="chartPaginas" height="200"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Navegadores</h3>
+      <canvas id="chartNavegadores" height="200"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Dispositivos</h3>
+      <canvas id="chartDispositivos" height="200"></canvas>
+    </div>
+  </div>
+
+  <!-- ── Active now ─────────────────────────────────────────────── -->
+  {% if activos_detalle %}
+  <div class="table-card">
+    <h3><span class="dot-online"></span>Activos en los últimos 5 minutos</h3>
+    <div class="table-scroll">
+      <table class="adm-table">
+        <thead>
+          <tr>
+            <th>Hora</th>
+            <th>IP</th>
+            <th>Usuario</th>
+            <th>Página</th>
+            <th>Dispositivo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for v in activos_detalle %}
+          <tr>
+            <td>{{ v.timestamp|date:"H:i:s" }}</td>
+            <td><code>{{ v.ip }}</code></td>
+            <td>
+              {% if v.username_display %}
+                <span class="badge badge--auth">{{ v.username_display }}</span>
+              {% else %}
+                <span class="badge badge--anon">Anónimo</span>
+              {% endif %}
+            </td>
+            <td>{{ v.pagina }}</td>
+            <td>
+              {% if v.es_movil %}
+                <span class="badge badge--mobile">Móvil</span>
+              {% else %}
+                <span class="badge badge--desktop">Desktop</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Top tables ─────────────────────────────────────────────── -->
+  <div class="two-col">
+    <div class="table-card">
+      <h3>Top usuarios</h3>
+      <table class="adm-table">
+        <thead>
+          <tr><th>#</th><th>Usuario</th><th>Visitas</th></tr>
+        </thead>
+        <tbody>
+          {% for u in top_usuarios %}
+          <tr>
+            <td style="color:var(--muted-2)">{{ forloop.counter }}</td>
+            <td>{{ u.username_display|default:"—" }}</td>
+            <td><strong>{{ u.total }}</strong></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="3" style="color:var(--muted-2);text-align:center;padding:20px">Sin datos</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-card">
+      <h3>Top IPs</h3>
+      <table class="adm-table">
+        <thead>
+          <tr><th>#</th><th>IP</th><th>Visitas</th></tr>
+        </thead>
+        <tbody>
+          {% for ip in top_ips %}
+          <tr>
+            <td style="color:var(--muted-2)">{{ forloop.counter }}</td>
+            <td><code>{{ ip.ip }}</code></td>
+            <td><strong>{{ ip.total }}</strong></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="3" style="color:var(--muted-2);text-align:center;padding:20px">Sin datos</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── Visits table ───────────────────────────────────────────── -->
+  <div class="table-card">
+    <h3>Todas las visitas</h3>
+
+    <form method="get" class="filters">
+      <input type="text" name="ip"      placeholder="Filtrar por IP…"      value="{{ filtro_ip }}">
+      <input type="text" name="usuario" placeholder="Filtrar por usuario…"  value="{{ filtro_usuario }}">
+      <input type="text" name="pagina"  placeholder="Filtrar por página…"   value="{{ filtro_pagina }}">
+      <button type="submit">Filtrar</button>
+      {% if filtro_ip or filtro_usuario or filtro_pagina %}
+        <a href="{% url 'analytics:panel_admin' %}" style="text-decoration:none">
+          <button type="button">Limpiar</button>
+        </a>
+      {% endif %}
+    </form>
+
+    <div class="table-scroll">
+      <table class="adm-table">
+        <thead>
+          <tr>
+            <th>Fecha/Hora</th>
+            <th>IP</th>
+            <th>Usuario</th>
+            <th>Página</th>
+            <th>Método</th>
+            <th>Duración</th>
+            <th>Navegador</th>
+            <th>Dispositivo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for v in page_obj %}
+          <tr>
+            <td style="white-space:nowrap">{{ v.timestamp|date:"d/m/Y H:i:s" }}</td>
+            <td><code>{{ v.ip }}</code></td>
+            <td>
+              {% if v.username_display %}
+                <span class="badge badge--auth">{{ v.username_display }}</span>
+              {% else %}
+                <span class="badge badge--anon">Anónimo</span>
+              {% endif %}
+            </td>
+            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+                title="{{ v.pagina }}">{{ v.pagina }}</td>
+            <td>
+              {% if v.metodo == "POST" %}
+                <span class="badge badge--post">POST</span>
+              {% else %}
+                <span class="badge badge--get">GET</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if v.duracion_segundos %}
+                {% if v.duracion_segundos >= 3600 %}
+                  {{ v.duracion_segundos|floatformat:0 }}s
+                {% elif v.duracion_segundos >= 60 %}
+                  {{ v.duracion_segundos }}s
+                {% else %}
+                  {{ v.duracion_segundos }}s
+                {% endif %}
+              {% else %}
+                <span class="dur-null">—</span>
+              {% endif %}
+            </td>
+            <td>{{ v.navegador }}</td>
+            <td>
+              {% if v.es_movil %}
+                <span class="badge badge--mobile">Móvil</span>
+              {% else %}
+                <span class="badge badge--desktop">Desktop</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" style="text-align:center;padding:30px;color:var(--muted-2)">
+              No hay visitas registradas.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+      {% if page_obj.has_previous %}
+        <a href="?page=1{% if filtro_ip %}&ip={{ filtro_ip }}{% endif %}{% if filtro_usuario %}&usuario={{ filtro_usuario }}{% endif %}{% if filtro_pagina %}&pagina={{ filtro_pagina }}{% endif %}">«</a>
+        <a href="?page={{ page_obj.previous_page_number }}{% if filtro_ip %}&ip={{ filtro_ip }}{% endif %}{% if filtro_usuario %}&usuario={{ filtro_usuario }}{% endif %}{% if filtro_pagina %}&pagina={{ filtro_pagina }}{% endif %}">‹</a>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+          <span class="current">{{ num }}</span>
+        {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+          <a href="?page={{ num }}{% if filtro_ip %}&ip={{ filtro_ip }}{% endif %}{% if filtro_usuario %}&usuario={{ filtro_usuario }}{% endif %}{% if filtro_pagina %}&pagina={{ filtro_pagina }}{% endif %}">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if filtro_ip %}&ip={{ filtro_ip }}{% endif %}{% if filtro_usuario %}&usuario={{ filtro_usuario }}{% endif %}{% if filtro_pagina %}&pagina={{ filtro_pagina }}{% endif %}">›</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}{% if filtro_ip %}&ip={{ filtro_ip }}{% endif %}{% if filtro_usuario %}&usuario={{ filtro_usuario }}{% endif %}{% if filtro_pagina %}&pagina={{ filtro_pagina }}{% endif %}">»</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div>
+
+{{ por_hora|json_script:"d-por-hora" }}
+{{ labels_7d|json_script:"d-labels-7d" }}
+{{ data_7d|json_script:"d-data-7d" }}
+{{ top_paginas_labels|json_script:"d-pg-labels" }}
+{{ top_paginas_data|json_script:"d-pg-data" }}
+{{ nav_labels|json_script:"d-nav-labels" }}
+{{ nav_data|json_script:"d-nav-data" }}
+</div><!-- /adm -->
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+  function jd(id) { return JSON.parse(document.getElementById(id).textContent); }
+
+  var porHora    = jd('d-por-hora');
+  var labels7d   = jd('d-labels-7d');
+  var data7d     = jd('d-data-7d');
+  var pgLabels   = jd('d-pg-labels');
+  var pgData     = jd('d-pg-data');
+  var navLabels  = jd('d-nav-labels');
+  var navData    = jd('d-nav-data');
+
+  var COLORS = {
+    blue:  'rgba(89,168,255,',
+    green: 'rgba(49,203,106,',
+    amber: 'rgba(247,201,75,',
+    teal:  'rgba(79,209,197,',
+    red:   'rgba(239,90,90,',
+    purple:'rgba(167,139,250,',
+  };
+
+  function line(color, a) { return color + (a || '1)'); }
+  function fill(color, a) { return color + (a || '.15)'); }
+
+  Chart.defaults.color = '#b2c3db';
+  Chart.defaults.borderColor = 'rgba(95,148,224,0.12)';
+  Chart.defaults.font.family = 'inherit';
+  Chart.defaults.font.size = 12;
+
+  // ── Visitas por hora ──────────────────────────────────────────
+  new Chart(document.getElementById('chartHoras'), {
+    type: 'bar',
+    data: {
+      labels: Array.from({length:24}, function(_,i){ return i+'h'; }),
+      datasets: [{
+        label: 'Visitas',
+        data: porHora,
+        backgroundColor: fill(COLORS.blue, '.5'),
+        borderColor: line(COLORS.blue),
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false } },
+        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+      }
+    }
+  });
+
+  // ── Últimos 7 días ────────────────────────────────────────────
+  new Chart(document.getElementById('chart7d'), {
+    type: 'line',
+    data: {
+      labels: labels7d,
+      datasets: [{
+        label: 'Visitas',
+        data: data7d,
+        borderColor: line(COLORS.teal),
+        backgroundColor: fill(COLORS.teal, '.15'),
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: line(COLORS.teal),
+        pointRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+
+  // ── Páginas más visitadas ─────────────────────────────────────
+  new Chart(document.getElementById('chartPaginas'), {
+    type: 'bar',
+    data: {
+      labels: pgLabels,
+      datasets: [{
+        label: 'Visitas',
+        data: pgData,
+        backgroundColor: fill(COLORS.green, '.55'),
+        borderColor: line(COLORS.green),
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { beginAtZero: true },
+        y: { ticks: { font: { size: 10 } } }
+      }
+    }
+  });
+
+  // ── Navegadores ───────────────────────────────────────────────
+  var navColors = [
+    fill(COLORS.blue,'.7'), fill(COLORS.amber,'.7'), fill(COLORS.green,'.7'),
+    fill(COLORS.red,'.7'),  fill(COLORS.purple,'.7'), fill(COLORS.teal,'.7')
+  ];
+  new Chart(document.getElementById('chartNavegadores'), {
+    type: 'doughnut',
+    data: {
+      labels: navLabels,
+      datasets: [{
+        data: navData,
+        backgroundColor: navColors.slice(0, navLabels.length),
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { padding: 14, boxWidth: 12 } } }
+    }
+  });
+
+  // ── Dispositivos ──────────────────────────────────────────────
+  new Chart(document.getElementById('chartDispositivos'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Desktop', 'Móvil'],
+      datasets: [{
+        data: [{{ desktop_count }}, {{ movil_count }}],
+        backgroundColor: [fill(COLORS.blue,'.7'), fill(COLORS.amber,'.7')],
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { padding: 14, boxWidth: 12 } } }
+    }
+  });
+
+})();
+</script>
+
+{% if visita_id %}
+<script>
+(function () {
+  var VISITA_ID = {{ visita_id }};
+  var inicio = Date.now();
+
+  function enviarDuracion() {
+    var duracion = Math.round((Date.now() - inicio) / 1000);
+    if (duracion < 1) return;
+    navigator.sendBeacon(
+      '{% url "analytics:ping_visita" %}',
+      new URLSearchParams({ visita_id: VISITA_ID, duracion: duracion })
+    );
+  }
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') enviarDuracion();
+  });
+  window.addEventListener('beforeunload', enviarDuracion);
+})();
+</script>
+{% endif %}
+{% endblock %}

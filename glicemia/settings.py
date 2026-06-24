@@ -34,6 +34,7 @@ CSRF_TRUSTED_ORIGINS = os.environ.get(
 
 INSTALLED_APPS = [
     "calculadora",
+    "analytics",
 
     "django.contrib.admin",
     "django.contrib.auth",
@@ -60,6 +61,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "analytics.middleware.RegistroVisitasMiddleware",
 ]
 
 
@@ -80,6 +82,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "analytics.context_processors.visita_id",
+                "analytics.context_processors.es_admin_analytics",
             ],
         },
     },
@@ -198,6 +202,25 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
 X_FRAME_OPTIONS = "DENY"
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "level": "ERROR",
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "django_errors.log",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file"],
+            "level": "ERROR",
+            "propagate": True,
+        },
+    },
+}
 
 
 # =========================================================
