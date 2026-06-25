@@ -1,0 +1,47 @@
+{% if mediciones %}
+<div class="detalle-tabla-wrap">
+  <table class="historial-table">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Usuario</th>
+        <th>Glucemia</th>
+        <th>Estado</th>
+        <th>Conducta</th>
+        <th>Tendencia</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in mediciones %}
+      <tr>
+        <td class="historial-table__fecha">{{ m.fecha_hora|date:"d/m/Y H:i" }}</td>
+        <td class="historial-table__usuario">{{ m.usuario.username }}</td>
+        <td class="historial-table__glucemia">
+          {{ m.glicemia_actual }} <span class="historial-table__unit">mg/dL</span>
+        </td>
+        <td>
+          {% if "en objetivo" in m.estado|lower %}
+            <span class="status-pill status-pill-ok">{{ m.estado }}</span>
+          {% elif "hipogluc" in m.estado|lower %}
+            <span class="status-pill status-pill-hypo">{{ m.estado }}</span>
+          {% elif "hipergluc" in m.estado|lower or "encima" in m.estado|lower %}
+            <span class="status-pill status-pill-hyper">{{ m.estado }}</span>
+          {% else %}
+            <span class="status-pill status-pill-neutral">{{ m.estado }}</span>
+          {% endif %}
+        </td>
+        <td class="historial-table__conducta">{{ m.conducta|safe }}</td>
+        <td class="historial-table__tendencia">{{ m.tendencia|default:"—" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if hay_mas %}
+  <p class="detalle-hay-mas">
+    Mostrando los últimos {{ mediciones|length }} de {{ total_clase }} registros.
+  </p>
+  {% endif %}
+</div>
+{% else %}
+<p class="historial-empty">No hay mediciones para esta categoría.</p>
+{% endif %}

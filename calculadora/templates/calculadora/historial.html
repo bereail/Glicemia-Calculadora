@@ -4,7 +4,395 @@
 {% block title %}Historial de mediciones{% endblock %}
 
 {% block extra_css %}
-  <link rel="stylesheet" href="{% static 'calculadora/css/historial.css' %}?v=20260622-1">
+  <link rel="stylesheet" href="{% static 'calculadora/css/historial.css' %}?v=20260624-1">
+  <style>
+    /* ---- Cards sin subrayado ---- */
+    .historial-metrica--link,
+    .historial-metrica--link *,
+    .historial-metrica--link:hover,
+    .historial-metrica--link:visited { text-decoration: none !important; }
+
+    /* ---- Gráficos layout ---- */
+    .historial-charts-top {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    .historial-charts-bottom {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+    .hchart {
+      padding: 20px 22px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .hchart__title {
+      margin: 0 0 2px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #8ea3c2;
+    }
+    .hchart__sub {
+      margin: 0 0 16px;
+      font-size: 0.8rem;
+      color: #9db3cc;
+    }
+    .hchart__canvas-wrap { width: 100%; }
+    .hchart__canvas-wrap canvas { display: block; width: 100% !important; }
+    .hchart__donut-wrap {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-top: 8px;
+    }
+    .hchart__donut-wrap canvas {
+      display: block;
+      flex-shrink: 0;
+    }
+    .hchart__leyenda {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+    .hchart__leyenda li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .hchart__dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .hchart__lbl { font-size: 0.82rem; color: #d8e5f8; flex: 1; }
+    .hchart__cnt { font-size: 0.82rem; font-weight: 700; color: #fff; }
+
+    @media (max-width: 900px) {
+      .historial-charts-top { grid-template-columns: 1fr; }
+      .historial-charts-bottom { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .historial-charts-bottom { grid-template-columns: 1fr; }
+    }
+
+    /* ---- Modal centrado ---- */
+    #detalle-overlay {
+      position: fixed !important;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,0.68);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    #detalle-overlay.detalle-overlay--open { display: flex !important; }
+
+    #detalle-modal {
+      width: min(860px, 100%);
+      max-height: 88vh;
+      background: linear-gradient(180deg, #0d2849 0%, #08182e 100%);
+      border: 1px solid rgba(95,148,224,0.22);
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+      transform: scale(0.96) translateY(12px);
+      transition: transform 0.24s cubic-bezier(.22,.61,.36,1), opacity 0.2s;
+      opacity: 0;
+      overflow: hidden;
+    }
+    #detalle-overlay.detalle-overlay--open #detalle-modal {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+    .detalle-modal__header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 20px 24px 18px;
+      border-bottom: 1px solid rgba(95,148,224,0.12);
+      flex-shrink: 0;
+    }
+    .detalle-modal__accent {
+      width: 4px; height: 40px;
+      border-radius: 999px;
+      flex-shrink: 0;
+    }
+    .detalle-modal__titles { flex: 1; }
+    .detalle-modal__title {
+      margin: 0 0 3px;
+      font-size: 1.08rem;
+      font-weight: 900;
+      color: #fff;
+    }
+    .detalle-modal__sub {
+      margin: 0;
+      font-size: 0.8rem;
+      color: #9db3cc;
+    }
+    .detalle-modal__close {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      color: #9db3cc;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, color 0.15s;
+      font-family: inherit;
+      flex-shrink: 0;
+    }
+    .detalle-modal__close:hover { background: rgba(255,255,255,0.14); color: #fff; }
+    .detalle-modal__body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px 24px 24px;
+    }
+    .detalle-tabla-wrap { overflow-x: auto; }
+    .detalle-tabla-wrap .historial-table { min-width: 560px; }
+    .detalle-tabla-wrap .historial-table__conducta { min-width: 180px; }
+    .detalle-hay-mas {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #9db3cc;
+    }
+    .detalle-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 56px 0;
+      color: #9db3cc;
+      font-size: 0.9rem;
+    }
+
+    /* ---- Acordeón en cards de gráficos ---- */
+    .hchart__toggle {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      width: 100%;
+      background: none;
+      border: none;
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+      padding: 0;
+      gap: 10px;
+      font-family: inherit;
+    }
+    .hchart__toggle-text { flex: 1; }
+    .hchart__chevron {
+      color: #5f94e0;
+      font-size: 14px;
+      flex-shrink: 0;
+      transition: transform 0.22s;
+      margin-top: 4px;
+      line-height: 1;
+    }
+    .hchart__toggle[aria-expanded="true"] .hchart__chevron {
+      transform: rotate(180deg);
+    }
+    .hchart__body[hidden] { display: none !important; }
+    .hchart__body { padding-top: 16px; }
+    .hchart__sub { margin-bottom: 0; }
+
+    /* ---- Espaciado general ---- */
+    .historial-shell { gap: 20px; }
+    .htab-nav { margin: 4px 0 8px; }
+    .htab-panel > section:first-child,
+    .htab-panel > div:first-child  { margin-top: 4px; }
+
+    /* Más aire en las cards de métricas */
+    .historial-metricas { gap: 16px; margin-bottom: 8px; }
+    .historial-metrica  { padding: 22px 24px 20px !important; }
+    #htab-registros { display: flex; flex-direction: column; gap: 20px; }
+
+    /* Más aire en la tabla */
+    .historial-tabla-panel { padding: 24px 28px 28px !important; }
+    .historial-tabla-panel__top { margin-bottom: 20px; }
+    .historial-table th { padding: 11px 14px; }
+    .historial-table td { padding: 14px 14px; }
+
+    /* Filtros un poco más espaciados */
+    .historial-filtros { padding: 24px 28px 22px !important; }
+    .historial-filtros__grid { gap: 16px; margin-top: 16px; }
+
+    /* ---- Cards con porcentaje ---- */
+    .historial-metrica__pct {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.02em;
+    }
+
+    /* ---- Tabla: colores de glucemia ---- */
+    .gval         { font-weight: 800; }
+    .gval--hipo   { color: #f87171; }
+    .gval--bajo   { color: #fb923c; }
+    .gval--ok     { color: #34d399; }
+    .gval--alto   { color: #fbbf24; }
+    .gval--hiper  { color: #f97316; }
+
+    /* ---- Tabla: highlight de filas críticas ---- */
+    .row-hipo  td:first-child { border-left: 3px solid #f87171; }
+    .row-hipo              { background: rgba(248,113,113,0.05) !important; }
+    .row-hiper td:first-child { border-left: 3px solid #f97316; }
+    .row-hiper             { background: rgba(249,115,22,0.04) !important; }
+
+    /* ---- Paginación mejorada ---- */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 18px 0 4px;
+      flex-wrap: wrap;
+    }
+    .page-link {
+      min-width: 34px; height: 34px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 8px;
+      border: 1px solid rgba(95,148,224,0.18);
+      background: rgba(255,255,255,0.04);
+      color: #9db3cc;
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      padding: 0 8px;
+    }
+    .page-link:hover        { background: rgba(95,148,224,0.14); color: #d8e5f8; border-color: rgba(95,148,224,0.4); }
+    .page-link--active      { background: linear-gradient(135deg,#1a4a8a,#0f3060); color: #fff; border-color: transparent; }
+    .page-link--disabled    { opacity: 0.35; pointer-events: none; }
+    .page-ellipsis          { color: #5f7a99; font-size: 0.82rem; padding: 0 4px; }
+    .page-info-chip {
+      font-size: 0.75rem; color: #5f7a99;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(95,148,224,0.1);
+      border-radius: 20px;
+      padding: 3px 12px;
+    }
+
+    /* ---- Responsive tabla ---- */
+    @media (max-width: 700px) {
+      .historial-table thead { display: none; }
+      .historial-table, .historial-table tbody, .historial-table tr, .historial-table td { display: block; width: 100%; }
+      .historial-table tr {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(95,148,224,0.1);
+        border-radius: 10px;
+        margin-bottom: 10px;
+        padding: 4px 0;
+        overflow: hidden;
+      }
+      .historial-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 7px 14px;
+        border: none;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+        font-size: 0.83rem;
+        gap: 10px;
+      }
+      .historial-table td:last-child { border-bottom: none; }
+      .historial-table td::before {
+        content: attr(data-label);
+        color: #8ea3c2;
+        font-size: 0.68rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        flex-shrink: 0;
+        padding-top: 2px;
+        min-width: 80px;
+      }
+      .historial-table .historial-table__conducta { flex-direction: column; gap: 4px; }
+      .row-hipo  { border-left: 3px solid #f87171 !important; }
+      .row-hiper { border-left: 3px solid #f97316 !important; }
+      .row-hipo  td:first-child { border-left: none; }
+      .row-hiper td:first-child { border-left: none; }
+    }
+
+    /* ---- Responsive general ---- */
+    @media (max-width: 600px) {
+      .historial-metricas { grid-template-columns: 1fr 1fr !important; }
+      .htab-metricas-resumen { grid-template-columns: 1fr 1fr; }
+      .historial-filtros__grid { flex-direction: column; }
+    }
+
+    /* ---- Tabs ---- */
+    .htab-nav {
+      display: flex;
+      gap: 4px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(95,148,224,0.14);
+      border-radius: 14px;
+      padding: 5px;
+      width: fit-content;
+    }
+    .htab-btn {
+      padding: 8px 28px;
+      border-radius: 10px;
+      border: none;
+      background: none;
+      color: #9db3cc;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      letter-spacing: 0.02em;
+      transition: background 0.18s, color 0.18s;
+    }
+    .htab-btn:hover { color: #d8e5f8; }
+    .htab-btn--active {
+      background: linear-gradient(135deg, #1a4a8a 0%, #0f3060 100%);
+      color: #fff;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+    .htab-panel[hidden] { display: none !important; }
+
+    /* Charts en tab Métricas: sin acordeón */
+    .htab-metricas-wrap .hchart { padding: 20px 22px 22px; }
+    .htab-metricas-wrap .hchart__sub { margin-bottom: 14px; }
+    .htab-metricas-wrap .historial-charts-top { margin-bottom: 18px; }
+
+    /* Métricas resumen en tab */
+    .htab-metricas-resumen {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .htab-resumen-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(95,148,224,0.12);
+      border-radius: 12px;
+      padding: 14px 18px;
+      text-align: center;
+    }
+    .htab-resumen-card__label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #8ea3c2; margin: 0 0 4px; }
+    .htab-resumen-card__value { font-size: 1.7rem; font-weight: 900; color: #fff; margin: 0; line-height: 1; }
+    @media (max-width: 700px) { .htab-metricas-resumen { grid-template-columns: repeat(2,1fr); } }
+  </style>
 {% endblock %}
 
 {% block content %}
@@ -26,9 +414,7 @@
           <select name="usuario" id="usuario">
             <option value="">Todos los usuarios</option>
             {% for u in usuarios %}
-              <option value="{{ u }}" {% if usuario_seleccionado == u %}selected{% endif %}>
-                {{ u }}
-              </option>
+              <option value="{{ u }}" {% if usuario_seleccionado == u %}selected{% endif %}>{{ u }}</option>
             {% endfor %}
           </select>
         </div>
@@ -38,9 +424,7 @@
           <select name="estado" id="estado">
             <option value="">Todos los estados</option>
             {% for e in estados %}
-              <option value="{{ e }}" {% if estado_seleccionado == e %}selected{% endif %}>
-                {{ e }}
-              </option>
+              <option value="{{ e }}" {% if estado_seleccionado == e %}selected{% endif %}>{{ e }}</option>
             {% endfor %}
           </select>
         </div>
@@ -72,134 +456,47 @@
       </form>
     </section>
 
-    <!-- MÉTRICAS -->
-    <section class="historial-metricas">
-      <a href="{% url 'historial' %}" class="historial-metrica historial-metrica--total historial-metrica--link">
-        <p class="historial-metrica__label">Total</p>
-        <p class="historial-metrica__value">{{ total }}</p>
-        <p class="historial-metrica__desc">Mediciones encontradas</p>
-      </a>
+    <!-- TAB NAV -->
+    <div class="htab-nav">
+      <button class="htab-btn htab-btn--active" data-tab="registros">Registros</button>
+      <button class="htab-btn" data-tab="metricas">Métricas</button>
+    </div>
 
-      <a href="{% url 'historial' %}?clase=hipoglucemia" class="historial-metrica historial-metrica--hipo historial-metrica--link">
-        <p class="historial-metrica__label">Hipoglucemias</p>
-        <p class="historial-metrica__value">{{ hipoglucemias }}</p>
-        <p class="historial-metrica__desc">Valores críticos bajos</p>
-      </a>
+    <!-- ===================== TAB: REGISTROS ===================== -->
+    <div id="htab-registros" class="htab-panel">
 
-      <a href="{% url 'historial' %}?clase=en_rango" class="historial-metrica historial-metrica--ok historial-metrica--link">
-        <p class="historial-metrica__label">En objetivo</p>
-        <p class="historial-metrica__value">{{ en_objetivo }}</p>
-        <p class="historial-metrica__desc">Dentro del rango esperado</p>
-      </a>
+      <section class="historial-metricas">
+        <a href="{% url 'historial' %}" data-detalle="total"
+           class="historial-metrica historial-metrica--total historial-metrica--link" style="text-decoration:none">
+          <p class="historial-metrica__label">Total</p>
+          <p class="historial-metrica__value">{{ total }}</p>
+          <p class="historial-metrica__desc">Mediciones encontradas</p>
+        </a>
+        <a href="{% url 'historial' %}?clase=hipoglucemia" data-detalle="hipoglucemia"
+           class="historial-metrica historial-metrica--hipo historial-metrica--link" style="text-decoration:none">
+          <p class="historial-metrica__label">Hipoglucemias</p>
+          <p class="historial-metrica__value">{{ hipoglucemias }}</p>
+          <p class="historial-metrica__desc">Valores críticos bajos</p>
+          <span class="historial-metrica__pct">{{ pct_hipo }}% del total</span>
+        </a>
+        <a href="{% url 'historial' %}?clase=en_rango" data-detalle="en_rango"
+           class="historial-metrica historial-metrica--ok historial-metrica--link" style="text-decoration:none">
+          <p class="historial-metrica__label">En objetivo</p>
+          <p class="historial-metrica__value">{{ en_objetivo }}</p>
+          <p class="historial-metrica__desc">Dentro del rango esperado</p>
+          <span class="historial-metrica__pct">{{ pct_ok }}% del total</span>
+        </a>
+        <a href="{% url 'historial' %}?clase=hiperglucemia" data-detalle="hiperglucemia"
+           class="historial-metrica historial-metrica--hiper historial-metrica--link" style="text-decoration:none">
+          <p class="historial-metrica__label">Hiperglucemias</p>
+          <p class="historial-metrica__value">{{ hiperglucemias }}</p>
+          <p class="historial-metrica__desc">Valores por encima del objetivo</p>
+          <span class="historial-metrica__pct">{{ pct_hiper }}% del total</span>
+        </a>
+      </section>
 
-      <a href="{% url 'historial' %}?clase=hiperglucemia" class="historial-metrica historial-metrica--hiper historial-metrica--link">
-        <p class="historial-metrica__label">Hiperglucemias</p>
-        <p class="historial-metrica__value">{{ hiperglucemias }}</p>
-        <p class="historial-metrica__desc">Valores por encima del objetivo</p>
-      </a>
-    </section>
-
-    <!-- GRÁFICO USO POR ROL -->
-    <details class="card historial-uso-roles" id="detalleUsoRoles">
-      <summary class="historial-uso-roles__summary">
-        <span class="historial-uso-roles__summary-text">
-          <span class="historial-uso-roles__title">Uso por rol</span>
-          <span class="historial-uso-roles__subtitle">Distribución de mediciones según el rol del usuario</span>
-        </span>
-        <span class="historial-uso-roles__chevron" aria-hidden="true">▾</span>
-      </summary>
-      <div class="historial-uso-roles__body">
-        <div class="historial-uso-roles__chart-wrap">
-          <canvas id="chartUsoRoles" width="220" height="220"></canvas>
-        </div>
-        <ul class="historial-uso-roles__leyenda">
-          {% if uso_medicos %}
-          <li>
-            <span class="historial-uso-roles__dot historial-uso-roles__dot--medicos"></span>
-            <span class="historial-uso-roles__rol">Médicos</span>
-            <span class="historial-uso-roles__count">{{ uso_medicos }}</span>
-          </li>
-          {% endif %}
-          {% if uso_enfermeria %}
-          <li>
-            <span class="historial-uso-roles__dot historial-uso-roles__dot--enfermeria"></span>
-            <span class="historial-uso-roles__rol">Enfermería</span>
-            <span class="historial-uso-roles__count">{{ uso_enfermeria }}</span>
-          </li>
-          {% endif %}
-          {% if uso_sin_grupo %}
-          <li>
-            <span class="historial-uso-roles__dot historial-uso-roles__dot--sin-grupo"></span>
-            <span class="historial-uso-roles__rol">Sin rol asignado</span>
-            <span class="historial-uso-roles__count">{{ uso_sin_grupo }}</span>
-          </li>
-          {% endif %}
-        </ul>
-      </div>
-    </details>
-
-    <!-- GRÁFICO USO POR TURNO -->
-    <details class="card historial-uso-roles" id="detalleUsoTurnos">
-      <summary class="historial-uso-roles__summary">
-        <span class="historial-uso-roles__summary-text">
-          <span class="historial-uso-roles__title">Uso por turno</span>
-          <span class="historial-uso-roles__subtitle">Mediciones registradas según el turno horario (06–12 / 12–18 / 18–24 / 00–06)</span>
-        </span>
-        <span class="historial-uso-roles__chevron" aria-hidden="true">▾</span>
-      </summary>
-      <div class="historial-uso-roles__body">
-        <div class="historial-uso-roles__chart-wrap">
-          <canvas id="chartUsoTurnos" width="220" height="220"></canvas>
-        </div>
-        <ul class="historial-uso-roles__leyenda">
-          {% if turno_manana %}
-          <li>
-            <span class="historial-uso-roles__dot historial-uso-roles__dot--manana"></span>
-            <span class="historial-uso-roles__rol">Mañana (06:00–12:00)</span>
-            <span class="historial-uso-roles__count">{{ turno_manana }}</span>
-          </li>
-          {% endif %}
-          {% if turno_tarde %}
-          <li>
-            <span class="historial-uso-roles__dot historial-uso-roles__dot--tarde"></span>
-            <span class="historial-uso-roles__rol">Tarde (12:00–18:00)</span>
-            <span class="historial-uso-roles__count">{{ turno_tarde }}</span>
-          </li>
-          {% endif %}
-          {% if turno_noche %}
-          <li>
-            <span class="historial-uso-roles__dot historial-uso-roles__dot--noche"></span>
-            <span class="historial-uso-roles__rol">Noche (18:00–00:00)</span>
-            <span class="historial-uso-roles__count">{{ turno_noche }}</span>
-          </li>
-          {% endif %}
-          {% if turno_madrugada %}
-          <li>
-            <span class="historial-uso-roles__dot historial-uso-roles__dot--madrugada"></span>
-            <span class="historial-uso-roles__rol">Madrugada (00:00–06:00)</span>
-            <span class="historial-uso-roles__count">{{ turno_madrugada }}</span>
-          </li>
-          {% endif %}
-        </ul>
-      </div>
-    </details>
-
-    <!-- LÍNEA DE TIEMPO -->
-    <details class="card historial-uso-roles" id="detalleLineaTiempo">
-      <summary class="historial-uso-roles__summary">
-        <span class="historial-uso-roles__summary-text">
-          <span class="historial-uso-roles__title">Evolución de resultados</span>
-          <span class="historial-uso-roles__subtitle">% de glucemias en objetivo, hipo e hiperglucemia por semana</span>
-        </span>
-        <span class="historial-uso-roles__chevron" aria-hidden="true">▾</span>
-      </summary>
-      <div class="historial-lt__body">
-        <canvas id="chartLineaTiempo"></canvas>
-      </div>
-    </details>
-
-    <!-- TABLA / EXPORTACIÓN -->
-    <section class="card historial-tabla-panel">
+      <!-- TABLA / EXPORTACIÓN -->
+      <section class="card historial-tabla-panel">
       <div class="historial-tabla-panel__top">
         <div>
           <h2 class="historial-tabla-panel__title">Exportar reporte</h2>
@@ -229,14 +526,22 @@
           </thead>
           <tbody>
             {% for m in mediciones %}
-            <tr>
-              <td class="historial-table__fecha">{{ m.fecha_hora|date:"d/m/Y H:i" }}</td>
-              <td class="historial-table__usuario">{{ m.usuario.username }}</td>
-              <td class="historial-table__glucemia">
-                {{ m.glicemia_actual }} <span class="historial-table__unit">mg/dL</span>
+            <tr class="{% if 'hipogluc' in m.estado|lower %}row-hipo{% elif 'hipergluc' in m.estado|lower or 'encima' in m.estado|lower %}row-hiper{% endif %}">
+              <td class="historial-table__fecha" data-label="Fecha">{{ m.fecha_hora|date:"d/m/Y H:i" }}</td>
+              <td class="historial-table__usuario" data-label="Usuario">{{ m.usuario.username }}</td>
+              <td class="historial-table__glucemia" data-label="Glucemia">
+                {% if m.glicemia_actual < 70 %}
+                  <span class="gval gval--hipo">{{ m.glicemia_actual }} <span class="historial-table__unit">mg/dL</span></span>
+                {% elif m.glicemia_actual <= 110 %}
+                  <span class="gval gval--ok">{{ m.glicemia_actual }} <span class="historial-table__unit">mg/dL</span></span>
+                {% elif m.glicemia_actual <= 180 %}
+                  <span class="gval gval--alto">{{ m.glicemia_actual }} <span class="historial-table__unit">mg/dL</span></span>
+                {% else %}
+                  <span class="gval gval--hiper">{{ m.glicemia_actual }} <span class="historial-table__unit">mg/dL</span></span>
+                {% endif %}
               </td>
-              <td class="historial-table__modo">{{ m.get_modo_display }}</td>
-              <td>
+              <td class="historial-table__modo" data-label="Modo">{{ m.get_modo_display }}</td>
+              <td data-label="Estado">
                 {% if "en objetivo" in m.estado|lower %}
                   <span class="status-pill status-pill-ok">{{ m.estado }}</span>
                 {% elif "hipogluc" in m.estado|lower %}
@@ -247,8 +552,8 @@
                   <span class="status-pill status-pill-neutral">{{ m.estado }}</span>
                 {% endif %}
               </td>
-              <td class="historial-table__conducta">{{ m.conducta|safe }}</td>
-              <td class="historial-table__tendencia">{{ m.tendencia|default:"—" }}</td>
+              <td class="historial-table__conducta" data-label="Conducta">{{ m.conducta|safe }}</td>
+              <td class="historial-table__tendencia" data-label="Tendencia">{{ m.tendencia|default:"—" }}</td>
             </tr>
             {% empty %}
             <tr>
@@ -262,240 +567,334 @@
       {% if mediciones.paginator.num_pages > 1 %}
         <div class="pagination">
           {% if mediciones.has_previous %}
-            <a href="?page={{ mediciones.previous_page_number }}{% if usuario_seleccionado %}&usuario={{ usuario_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if clase_seleccionada %}&clase={{ clase_seleccionada }}{% endif %}{% if periodo_seleccionado %}&periodo={{ periodo_seleccionado }}{% endif %}{% if turno_seleccionado %}&turno={{ turno_seleccionado }}{% endif %}" class="btn">
-              ← Anterior
-            </a>
+            <a href="?page={{ mediciones.previous_page_number }}{% if usuario_seleccionado %}&usuario={{ usuario_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if clase_seleccionada %}&clase={{ clase_seleccionada }}{% endif %}{% if periodo_seleccionado %}&periodo={{ periodo_seleccionado }}{% endif %}{% if turno_seleccionado %}&turno={{ turno_seleccionado }}{% endif %}" class="page-link">← Ant</a>
+          {% else %}
+            <span class="page-link page-link--disabled">← Ant</span>
           {% endif %}
 
-          <span class="page-info">
-            Página {{ mediciones.number }} de {{ mediciones.paginator.num_pages }}
-          </span>
+          {% for i in mediciones.paginator.page_range %}
+            {% if i == mediciones.number %}
+              <span class="page-link page-link--active">{{ i }}</span>
+            {% elif i == 1 or i == mediciones.paginator.num_pages or i >= mediciones.number|add:"-2" and i <= mediciones.number|add:"2" %}
+              <a href="?page={{ i }}{% if usuario_seleccionado %}&usuario={{ usuario_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if clase_seleccionada %}&clase={{ clase_seleccionada }}{% endif %}{% if periodo_seleccionado %}&periodo={{ periodo_seleccionado }}{% endif %}{% if turno_seleccionado %}&turno={{ turno_seleccionado }}{% endif %}" class="page-link">{{ i }}</a>
+            {% elif i == mediciones.number|add:"-3" or i == mediciones.number|add:"3" %}
+              <span class="page-ellipsis">…</span>
+            {% endif %}
+          {% endfor %}
 
           {% if mediciones.has_next %}
-            <a href="?page={{ mediciones.next_page_number }}{% if usuario_seleccionado %}&usuario={{ usuario_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if clase_seleccionada %}&clase={{ clase_seleccionada }}{% endif %}{% if periodo_seleccionado %}&periodo={{ periodo_seleccionado }}{% endif %}{% if turno_seleccionado %}&turno={{ turno_seleccionado }}{% endif %}" class="btn">
-              Siguiente →
-            </a>
+            <a href="?page={{ mediciones.next_page_number }}{% if usuario_seleccionado %}&usuario={{ usuario_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if clase_seleccionada %}&clase={{ clase_seleccionada }}{% endif %}{% if periodo_seleccionado %}&periodo={{ periodo_seleccionado }}{% endif %}{% if turno_seleccionado %}&turno={{ turno_seleccionado }}{% endif %}" class="page-link">Sig →</a>
+          {% else %}
+            <span class="page-link page-link--disabled">Sig →</span>
           {% endif %}
+
+          <span class="page-info-chip">{{ mediciones.number }} / {{ mediciones.paginator.num_pages }}</span>
         </div>
       {% endif %}
     </section>
 
+    </div><!-- /htab-registros -->
+
+    <!-- ===================== TAB: MÉTRICAS ===================== -->
+    <div id="htab-metricas" class="htab-panel" hidden>
+      <div class="htab-metricas-wrap">
+
+        <!-- Resumen numérico -->
+        <div class="htab-metricas-resumen">
+          <div class="htab-resumen-card">
+            <p class="htab-resumen-card__label">Total</p>
+            <p class="htab-resumen-card__value">{{ total }}</p>
+          </div>
+          <div class="htab-resumen-card" style="border-color:rgba(248,113,113,0.3);">
+            <p class="htab-resumen-card__label" style="color:#f87171;">Hipoglucemias</p>
+            <p class="htab-resumen-card__value" style="color:#f87171;">{{ hipoglucemias }}</p>
+          </div>
+          <div class="htab-resumen-card" style="border-color:rgba(52,211,153,0.3);">
+            <p class="htab-resumen-card__label" style="color:#34d399;">En objetivo</p>
+            <p class="htab-resumen-card__value" style="color:#34d399;">{{ en_objetivo }}</p>
+          </div>
+          <div class="htab-resumen-card" style="border-color:rgba(251,191,36,0.3);">
+            <p class="htab-resumen-card__label" style="color:#fbbf24;">Hiperglucemias</p>
+            <p class="htab-resumen-card__value" style="color:#fbbf24;">{{ hiperglucemias }}</p>
+          </div>
+        </div>
+
+        <!-- Gráficos fila 1 -->
+        <div class="historial-charts-top">
+          <div class="card hchart">
+            <p class="hchart__title">Evolución de resultados</p>
+            <p class="hchart__sub">% en objetivo, hipo e hiperglucemia por semana</p>
+            <div style="position:relative;height:260px;width:100%;margin-top:14px;">
+              <canvas id="chartLineaTiempo"></canvas>
+            </div>
+          </div>
+          <div class="card hchart">
+            <p class="hchart__title">Distribución por rango de glucemia</p>
+            <p class="hchart__sub">Cantidad de mediciones por rango en mg/dL</p>
+            <div style="position:relative;height:260px;width:100%;margin-top:14px;">
+              <canvas id="chartRangos"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráficos fila 2 -->
+        <div class="historial-charts-bottom">
+          <div class="card hchart">
+            <p class="hchart__title">Uso por rol</p>
+            <p class="hchart__sub">Distribución según rol del usuario</p>
+            <div class="hchart__donut-wrap" style="margin-top:14px;">
+              <div style="position:relative;width:140px;height:140px;flex-shrink:0;">
+                <canvas id="chartUsoRoles"></canvas>
+              </div>
+              <ul class="hchart__leyenda">
+                {% if uso_medicos %}
+                <li><span class="hchart__dot" style="background:#60a5fa"></span><span class="hchart__lbl">Médicos</span><span class="hchart__cnt">{{ uso_medicos }}</span></li>
+                {% endif %}
+                {% if uso_enfermeria %}
+                <li><span class="hchart__dot" style="background:#34d399"></span><span class="hchart__lbl">Enfermería</span><span class="hchart__cnt">{{ uso_enfermeria }}</span></li>
+                {% endif %}
+                {% if uso_sin_grupo %}
+                <li><span class="hchart__dot" style="background:#9db3cc"></span><span class="hchart__lbl">Sin rol</span><span class="hchart__cnt">{{ uso_sin_grupo }}</span></li>
+                {% endif %}
+              </ul>
+            </div>
+          </div>
+
+          <div class="card hchart">
+            <p class="hchart__title">Distribución de estados</p>
+            <p class="hchart__sub">Hipoglucemia / En objetivo / Hiperglucemia</p>
+            <div class="hchart__donut-wrap" style="margin-top:14px;">
+              <div style="position:relative;width:140px;height:140px;flex-shrink:0;">
+                <canvas id="chartEstados"></canvas>
+              </div>
+              <ul class="hchart__leyenda">
+                <li><span class="hchart__dot" style="background:#f87171"></span><span class="hchart__lbl">Hipoglucemias</span><span class="hchart__cnt">{{ hipoglucemias }}</span></li>
+                <li><span class="hchart__dot" style="background:#34d399"></span><span class="hchart__lbl">En objetivo</span><span class="hchart__cnt">{{ en_objetivo }}</span></li>
+                <li><span class="hchart__dot" style="background:#fbbf24"></span><span class="hchart__lbl">Hiperglucemias</span><span class="hchart__cnt">{{ hiperglucemias }}</span></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="card hchart">
+            <p class="hchart__title">Distribución por turno</p>
+            <p class="hchart__sub">Mañana / Tarde / Noche / Madrugada</p>
+            <div class="hchart__donut-wrap" style="margin-top:14px;">
+              <div style="position:relative;width:140px;height:140px;flex-shrink:0;">
+                <canvas id="chartUsoTurnos"></canvas>
+              </div>
+              <ul class="hchart__leyenda">
+                {% if turno_manana %}<li><span class="hchart__dot" style="background:#fbbf24"></span><span class="hchart__lbl">Mañana (06–12)</span><span class="hchart__cnt">{{ turno_manana }}</span></li>{% endif %}
+                {% if turno_tarde %}<li><span class="hchart__dot" style="background:#f97316"></span><span class="hchart__lbl">Tarde (12–18)</span><span class="hchart__cnt">{{ turno_tarde }}</span></li>{% endif %}
+                {% if turno_noche %}<li><span class="hchart__dot" style="background:#818cf8"></span><span class="hchart__lbl">Noche (18–24)</span><span class="hchart__cnt">{{ turno_noche }}</span></li>{% endif %}
+                {% if turno_madrugada %}<li><span class="hchart__dot" style="background:#60a5fa"></span><span class="hchart__lbl">Madrugada (00–06)</span><span class="hchart__cnt">{{ turno_madrugada }}</span></li>{% endif %}
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /htab-metricas -->
+
+  </div>
+</div>
+
+<!-- MODAL DETALLE -->
+<div id="detalle-overlay" aria-hidden="true">
+  <div id="detalle-modal" role="dialog" aria-modal="true" aria-labelledby="detalle-titulo">
+    <div class="detalle-modal__header">
+      <span class="detalle-modal__accent" id="detalle-accent"></span>
+      <div class="detalle-modal__titles">
+        <p class="detalle-modal__title" id="detalle-titulo"></p>
+        <p class="detalle-modal__sub" id="detalle-subtitulo"></p>
+      </div>
+      <button type="button" class="detalle-modal__close" id="detalle-close" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="detalle-modal__body" id="detalle-body">
+      <div class="detalle-loading">Cargando…</div>
+    </div>
   </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
+{{ lt_labels|json_script:"d-lt-labels" }}
+{{ lt_objetivo|json_script:"d-lt-objetivo" }}
+{{ lt_hipo|json_script:"d-lt-hipo" }}
+{{ lt_hiper|json_script:"d-lt-hiper" }}
+{{ rango_labels|json_script:"d-rango-labels" }}
+{{ rango_datos|json_script:"d-rango-datos" }}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
+/* ---- MODAL ---- */
 (function () {
-  var medicos    = {{ uso_medicos }};
-  var enfermeria = {{ uso_enfermeria }};
-  var sinGrupo   = {{ uso_sin_grupo }};
+  var overlay  = document.getElementById('detalle-overlay');
+  var body     = document.getElementById('detalle-body');
+  var titulo   = document.getElementById('detalle-titulo');
+  var subtitulo = document.getElementById('detalle-subtitulo');
+  var accent   = document.getElementById('detalle-accent');
+  var closeBtn = document.getElementById('detalle-close');
 
-  var labels = [];
-  var datos  = [];
-  var colores = [];
+  var META = {
+    'total':         { label: 'Total de mediciones', desc: 'Todas las mediciones registradas', color: '#60a5fa' },
+    'hipoglucemia':  { label: 'Hipoglucemias',        desc: 'Valores críticos bajos',           color: '#f87171' },
+    'en_rango':      { label: 'En objetivo',           desc: 'Dentro del rango esperado',        color: '#34d399' },
+    'hiperglucemia': { label: 'Hiperglucemias',        desc: 'Valores por encima del objetivo',  color: '#fbbf24' },
+  };
 
-  if (medicos)    { labels.push("Médicos");          datos.push(medicos);    colores.push("#60a5fa"); }
-  if (enfermeria) { labels.push("Enfermería");       datos.push(enfermeria); colores.push("#34d399"); }
-  if (sinGrupo)   { labels.push("Sin rol asignado"); datos.push(sinGrupo);   colores.push("#9db3cc"); }
+  function abrir(clase) {
+    var info = META[clase] || META['total'];
+    titulo.textContent    = info.label;
+    subtitulo.textContent = info.desc;
+    accent.style.background = info.color;
+    body.innerHTML = '<div class="detalle-loading">Cargando…</div>';
+    overlay.classList.add('detalle-overlay--open');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
 
-  if (!datos.length) return;
-
-  var chartIniciado = false;
-
-  function iniciarChart() {
-    if (chartIniciado) return;
-    chartIniciado = true;
-    var ctx = document.getElementById("chartUsoRoles").getContext("2d");
-    new Chart(ctx, {
-      type: "doughnut",
-      data: {
-        labels: labels,
-        datasets: [{
-          data: datos,
-          backgroundColor: colores,
-          borderColor: "rgba(8, 24, 46, 0.9)",
-          borderWidth: 3,
-          hoverOffset: 6
-        }]
-      },
-      options: {
-        cutout: "68%",
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: function(ctx) {
-                var total = ctx.dataset.data.reduce(function(a, b) { return a + b; }, 0);
-                var pct = total ? Math.round(ctx.parsed / total * 100) : 0;
-                return " " + ctx.label + ": " + ctx.parsed + " (" + pct + "%)";
-              }
-            }
-          }
-        }
-      }
-    });
+    var url = '{% url "historial_detalle" %}' + (clase !== 'total' ? '?clase=' + encodeURIComponent(clase) : '');
+    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(function (r) { return r.text(); })
+      .then(function (html) { body.innerHTML = html; })
+      .catch(function () { body.innerHTML = '<p class="historial-empty">Error al cargar los datos.</p>'; });
   }
 
-  var detalle = document.getElementById("detalleUsoRoles");
-  detalle.addEventListener("toggle", function () {
-    if (detalle.open) iniciarChart();
-  });
-})();
-
-(function () {
-  var manana    = {{ turno_manana }};
-  var tarde     = {{ turno_tarde }};
-  var noche     = {{ turno_noche }};
-  var madrugada = {{ turno_madrugada }};
-
-  var labels  = [];
-  var datos   = [];
-  var colores = [];
-
-  if (manana)    { labels.push("Mañana (06–12)");     datos.push(manana);    colores.push("#fbbf24"); }
-  if (tarde)     { labels.push("Tarde (12–18)");      datos.push(tarde);     colores.push("#f97316"); }
-  if (noche)     { labels.push("Noche (18–24)");      datos.push(noche);     colores.push("#818cf8"); }
-  if (madrugada) { labels.push("Madrugada (00–06)");  datos.push(madrugada); colores.push("#334155"); }
-
-  if (!datos.length) return;
-
-  var chartIniciado = false;
-
-  function iniciarChart() {
-    if (chartIniciado) return;
-    chartIniciado = true;
-    var ctx = document.getElementById("chartUsoTurnos").getContext("2d");
-    new Chart(ctx, {
-      type: "doughnut",
-      data: {
-        labels: labels,
-        datasets: [{
-          data: datos,
-          backgroundColor: colores,
-          borderColor: "rgba(8, 24, 46, 0.9)",
-          borderWidth: 3,
-          hoverOffset: 6
-        }]
-      },
-      options: {
-        cutout: "68%",
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: function(ctx) {
-                var total = ctx.dataset.data.reduce(function(a, b) { return a + b; }, 0);
-                var pct = total ? Math.round(ctx.parsed / total * 100) : 0;
-                return " " + ctx.label + ": " + ctx.parsed + " (" + pct + "%)";
-              }
-            }
-          }
-        }
-      }
-    });
+  function cerrar() {
+    overlay.classList.remove('detalle-overlay--open');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
   }
 
-  var detalle = document.getElementById("detalleUsoTurnos");
-  detalle.addEventListener("toggle", function () {
-    if (detalle.open) iniciarChart();
+  document.querySelectorAll('[data-detalle]').forEach(function (el) {
+    el.addEventListener('click', function (e) { e.preventDefault(); abrir(el.dataset.detalle); });
   });
+  closeBtn.addEventListener('click', cerrar);
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) cerrar(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') cerrar(); });
 })();
 
-(function () {
-  var labels   = {{ lt_labels|safe }};
-  var objetivo = {{ lt_objetivo|safe }};
-  var hipo     = {{ lt_hipo|safe }};
-  var hiper    = {{ lt_hiper|safe }};
-
-  if (!labels.length) return;
-
-  var iniciado = false;
-
-  function iniciarChart() {
-    if (iniciado) return;
-    iniciado = true;
-    var ctx = document.getElementById("chartLineaTiempo").getContext("2d");
-    new Chart(ctx, {
-      type: "line",
+/* ---- Inicialización lazy de charts (se renderizan al abrir la card) ---- */
+var chartInits = {
+  chartLineaTiempo: function() {
+    var labels   = JSON.parse(document.getElementById('d-lt-labels').textContent);
+    var objetivo = JSON.parse(document.getElementById('d-lt-objetivo').textContent);
+    var hipo     = JSON.parse(document.getElementById('d-lt-hipo').textContent);
+    var hiper    = JSON.parse(document.getElementById('d-lt-hiper').textContent);
+    if (!labels.length) return;
+    new Chart(document.getElementById('chartLineaTiempo'), {
+      type: 'line',
       data: {
         labels: labels,
         datasets: [
-          {
-            label: "En objetivo (%)",
-            data: objetivo,
-            borderColor: "#34d399",
-            backgroundColor: "rgba(52,211,153,0.1)",
-            fill: true,
-            tension: 0.35,
-            pointRadius: 4,
-            pointHoverRadius: 6,
-            borderWidth: 2.5,
-          },
-          {
-            label: "Hiperglucemias (%)",
-            data: hiper,
-            borderColor: "#fbbf24",
-            backgroundColor: "rgba(251,191,36,0.07)",
-            fill: false,
-            tension: 0.35,
-            pointRadius: 4,
-            pointHoverRadius: 6,
-            borderWidth: 2,
-          },
-          {
-            label: "Hipoglucemias (%)",
-            data: hipo,
-            borderColor: "#f87171",
-            backgroundColor: "rgba(248,113,113,0.07)",
-            fill: false,
-            tension: 0.35,
-            pointRadius: 4,
-            pointHoverRadius: 6,
-            borderWidth: 2,
-          }
+          { label: 'En objetivo (%)',    data: objetivo, borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,0.1)',  fill: true,  tension: 0.35, pointRadius: 4, borderWidth: 2.5 },
+          { label: 'Hiperglucemias (%)', data: hiper,    borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.07)', fill: false, tension: 0.35, pointRadius: 4, borderWidth: 2   },
+          { label: 'Hipoglucemias (%)',  data: hipo,     borderColor: '#f87171', backgroundColor: 'rgba(248,113,113,0.07)',fill: false, tension: 0.35, pointRadius: 4, borderWidth: 2   }
         ]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: true,
+        responsive: true, maintainAspectRatio: false,
         scales: {
-          x: {
-            ticks: { color: "#9db3cc", font: { size: 11 } },
-            grid:  { color: "rgba(95,148,224,0.08)" }
-          },
-          y: {
-            min: 0,
-            max: 100,
-            ticks: {
-              color: "#9db3cc",
-              font: { size: 11 },
-              callback: function(v) { return v + "%"; }
-            },
-            grid: { color: "rgba(95,148,224,0.08)" }
-          }
+          x: { ticks: { color: '#9db3cc', font: { size: 11 } }, grid: { color: 'rgba(95,148,224,0.08)' } },
+          y: { min: 0, max: 100, ticks: { color: '#9db3cc', font: { size: 11 }, callback: function(v) { return v + '%'; } }, grid: { color: 'rgba(95,148,224,0.08)' } }
         },
         plugins: {
-          legend: {
-            labels: { color: "#d8e5f8", font: { size: 12 }, boxWidth: 14 }
-          },
-          tooltip: {
-            callbacks: {
-              label: function(ctx) {
-                return " " + ctx.dataset.label + ": " + ctx.parsed.y + "%";
-              }
-            }
-          }
+          legend: { labels: { color: '#d8e5f8', font: { size: 12 }, boxWidth: 14 } },
+          tooltip: { callbacks: { label: function(c) { return ' ' + c.dataset.label + ': ' + c.parsed.y + '%'; } } }
         }
       }
     });
+  },
+  chartRangos: function() {
+    var labels  = JSON.parse(document.getElementById('d-rango-labels').textContent);
+    var datos   = JSON.parse(document.getElementById('d-rango-datos').textContent);
+    var colores = ['#f87171', '#34d399', '#60a5fa', '#fbbf24', '#f97316'];
+    if (!datos.some(function(v) { return v > 0; })) return;
+    new Chart(document.getElementById('chartRangos'), {
+      type: 'bar',
+      data: { labels: labels, datasets: [{ data: datos, backgroundColor: colores, borderRadius: 6, borderSkipped: false }] },
+      options: {
+        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: function(c) { return ' ' + c.parsed.x + ' mediciones'; } } }
+        },
+        scales: {
+          x: { ticks: { color: '#9db3cc', font: { size: 11 } }, grid: { color: 'rgba(95,148,224,0.08)' } },
+          y: { ticks: { color: '#d8e5f8', font: { size: 13, weight: '700' } }, grid: { display: false } }
+        }
+      }
+    });
+  },
+  chartUsoRoles: function() {
+    var medicos    = {{ uso_medicos }};
+    var enfermeria = {{ uso_enfermeria }};
+    var sinGrupo   = {{ uso_sin_grupo }};
+    var labels = []; var datos = []; var colores = [];
+    if (medicos)    { labels.push('Médicos');         datos.push(medicos);    colores.push('#60a5fa'); }
+    if (enfermeria) { labels.push('Enfermería');      datos.push(enfermeria); colores.push('#34d399'); }
+    if (sinGrupo)   { labels.push('Sin rol asignado');     datos.push(sinGrupo);   colores.push('#9db3cc'); }
+    if (!datos.length) return;
+    new Chart(document.getElementById('chartUsoRoles'), {
+      type: 'doughnut',
+      data: { labels: labels, datasets: [{ data: datos, backgroundColor: colores, borderColor: 'rgba(8,24,46,0.9)', borderWidth: 3, hoverOffset: 6 }] },
+      options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { var t = c.dataset.data.reduce(function(a,b){return a+b;},0); return ' ' + c.label + ': ' + c.parsed + ' (' + (t ? Math.round(c.parsed/t*100) : 0) + '%)'; } } } } }
+    });
+  },
+  chartEstados: function() {
+    var hipo  = {{ hipoglucemias }};
+    var ok    = {{ en_objetivo }};
+    var hiper = {{ hiperglucemias }};
+    if (!hipo && !ok && !hiper) return;
+    new Chart(document.getElementById('chartEstados'), {
+      type: 'doughnut',
+      data: { labels: ['Hipoglucemias', 'En objetivo', 'Hiperglucemias'], datasets: [{ data: [hipo, ok, hiper], backgroundColor: ['#f87171', '#34d399', '#fbbf24'], borderColor: 'rgba(8,24,46,0.9)', borderWidth: 3, hoverOffset: 6 }] },
+      options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { var t = c.dataset.data.reduce(function(a,b){return a+b;},0); return ' ' + c.label + ': ' + c.parsed + ' (' + (t ? Math.round(c.parsed/t*100) : 0) + '%)'; } } } } }
+    });
+  },
+  chartUsoTurnos: function() {
+    var manana    = {{ turno_manana }};
+    var tarde     = {{ turno_tarde }};
+    var noche     = {{ turno_noche }};
+    var madrugada = {{ turno_madrugada }};
+    var labels = []; var datos = []; var colores = [];
+    if (manana)    { labels.push('Mañana (06–12)');    datos.push(manana);    colores.push('#fbbf24'); }
+    if (tarde)     { labels.push('Tarde (12–18)');           datos.push(tarde);     colores.push('#f97316'); }
+    if (noche)     { labels.push('Noche (18–24)');           datos.push(noche);     colores.push('#818cf8'); }
+    if (madrugada) { labels.push('Madrugada (00–06)');       datos.push(madrugada); colores.push('#60a5fa'); }
+    if (!datos.length) return;
+    new Chart(document.getElementById('chartUsoTurnos'), {
+      type: 'doughnut',
+      data: { labels: labels, datasets: [{ data: datos, backgroundColor: colores, borderColor: 'rgba(8,24,46,0.9)', borderWidth: 3, hoverOffset: 6 }] },
+      options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { var t = c.dataset.data.reduce(function(a,b){return a+b;},0); return ' ' + c.label + ': ' + c.parsed + ' (' + (t ? Math.round(c.parsed/t*100) : 0) + '%)'; } } } } }
+    });
+  }
+};
+var metricasIniciadas = false;
+
+/* ---- Tabs ---- */
+(function () {
+  var btns   = document.querySelectorAll('.htab-btn');
+  var panels = document.querySelectorAll('.htab-panel');
+
+  function activar(tab) {
+    btns.forEach(function(b) { b.classList.toggle('htab-btn--active', b.dataset.tab === tab); });
+    panels.forEach(function(p) { p.hidden = (p.id !== 'htab-' + tab); });
+    try { var u = new URL(window.location); u.searchParams.set('tab', tab); history.replaceState(null, '', u); } catch(e) {}
+    if (tab === 'metricas' && !metricasIniciadas) {
+      metricasIniciadas = true;
+      setTimeout(function() {
+        Object.keys(chartInits).forEach(function(id) { try { chartInits[id](); } catch(e) {} });
+      }, 50);
+    }
   }
 
-  var detalle = document.getElementById("detalleLineaTiempo");
-  detalle.addEventListener("toggle", function () {
-    if (detalle.open) iniciarChart();
+  btns.forEach(function(btn) {
+    btn.addEventListener('click', function() { activar(btn.dataset.tab); });
   });
+
+  /* Leer tab inicial de la URL */
+  var tabInicial = 'registros';
+  try { tabInicial = new URLSearchParams(window.location.search).get('tab') || 'registros'; } catch(e) {}
+  activar(tabInicial);
 })();
 </script>
 {% endblock %}

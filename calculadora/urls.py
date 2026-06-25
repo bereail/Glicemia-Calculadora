@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path("", views.control_glicemia, name="control_glicemia"),
     path("historial/", views.historial, name="historial"),
+    path("historial/detalle/", views.historial_detalle, name="historial_detalle"),
     path(
         "historial/exportar/excel/",
         views.exportar_historial_excel,

@@ -323,6 +323,15 @@ def historial(request):
         lt_hipo.append(round(d["hipo"] / t * 100, 1))
         lt_hiper.append(round(d["hiper"] / t * 100, 1))
 
+    rango_labels = ["< 70", "70–110", "111–140", "141–180", "> 180"]
+    rango_datos = [
+        mediciones_qs.filter(glicemia_actual__lt=70).count(),
+        mediciones_qs.filter(glicemia_actual__gte=70,  glicemia_actual__lte=110).count(),
+        mediciones_qs.filter(glicemia_actual__gt=110,  glicemia_actual__lte=140).count(),
+        mediciones_qs.filter(glicemia_actual__gt=140,  glicemia_actual__lte=180).count(),
+        mediciones_qs.filter(glicemia_actual__gt=180).count(),
+    ]
+
     paginator = Paginator(mediciones_qs, 5)
     page_number = request.GET.get("page")
     mediciones = paginator.get_page(page_number)
@@ -364,6 +373,9 @@ def historial(request):
             "post_hipoglucemias": post_hipoglucemias,
             "en_objetivo": en_objetivo,
             "hiperglucemias": hiperglucemias,
+            "pct_hipo":  round(hipoglucemias  / (total or 1) * 100, 1),
+            "pct_ok":    round(en_objetivo     / (total or 1) * 100, 1),
+            "pct_hiper": round(hiperglucemias  / (total or 1) * 100, 1),
             "uso_medicos": uso_medicos,
             "uso_enfermeria": uso_enfermeria,
             "uso_sin_grupo": uso_sin_grupo,
@@ -371,12 +383,35 @@ def historial(request):
             "turno_tarde": turnos["tarde"],
             "turno_noche": turnos["noche"],
             "turno_madrugada": turnos["madrugada"],
-            "lt_labels": json.dumps(lt_labels),
-            "lt_objetivo": json.dumps(lt_objetivo),
-            "lt_hipo": json.dumps(lt_hipo),
-            "lt_hiper": json.dumps(lt_hiper),
+            "lt_labels": lt_labels,
+            "lt_objetivo": lt_objetivo,
+            "lt_hipo": lt_hipo,
+            "lt_hiper": lt_hiper,
+            "rango_labels": rango_labels,
+            "rango_datos": rango_datos,
         },
     )
+
+
+@login_required
+@user_passes_test(tiene_acceso_historial, login_url="/login/")
+def historial_detalle(request):
+    clase = request.GET.get("clase", "").strip()
+    LIMITE = 200
+
+    qs = MedicionGlucemia.objects.select_related("usuario").order_by("-fecha_hora")
+    if clase:
+        qs = qs.filter(clase=clase)
+
+    total_clase = qs.count()
+    mediciones = list(qs[:LIMITE])
+
+    return render(request, "calculadora/partials/detalle_clase.html", {
+        "mediciones": mediciones,
+        "total_clase": total_clase,
+        "hay_mas": total_clase > LIMITE,
+        "clase": clase,
+    })
 
 
 @login_required
