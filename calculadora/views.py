@@ -60,6 +60,7 @@ def tiene_acceso_historial(user):
     return user.is_authenticated and (
         user.is_superuser
         or user.username == "metanutric"
+        or user.groups.filter(name="Historial").exists()
     )
 
 
@@ -210,7 +211,7 @@ def control_glicemia(request):
         {
             "form": form,
             "resultado": resultado,
-            "medicion_guardada": None,
+            "medicion_guardada": resultado is not None,
             "es_medico": request.user.groups.filter(name="Medicos").exists(),
         },
     )
@@ -226,11 +227,14 @@ _TURNOS = {
 
 
 def _filtrar_mediciones_desde_request(request):
+    from datetime import datetime as dt
     usuario = request.GET.get("usuario", "").strip()
     estado = request.GET.get("estado", "").strip()
     clase = request.GET.get("clase", "").strip()
     periodo = request.GET.get("periodo", "").strip().lower()
     turno = request.GET.get("turno", "").strip().lower()
+    fecha_desde_str = request.GET.get("fecha_desde", "").strip()
+    fecha_hasta_str = request.GET.get("fecha_hasta", "").strip()
 
     mediciones = (
         MedicionGlucemia.objects.select_related("usuario")
@@ -247,14 +251,30 @@ def _filtrar_mediciones_desde_request(request):
     if clase:
         mediciones = mediciones.filter(clase=clase)
 
-    ahora = timezone.now()
+    # Filtro por rango de fechas (tiene precedencia sobre período)
+    if fecha_desde_str:
+        try:
+            desde = timezone.make_aware(dt.strptime(fecha_desde_str, "%Y-%m-%d"))
+            mediciones = mediciones.filter(fecha_hora__gte=desde)
+        except ValueError:
+            fecha_desde_str = ""
 
-    if periodo == "semanal":
-        desde = ahora - timedelta(days=7)
-        mediciones = mediciones.filter(fecha_hora__gte=desde)
-    elif periodo == "mensual":
-        desde = ahora - timedelta(days=30)
-        mediciones = mediciones.filter(fecha_hora__gte=desde)
+    if fecha_hasta_str:
+        try:
+            hasta = timezone.make_aware(
+                dt.strptime(fecha_hasta_str, "%Y-%m-%d") + timedelta(days=1)
+            )
+            mediciones = mediciones.filter(fecha_hora__lt=hasta)
+        except ValueError:
+            fecha_hasta_str = ""
+
+    # Período preestablecido (solo si no hay fecha manual)
+    if not fecha_desde_str and not fecha_hasta_str:
+        ahora = timezone.now()
+        if periodo == "semanal":
+            mediciones = mediciones.filter(fecha_hora__gte=ahora - timedelta(days=7))
+        elif periodo == "mensual":
+            mediciones = mediciones.filter(fecha_hora__gte=ahora - timedelta(days=30))
 
     if turno and turno in _TURNOS:
         h_ini, h_fin = _TURNOS[turno]
@@ -264,7 +284,7 @@ def _filtrar_mediciones_desde_request(request):
         ]
         mediciones = mediciones.filter(pk__in=ids)
 
-    return mediciones, usuario, estado, clase, periodo, turno
+    return mediciones, usuario, estado, clase, periodo, turno, fecha_desde_str, fecha_hasta_str
 
 
 @login_required
@@ -277,6 +297,8 @@ def historial(request):
         clase_seleccionada,
         periodo,
         turno_seleccionado,
+        fecha_desde_seleccionada,
+        fecha_hasta_seleccionada,
     ) = _filtrar_mediciones_desde_request(request)
 
     total = mediciones_qs.count()
@@ -368,6 +390,8 @@ def historial(request):
             "clase_seleccionada": clase_seleccionada,
             "periodo_seleccionado": periodo,
             "turno_seleccionado": turno_seleccionado,
+            "fecha_desde_seleccionada": fecha_desde_seleccionada,
+            "fecha_hasta_seleccionada": fecha_hasta_seleccionada,
             "total": total,
             "hipoglucemias": hipoglucemias,
             "post_hipoglucemias": post_hipoglucemias,
@@ -417,7 +441,7 @@ def historial_detalle(request):
 @login_required
 @user_passes_test(tiene_acceso_historial, login_url="/login/")
 def exportar_historial_excel(request):
-    mediciones, usuario, estado, clase, periodo, turno = _filtrar_mediciones_desde_request(
+    mediciones, usuario, estado, clase, periodo, turno, *_ = _filtrar_mediciones_desde_request(
         request
     )
 
@@ -520,7 +544,7 @@ def exportar_historial_pdf(request):
     from reportlab.lib.units import mm
     from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
-    mediciones, usuario, estado, clase, periodo, turno = _filtrar_mediciones_desde_request(
+    mediciones, usuario, estado, clase, periodo, turno, *_ = _filtrar_mediciones_desde_request(
         request
     )
 

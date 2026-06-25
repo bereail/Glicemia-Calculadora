@@ -433,9 +433,23 @@
           <label for="periodo" class="label">Período</label>
           <select name="periodo" id="periodo">
             <option value="" {% if not periodo_seleccionado %}selected{% endif %}>Completo</option>
-            <option value="semanal" {% if periodo_seleccionado == "semanal" %}selected{% endif %}>Semanal</option>
-            <option value="mensual" {% if periodo_seleccionado == "mensual" %}selected{% endif %}>Mensual</option>
+            <option value="semanal" {% if periodo_seleccionado == "semanal" %}selected{% endif %}>Últimos 7 días</option>
+            <option value="mensual" {% if periodo_seleccionado == "mensual" %}selected{% endif %}>Últimos 30 días</option>
           </select>
+        </div>
+
+        <div class="historial-filtros__field">
+          <label for="fecha_desde" class="label">Desde</label>
+          <input type="date" name="fecha_desde" id="fecha_desde"
+                 value="{{ fecha_desde_seleccionada }}"
+                 style="color-scheme:dark;">
+        </div>
+
+        <div class="historial-filtros__field">
+          <label for="fecha_hasta" class="label">Hasta</label>
+          <input type="date" name="fecha_hasta" id="fecha_hasta"
+                 value="{{ fecha_hasta_seleccionada }}"
+                 style="color-scheme:dark;">
         </div>
 
         <div class="historial-filtros__field">
@@ -503,10 +517,10 @@
           <p class="historial-tabla-panel__subtitle">Descargá el historial filtrado en Excel o PDF.</p>
         </div>
         <div class="historial-export-actions">
-          <a href="{% url 'exportar_historial_excel' %}?periodo={{ periodo_seleccionado }}&usuario={{ usuario_seleccionado }}&estado={{ estado_seleccionado }}&turno={{ turno_seleccionado }}" class="btn">
+          <a href="{% url 'exportar_historial_excel' %}?periodo={{ periodo_seleccionado }}&usuario={{ usuario_seleccionado }}&estado={{ estado_seleccionado }}&turno={{ turno_seleccionado }}{% if fecha_desde_seleccionada %}&fecha_desde={{ fecha_desde_seleccionada }}{% endif %}{% if fecha_hasta_seleccionada %}&fecha_hasta={{ fecha_hasta_seleccionada }}{% endif %}" class="btn">
             Exportar Excel
           </a>
-          <a href="{% url 'exportar_historial_pdf' %}?periodo={{ periodo_seleccionado }}&usuario={{ usuario_seleccionado }}&estado={{ estado_seleccionado }}&turno={{ turno_seleccionado }}" class="btn">
+          <a href="{% url 'exportar_historial_pdf' %}?periodo={{ periodo_seleccionado }}&usuario={{ usuario_seleccionado }}&estado={{ estado_seleccionado }}&turno={{ turno_seleccionado }}{% if fecha_desde_seleccionada %}&fecha_desde={{ fecha_desde_seleccionada }}{% endif %}{% if fecha_hasta_seleccionada %}&fecha_hasta={{ fecha_hasta_seleccionada }}{% endif %}" class="btn">
             Exportar PDF
           </a>
         </div>
@@ -567,7 +581,7 @@
       {% if mediciones.paginator.num_pages > 1 %}
         <div class="pagination">
           {% if mediciones.has_previous %}
-            <a href="?page={{ mediciones.previous_page_number }}{% if usuario_seleccionado %}&usuario={{ usuario_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if clase_seleccionada %}&clase={{ clase_seleccionada }}{% endif %}{% if periodo_seleccionado %}&periodo={{ periodo_seleccionado }}{% endif %}{% if turno_seleccionado %}&turno={{ turno_seleccionado }}{% endif %}" class="page-link">← Ant</a>
+            <a href="?page={{ mediciones.previous_page_number }}{% if usuario_seleccionado %}&usuario={{ usuario_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if clase_seleccionada %}&clase={{ clase_seleccionada }}{% endif %}{% if periodo_seleccionado %}&periodo={{ periodo_seleccionado }}{% endif %}{% if turno_seleccionado %}&turno={{ turno_seleccionado }}{% endif %}{% if fecha_desde_seleccionada %}&fecha_desde={{ fecha_desde_seleccionada }}{% endif %}{% if fecha_hasta_seleccionada %}&fecha_hasta={{ fecha_hasta_seleccionada }}{% endif %}" class="page-link">← Ant</a>
           {% else %}
             <span class="page-link page-link--disabled">← Ant</span>
           {% endif %}
@@ -576,14 +590,14 @@
             {% if i == mediciones.number %}
               <span class="page-link page-link--active">{{ i }}</span>
             {% elif i == 1 or i == mediciones.paginator.num_pages or i >= mediciones.number|add:"-2" and i <= mediciones.number|add:"2" %}
-              <a href="?page={{ i }}{% if usuario_seleccionado %}&usuario={{ usuario_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if clase_seleccionada %}&clase={{ clase_seleccionada }}{% endif %}{% if periodo_seleccionado %}&periodo={{ periodo_seleccionado }}{% endif %}{% if turno_seleccionado %}&turno={{ turno_seleccionado }}{% endif %}" class="page-link">{{ i }}</a>
+              <a href="?page={{ i }}{% if usuario_seleccionado %}&usuario={{ usuario_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if clase_seleccionada %}&clase={{ clase_seleccionada }}{% endif %}{% if periodo_seleccionado %}&periodo={{ periodo_seleccionado }}{% endif %}{% if turno_seleccionado %}&turno={{ turno_seleccionado }}{% endif %}{% if fecha_desde_seleccionada %}&fecha_desde={{ fecha_desde_seleccionada }}{% endif %}{% if fecha_hasta_seleccionada %}&fecha_hasta={{ fecha_hasta_seleccionada }}{% endif %}" class="page-link">{{ i }}</a>
             {% elif i == mediciones.number|add:"-3" or i == mediciones.number|add:"3" %}
               <span class="page-ellipsis">…</span>
             {% endif %}
           {% endfor %}
 
           {% if mediciones.has_next %}
-            <a href="?page={{ mediciones.next_page_number }}{% if usuario_seleccionado %}&usuario={{ usuario_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if clase_seleccionada %}&clase={{ clase_seleccionada }}{% endif %}{% if periodo_seleccionado %}&periodo={{ periodo_seleccionado }}{% endif %}{% if turno_seleccionado %}&turno={{ turno_seleccionado }}{% endif %}" class="page-link">Sig →</a>
+            <a href="?page={{ mediciones.next_page_number }}{% if usuario_seleccionado %}&usuario={{ usuario_seleccionado }}{% endif %}{% if estado_seleccionado %}&estado={{ estado_seleccionado }}{% endif %}{% if clase_seleccionada %}&clase={{ clase_seleccionada }}{% endif %}{% if periodo_seleccionado %}&periodo={{ periodo_seleccionado }}{% endif %}{% if turno_seleccionado %}&turno={{ turno_seleccionado }}{% endif %}{% if fecha_desde_seleccionada %}&fecha_desde={{ fecha_desde_seleccionada }}{% endif %}{% if fecha_hasta_seleccionada %}&fecha_hasta={{ fecha_hasta_seleccionada }}{% endif %}" class="page-link">Sig →</a>
           {% else %}
             <span class="page-link page-link--disabled">Sig →</span>
           {% endif %}
@@ -723,7 +737,7 @@
 {{ lt_hiper|json_script:"d-lt-hiper" }}
 {{ rango_labels|json_script:"d-rango-labels" }}
 {{ rango_datos|json_script:"d-rango-datos" }}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="{% static 'calculadora/js/chart.umd.min.js' %}"></script>
 <script>
 /* ---- MODAL ---- */
 (function () {
