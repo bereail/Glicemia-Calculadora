@@ -1,0 +1,316 @@
+{% extends "calculadora/base.html" %}
+{% load static %}
+
+{% block title %}Análisis{% if usuario %} — {{ usuario }}{% endif %}{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'calculadora/css/analisis.css' %}?v=20260619-4">
+{% endblock %}
+
+{% block content %}
+<div class="app-shell">
+<div class="an">
+
+  {# ── Header ───────────────────────────────────────────── #}
+  <header class="an-header card">
+    <div class="an-header__left">
+      <a href="{% url 'historial' %}{% if usuario %}?usuario={{ usuario }}{% endif %}" class="an-back">&#8592; Historial</a>
+      {% if usuario and not sin_usuario and not sin_datos %}
+        <h1 class="an-title">{{ usuario }}</h1>
+        <p class="an-meta">{{ fecha_inicio|date:"d/m/Y H:i" }} &mdash; {{ fecha_ultimo|date:"d/m/Y H:i" }} &middot; {{ total }} controles</p>
+      {% else %}
+        <h1 class="an-title">Análisis de Resultados</h1>
+      {% endif %}
+    </div>
+    <form method="get" class="an-selector">
+      <select name="usuario">
+        <option value="">Seleccionar paciente...</option>
+        {% for u in usuarios %}
+          <option value="{{ u }}" {% if usuario == u %}selected{% endif %}>{{ u }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn primary">Ver</button>
+    </form>
+  </header>
+
+  {% if sin_usuario or sin_datos %}
+  <div class="an-empty card">
+    {% if sin_usuario %}Seleccioná un paciente para ver el análisis.
+    {% else %}Sin mediciones registradas para <strong>{{ usuario }}</strong>.{% endif %}
+  </div>
+  {% else %}
+
+  {# ══════════════════════════════════════════════════════
+     FILA 1 — 4 métricas principales (estilo Clarity)
+  ══════════════════════════════════════════════════════ #}
+  <div class="an-stats">
+
+    {# Tiempo en rango — la métrica hero #}
+    <div class="an-stat an-stat--hero">
+      <p class="an-stat__label">Tiempo en rango</p>
+      <div class="an-stat__ring-wrap">
+        <svg class="an-stat__ring-svg" viewBox="0 0 120 120" aria-hidden="true">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="12"/>
+          <circle cx="60" cy="60" r="50" fill="none"
+                  stroke="{% if pct_en_rango >= 75 %}#34d399{% elif pct_en_rango >= 50 %}#fbbf24{% else %}#f97316{% endif %}"
+                  stroke-width="12"
+                  stroke-linecap="butt"
+                  pathLength="100"
+                  stroke-dasharray="0 100"
+                  transform="rotate(-90 60 60)"
+                  class="an-ring-arc" data-pct="{{ pct_en_rango }}"/>
+        </svg>
+        <div class="an-stat__ring-inner">
+          <span class="an-stat__big {% if pct_en_rango >= 75 %}an-c-verde{% elif pct_en_rango >= 50 %}an-c-amarillo{% else %}an-c-naranja{% endif %}">{{ pct_en_rango }}<span class="an-stat__pct">%</span></span>
+          <span class="an-stat__sub">140–200 mg/dL</span>
+        </div>
+      </div>
+    </div>
+
+    {# Glucemia actual #}
+    <div class="an-stat">
+      <p class="an-stat__label">Glucemia actual</p>
+      <p class="an-stat__big {% if glicemia_ultima >= 140 and glicemia_ultima <= 200 %}an-c-verde{% elif glicemia_ultima < 70 %}an-c-azul{% elif glicemia_ultima > 300 %}an-c-rojo{% endif %}">
+        {{ glicemia_ultima }}<span class="an-stat__unit">mg/dL</span>
+      </p>
+      <p class="an-stat__sub">
+        {% if glicemia_ultima >= 140 and glicemia_ultima <= 200 %}En objetivo
+        {% elif glicemia_ultima < 70 %}Hipoglucemia
+        {% elif glicemia_ultima > 300 %}Nivel crítico
+        {% elif glicemia_ultima > 200 %}Por encima del objetivo
+        {% else %}Por debajo del objetivo{% endif %}
+      </p>
+    </div>
+
+    {# Tiempo hasta objetivo #}
+    <div class="an-stat">
+      <p class="an-stat__label">Tiempo hasta objetivo</p>
+      <p class="an-stat__big {% if tiempo_hasta_objetivo %}an-c-verde{% endif %}">
+        {% if tiempo_hasta_objetivo %}{{ tiempo_hasta_objetivo }}{% else %}&mdash;{% endif %}
+      </p>
+      <p class="an-stat__sub">
+        {% if tiempo_hasta_objetivo %}desde inicio del protocolo
+        {% else %}objetivo aún no alcanzado{% endif %}
+      </p>
+    </div>
+
+    {# Reducción #}
+    <div class="an-stat">
+      <p class="an-stat__label">Reducción</p>
+      <p class="an-stat__big {% if reduccion_signo == '↓' %}an-c-verde{% elif reduccion_signo == '↑' %}an-c-rojo{% endif %}">
+        {{ reduccion_signo }} {{ reduccion_pct }}<span class="an-stat__pct">%</span>
+      </p>
+      <p class="an-stat__sub">de {{ glicemia_inicial }} a {{ glicemia_ultima }} mg/dL</p>
+    </div>
+
+  </div>
+
+  {# ══════════════════════════════════════════════════════
+     BARRA TIR — firma visual de Clarity
+  ══════════════════════════════════════════════════════ #}
+  <div class="an-tir card">
+    <p class="an-tir__title">Distribución de glucemia</p>
+    <div class="an-tir__bar">
+      {% if pct_hipo > 0 %}
+      <div class="an-tir__seg an-tir__seg--hipo" style="flex: {{ pct_hipo }}">
+        <span class="an-tir__pct">{{ pct_hipo }}%</span>
+        <span class="an-tir__zone">&lt;70</span>
+      </div>
+      {% endif %}
+      {% if pct_bajo > 0 %}
+      <div class="an-tir__seg an-tir__seg--bajo" style="flex: {{ pct_bajo }}">
+        {% if pct_bajo >= 8 %}<span class="an-tir__pct">{{ pct_bajo }}%</span>
+        <span class="an-tir__zone">70–139</span>{% endif %}
+      </div>
+      {% endif %}
+      {% if pct_en_rango > 0 %}
+      <div class="an-tir__seg an-tir__seg--ok" style="flex: {{ pct_en_rango }}">
+        <span class="an-tir__pct">{{ pct_en_rango }}%</span>
+        <span class="an-tir__zone">140–200 mg/dL</span>
+      </div>
+      {% endif %}
+      {% if pct_alto > 0 %}
+      <div class="an-tir__seg an-tir__seg--alto" style="flex: {{ pct_alto }}">
+        {% if pct_alto >= 8 %}<span class="an-tir__pct">{{ pct_alto }}%</span>
+        <span class="an-tir__zone">201–300</span>{% endif %}
+      </div>
+      {% endif %}
+      {% if pct_critico > 0 %}
+      <div class="an-tir__seg an-tir__seg--critico" style="flex: {{ pct_critico }}">
+        {% if pct_critico >= 8 %}<span class="an-tir__pct">{{ pct_critico }}%</span>
+        <span class="an-tir__zone">&gt;300</span>{% endif %}
+      </div>
+      {% endif %}
+    </div>
+    <div class="an-tir__legend">
+      {% if pct_hipo > 0 %}<span class="an-tir__litem an-tir__litem--hipo">Hipoglucemia &lt;70</span>{% endif %}
+      {% if pct_bajo > 0 %}<span class="an-tir__litem an-tir__litem--bajo">Bajo objetivo 70–139</span>{% endif %}
+      <span class="an-tir__litem an-tir__litem--ok">En objetivo 140–200</span>
+      {% if pct_alto > 0 %}<span class="an-tir__litem an-tir__litem--alto">Elevado 201–300</span>{% endif %}
+      {% if pct_critico > 0 %}<span class="an-tir__litem an-tir__litem--critico">Crítico &gt;300</span>{% endif %}
+    </div>
+  </div>
+
+  {# ══════════════════════════════════════════════════════
+     GRÁFICO — protagonista
+  ══════════════════════════════════════════════════════ #}
+  <section class="an-chart card">
+    <canvas id="chartEvoGluc" class="an-canvas"></canvas>
+  </section>
+
+  {# ══════════════════════════════════════════════════════
+     FILA INFERIOR — métricas de impacto
+  ══════════════════════════════════════════════════════ #}
+  <div class="an-impact">
+
+    <div class="an-imp">
+      <span class="an-imp__n">{{ glicemia_inicial }}</span>
+      <span class="an-imp__u">mg/dL</span>
+      <span class="an-imp__l">Glucemia inicial</span>
+    </div>
+
+    <div class="an-imp">
+      <span class="an-imp__n an-c-verde">{{ glicemia_ultima }}</span>
+      <span class="an-imp__u">mg/dL</span>
+      <span class="an-imp__l">Glucemia actual</span>
+    </div>
+
+    <div class="an-imp">
+      <span class="an-imp__n">{{ promedio_glucemia }}</span>
+      <span class="an-imp__u">mg/dL</span>
+      <span class="an-imp__l">Promedio</span>
+    </div>
+
+    <div class="an-imp">
+      <span class="an-imp__n {% if hipoglucemia_cnt == 0 %}an-c-verde{% else %}an-c-azul{% endif %}">{{ hipoglucemia_cnt }}</span>
+      <span class="an-imp__l">Hipoglucemias</span>
+    </div>
+
+    <div class="an-imp">
+      <span class="an-imp__n">{{ total }}</span>
+      <span class="an-imp__l">Controles</span>
+    </div>
+
+  </div>
+
+  {% endif %}
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+{% if not sin_usuario and not sin_datos %}
+<script src="{% static 'calculadora/js/chart.umd.min.js' %}"></script>
+<script>
+(function () {
+  /* ── Ring arc animation ──────────────────────────── */
+  const arc = document.querySelector('.an-ring-arc');
+  if (arc) {
+    const pct = parseFloat(arc.dataset.pct) || 0;
+    requestAnimationFrame(() => {
+      arc.style.transition = 'stroke-dasharray 1.1s cubic-bezier(.4,0,.2,1)';
+      requestAnimationFrame(() => arc.setAttribute('stroke-dasharray', `${pct} 100`));
+    });
+  }
+
+  /* ── Gráfico ─────────────────────────────────────── */
+  function glucColor(v) {
+    if (v < 70)   return '#60a5fa';
+    if (v < 140)  return '#94a3b8';
+    if (v <= 200) return '#34d399';
+    if (v <= 300) return '#fbbf24';
+    if (v <= 360) return '#f97316';
+    return '#ef4444';
+  }
+
+  const G  = 'rgba(255,255,255,0.045)';
+  const TC = '#7d9bb8';
+  const evoLabels = {{ evo_labels|safe }};
+  const evoData   = {{ evo_data|safe }};
+  const n = evoData.length;
+
+  new Chart(document.getElementById('chartEvoGluc'), {
+    type: 'line',
+    data: {
+      labels: evoLabels,
+      datasets: [
+        /* Banda objetivo rellena */
+        {
+          label: '_sup',
+          data: Array(n).fill(200),
+          borderColor: 'rgba(52,211,153,0.25)',
+          borderDash: [6,4], pointRadius: 0, borderWidth: 1.5,
+          fill: { target: { value: 140 }, above: 'rgba(52,211,153,0.055)', below: 'transparent' },
+          tension: 0, order: 3,
+        },
+        {
+          label: '_inf',
+          data: Array(n).fill(140),
+          borderColor: 'rgba(52,211,153,0.25)',
+          borderDash: [6,4], pointRadius: 0, borderWidth: 1.5,
+          fill: false, tension: 0, order: 3,
+        },
+        /* Línea hipoglucemia */
+        {
+          label: '_hipo',
+          data: Array(n).fill(70),
+          borderColor: 'rgba(96,165,250,0.3)',
+          borderDash: [4,4], pointRadius: 0, borderWidth: 1,
+          fill: false, tension: 0, order: 3,
+        },
+        /* Línea principal — coloreada por segmento */
+        {
+          label: 'Glucemia',
+          data: evoData,
+          borderColor: 'rgba(148,163,184,0.3)',
+          segment: {
+            borderColor: ctx => glucColor(ctx.p1.parsed.y),
+          },
+          tension: 0.3,
+          pointRadius: n > 30 ? 4 : 6,
+          pointHoverRadius: 9,
+          pointBackgroundColor: evoData.map(glucColor),
+          pointBorderColor: 'rgba(8,18,42,0.4)',
+          pointBorderWidth: 1.5,
+          borderWidth: 2.5,
+          fill: false, order: 1,
+        },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          filter: i => i.dataset.label === 'Glucemia',
+          callbacks: {
+            title: i => i[0].label,
+            label: i => ` ${i.parsed.y} mg/dL`,
+            labelColor: i => ({
+              backgroundColor: glucColor(i.parsed.y),
+              borderColor: 'transparent',
+              borderRadius: 3,
+            }),
+          },
+        },
+      },
+      scales: {
+        x: {
+          grid: { color: G },
+          ticks: { color: TC, font: { size: 10 }, maxRotation: 45, maxTicksLimit: 14 },
+        },
+        y: {
+          grid: { color: G },
+          ticks: { color: TC, font: { size: 11 }, callback: v => v + ' mg/dL' },
+          min: 40,
+          suggestedMax: Math.max(...evoData) + 40,
+        },
+      },
+    },
+  });
+})();
+</script>
+{% endif %}
+{% endblock %}

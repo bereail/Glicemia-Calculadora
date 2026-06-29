@@ -392,6 +392,19 @@
     .htab-resumen-card__label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #8ea3c2; margin: 0 0 4px; }
     .htab-resumen-card__value { font-size: 1.7rem; font-weight: 900; color: #fff; margin: 0; line-height: 1; }
     @media (max-width: 700px) { .htab-metricas-resumen { grid-template-columns: repeat(2,1fr); } }
+
+    /* ── Responsive: overrides para mobile (anulan los !important de desktop) ── */
+    @media (max-width: 768px) {
+      .historial-filtros     { padding: 14px !important; }
+      .historial-tabla-panel { padding: 14px !important; }
+      .historial-filtros__grid { gap: 10px !important; }
+      .htab-nav  { width: 100%; }
+      .htab-btn  { flex: 1; padding: 8px 10px; text-align: center; font-size: 0.82rem; }
+    }
+    @media (max-width: 520px) {
+      .historial-metrica { padding: 14px !important; border-radius: 14px !important; }
+      .historial-metrica__value { font-size: 1.7rem !important; }
+    }
   </style>
 {% endblock %}
 
