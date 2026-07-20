@@ -13,7 +13,7 @@ SECRET_KEY = os.environ.get(
     "solo-local-no-produccion",
 )
 
-DEBUG = os.environ.get("DJANGO_DEBUG", "False") == "True"
+DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
 
 
 ALLOWED_HOSTS = os.environ.get(
