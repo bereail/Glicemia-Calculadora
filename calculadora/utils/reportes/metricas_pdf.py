@@ -46,7 +46,7 @@ def generar_pdf_metricas(metricas: dict, filtros: dict) -> bytes:
     else:
         y = _dibujar_kpis(c, MARGEN, y, cw, metricas)
         y -= 6 * mm
-        y = _dibujar_donuts(c, MARGEN, y, cw, metricas, alto_card=52 * mm)
+        y = _dibujar_donuts(c, MARGEN, y, cw, metricas, alto_card=64 * mm)
         y -= 6 * mm
         y = _dibujar_evolucion_y_rangos(c, MARGEN, y, cw, metricas, alto_card=56 * mm)
         y -= 6 * mm
@@ -208,7 +208,7 @@ def _leyenda_donut(c, x, y_top, w, items):
     return y
 
 
-def _dibujar_donuts(c, x, y_top, w, m, alto_card=56 * mm):
+def _dibujar_donuts(c, x, y_top, w, m, alto_card=64 * mm):
     gap = 5 * mm
     ancho_card = (w - 2 * gap) / 3
     y0 = y_top - alto_card
@@ -256,7 +256,7 @@ def _dibujar_donuts(c, x, y_top, w, m, alto_card=56 * mm):
             c.setFont("Helvetica", 7.6)
             c.drawCentredString(cx + ancho_card / 2, y0 + alto_card - 25 * mm, "Sin datos")
 
-        _leyenda_donut(c, cx + 5 * mm, y0 + 15 * mm, ancho_card - 10 * mm, items)
+        _leyenda_donut(c, cx + 5 * mm, y0 + 21 * mm, ancho_card - 10 * mm, items)
 
     return y0
 
