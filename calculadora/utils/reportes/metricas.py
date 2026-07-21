@@ -58,13 +58,14 @@ def calcular_metricas_dashboard(mediciones_qs):
         lt_hipo.append(round(d["hipo"] / t * 100, 1))
         lt_hiper.append(round(d["hiper"] / t * 100, 1))
 
-    rango_labels = ["< 70", "70–110", "111–140", "141–180", "> 180"]
+    rango_labels = ["< 70", "70–200", "200–300", "301–400", "401–500", "> 500"]
     rango_datos = [
         mediciones_qs.filter(glicemia_actual__lt=70).count(),
-        mediciones_qs.filter(glicemia_actual__gte=70, glicemia_actual__lte=110).count(),
-        mediciones_qs.filter(glicemia_actual__gt=110, glicemia_actual__lte=140).count(),
-        mediciones_qs.filter(glicemia_actual__gt=140, glicemia_actual__lte=180).count(),
-        mediciones_qs.filter(glicemia_actual__gt=180).count(),
+        mediciones_qs.filter(glicemia_actual__gte=70, glicemia_actual__lte=200).count(),
+        mediciones_qs.filter(glicemia_actual__gt=200, glicemia_actual__lte=300).count(),
+        mediciones_qs.filter(glicemia_actual__gt=300, glicemia_actual__lte=400).count(),
+        mediciones_qs.filter(glicemia_actual__gt=400, glicemia_actual__lte=500).count(),
+        mediciones_qs.filter(glicemia_actual__gt=500).count(),
     ]
 
     dg_labels = [etiqueta for _, etiqueta in DIAGNOSTICOS_PROTOCOLO]

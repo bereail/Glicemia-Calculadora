@@ -23,6 +23,7 @@ AMARILLO = colors.HexColor("#fbbf24")
 NARANJA = colors.HexColor("#f97316")
 INDIGO = colors.HexColor("#818cf8")
 GRIS_DOT = colors.HexColor("#9db3cc")
+ROJO_OSCURO = colors.HexColor("#991b1b")
 
 MARGEN = 14 * mm
 
@@ -345,7 +346,7 @@ def _dibujar_rangos(c, x, y_top, w, h, m):
 
     labels = m["rango_labels"]
     valores = m["rango_datos"]
-    colores = [ROJO, VERDE, AZUL, AMARILLO, NARANJA]
+    colores = [ROJO, VERDE, AZUL, AMARILLO, NARANJA, ROJO_OSCURO]
     maximo = max(valores) or 1
 
     pad_izq, pad_der = 20 * mm, 12 * mm
