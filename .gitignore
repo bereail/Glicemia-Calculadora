@@ -6,3 +6,7 @@ media/
 .env
 staticfiles/
 settings.LOCAL.backup.py
+django_errors.log
+*.spec
+build/
+dist/
