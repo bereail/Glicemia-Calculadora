@@ -18,13 +18,13 @@ DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = os.environ.get(
     "DJANGO_ALLOWED_HOSTS",
-    "127.0.0.1,localhost,192.168.7.250,192.168.100.21,192.168.7.210,138.36.238.175,www.ailonline.com.ar,ailonline.com.ar",
+    "127.0.0.1,localhost",
 ).split(",")
 
 
 CSRF_TRUSTED_ORIGINS = os.environ.get(
     "DJANGO_CSRF_TRUSTED_ORIGINS",
-    "http://192.168.7.250,http://192.168.100.21,http://192.168.7.210,http://138.36.238.175,http://138.36.238.175:8001,http://138.36.238.175:8010,https://www.ailonline.com.ar,https://ailonline.com.ar",
+    "http://127.0.0.1,http://localhost",
 ).split(",")
 
 
