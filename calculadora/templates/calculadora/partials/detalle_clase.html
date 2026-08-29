@@ -1,4 +1,40 @@
 {% if mediciones %}
+<div class="detalle-graficos">
+  <div class="detalle-grafico-card detalle-grafico-card--ancho">
+    <p class="detalle-grafico__titulo">Evolución de valores</p>
+    <p class="detalle-grafico__sub">Glucemia (mg/dL) en orden cronológico, para ver dónde se concentran los picos</p>
+    <div style="position:relative;height:170px;width:100%;margin-top:10px;">
+      <canvas id="detalleChartSerie"></canvas>
+    </div>
+  </div>
+  <div class="detalle-grafico-card">
+    <p class="detalle-grafico__titulo">Por turno</p>
+    <p class="detalle-grafico__sub">Dónde se concentran estos casos</p>
+    <div style="position:relative;height:140px;width:100%;margin-top:10px;">
+      <canvas id="detalleChartTurno"></canvas>
+    </div>
+  </div>
+  <div class="detalle-grafico-card">
+    <p class="detalle-grafico__titulo">Con infusión activa</p>
+    <p class="detalle-grafico__sub">Para saber si ajustar la tasa o iniciar protocolo</p>
+    <div class="hchart__donut-wrap" style="margin-top:10px;">
+      <div style="position:relative;width:100px;height:100px;flex-shrink:0;">
+        <canvas id="detalleChartInfusion"></canvas>
+      </div>
+      <ul class="hchart__leyenda">
+        <li><span class="hchart__dot" style="background:#60a5fa"></span><span class="hchart__lbl">Con infusión</span><span class="hchart__cnt">{{ detalle_infusion_si }}</span></li>
+        <li><span class="hchart__dot" style="background:#9db3cc"></span><span class="hchart__lbl">Sin infusión</span><span class="hchart__cnt">{{ detalle_infusion_no }}</span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+{{ detalle_serie_labels|json_script:"d-detalle-serie-labels" }}
+{{ detalle_serie_valores|json_script:"d-detalle-serie-valores" }}
+{{ detalle_turno_labels|json_script:"d-detalle-turno-labels" }}
+{{ detalle_turno_valores|json_script:"d-detalle-turno-valores" }}
+<span id="d-detalle-infusion" data-si="{{ detalle_infusion_si }}" data-no="{{ detalle_infusion_no }}" hidden></span>
+
 <div class="detalle-tabla-wrap">
   <table class="historial-table">
     <thead>

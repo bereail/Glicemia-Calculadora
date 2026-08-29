@@ -16,6 +16,11 @@ urlpatterns = [
         views.exportar_historial_pdf,
         name="exportar_historial_pdf",
     ),
+    path(
+        "historial/exportar/metricas/pdf/",
+        views.exportar_metricas_pdf,
+        name="exportar_metricas_pdf",
+    ),
 
 
     path(

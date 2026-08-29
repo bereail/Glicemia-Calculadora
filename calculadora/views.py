@@ -15,6 +15,9 @@ from .forms import GlucemiaForm
 from .models import MedicionGlucemia
 from .services import evaluar_glucemia_service
 from .utils.helpers import _a_bool
+from .utils.reportes.metricas import calcular_detalle_categoria, calcular_metricas_dashboard
+from .utils.reportes.metricas_pdf import generar_pdf_metricas
+from .utils.reportes.registro_pdf import generar_pdf_registro
 from .utils.ui.presentation import (
     enriquecer_resultado_ui,
     normalizar_clase_desde_estado,
@@ -301,58 +304,7 @@ def historial(request):
         fecha_hasta_seleccionada,
     ) = _filtrar_mediciones_desde_request(request)
 
-    total = mediciones_qs.count()
-    hipoglucemias = mediciones_qs.filter(clase="hipoglucemia").count()
-    post_hipoglucemias = mediciones_qs.filter(clase="post_hipoglucemia").count()
-    en_objetivo = mediciones_qs.filter(clase="en_rango").count()
-    hiperglucemias = mediciones_qs.filter(clase="hiperglucemia").count()
-
-    uso_medicos = MedicionGlucemia.objects.filter(usuario__groups__name="Medicos").count()
-    uso_enfermeria = MedicionGlucemia.objects.filter(usuario__groups__name="Enfermeria").count()
-    uso_sin_grupo = MedicionGlucemia.objects.filter(usuario__groups__isnull=True).count()
-
-    turnos = {"manana": 0, "tarde": 0, "noche": 0, "madrugada": 0}
-    semanas = {}
-    for fecha, clase_m in MedicionGlucemia.objects.values_list("fecha_hora", "clase"):
-        fecha_local = timezone.localtime(fecha)
-        h = fecha_local.hour
-        if 6 <= h < 12:
-            turnos["manana"] += 1
-        elif 12 <= h < 18:
-            turnos["tarde"] += 1
-        elif 18 <= h < 24:
-            turnos["noche"] += 1
-        else:
-            turnos["madrugada"] += 1
-
-        lunes = (fecha_local - timedelta(days=fecha_local.weekday())).date()
-        if lunes not in semanas:
-            semanas[lunes] = {"total": 0, "objetivo": 0, "hipo": 0, "hiper": 0}
-        semanas[lunes]["total"] += 1
-        if clase_m == "en_rango":
-            semanas[lunes]["objetivo"] += 1
-        elif clase_m == "hipoglucemia":
-            semanas[lunes]["hipo"] += 1
-        elif clase_m == "hiperglucemia":
-            semanas[lunes]["hiper"] += 1
-
-    lt_labels, lt_objetivo, lt_hipo, lt_hiper = [], [], [], []
-    for lunes in sorted(semanas):
-        d = semanas[lunes]
-        t = d["total"] or 1
-        lt_labels.append(lunes.strftime("%d/%m"))
-        lt_objetivo.append(round(d["objetivo"] / t * 100, 1))
-        lt_hipo.append(round(d["hipo"] / t * 100, 1))
-        lt_hiper.append(round(d["hiper"] / t * 100, 1))
-
-    rango_labels = ["< 70", "70–110", "111–140", "141–180", "> 180"]
-    rango_datos = [
-        mediciones_qs.filter(glicemia_actual__lt=70).count(),
-        mediciones_qs.filter(glicemia_actual__gte=70,  glicemia_actual__lte=110).count(),
-        mediciones_qs.filter(glicemia_actual__gt=110,  glicemia_actual__lte=140).count(),
-        mediciones_qs.filter(glicemia_actual__gt=140,  glicemia_actual__lte=180).count(),
-        mediciones_qs.filter(glicemia_actual__gt=180).count(),
-    ]
+    metricas = calcular_metricas_dashboard(mediciones_qs)
 
     paginator = Paginator(mediciones_qs, 5)
     page_number = request.GET.get("page")
@@ -377,65 +329,45 @@ def historial(request):
         .order_by("clase")
     )
 
-    return render(
-        request,
-        "calculadora/historial.html",
-        {
-            "mediciones": mediciones,
-            "usuarios": usuarios,
-            "estados": estados,
-            "clases": clases,
-            "usuario_seleccionado": usuario_seleccionado,
-            "estado_seleccionado": estado_seleccionado,
-            "clase_seleccionada": clase_seleccionada,
-            "periodo_seleccionado": periodo,
-            "turno_seleccionado": turno_seleccionado,
-            "fecha_desde_seleccionada": fecha_desde_seleccionada,
-            "fecha_hasta_seleccionada": fecha_hasta_seleccionada,
-            "total": total,
-            "hipoglucemias": hipoglucemias,
-            "post_hipoglucemias": post_hipoglucemias,
-            "en_objetivo": en_objetivo,
-            "hiperglucemias": hiperglucemias,
-            "pct_hipo":  round(hipoglucemias  / (total or 1) * 100, 1),
-            "pct_ok":    round(en_objetivo     / (total or 1) * 100, 1),
-            "pct_hiper": round(hiperglucemias  / (total or 1) * 100, 1),
-            "uso_medicos": uso_medicos,
-            "uso_enfermeria": uso_enfermeria,
-            "uso_sin_grupo": uso_sin_grupo,
-            "turno_manana": turnos["manana"],
-            "turno_tarde": turnos["tarde"],
-            "turno_noche": turnos["noche"],
-            "turno_madrugada": turnos["madrugada"],
-            "lt_labels": lt_labels,
-            "lt_objetivo": lt_objetivo,
-            "lt_hipo": lt_hipo,
-            "lt_hiper": lt_hiper,
-            "rango_labels": rango_labels,
-            "rango_datos": rango_datos,
-        },
-    )
+    contexto = {
+        "mediciones": mediciones,
+        "usuarios": usuarios,
+        "estados": estados,
+        "clases": clases,
+        "usuario_seleccionado": usuario_seleccionado,
+        "estado_seleccionado": estado_seleccionado,
+        "clase_seleccionada": clase_seleccionada,
+        "periodo_seleccionado": periodo,
+        "turno_seleccionado": turno_seleccionado,
+        "fecha_desde_seleccionada": fecha_desde_seleccionada,
+        "fecha_hasta_seleccionada": fecha_hasta_seleccionada,
+        **metricas,
+    }
+    return render(request, "calculadora/historial.html", contexto)
 
 
 @login_required
 @user_passes_test(tiene_acceso_historial, login_url="/login/")
 def historial_detalle(request):
+    """Detalle de una categoría (card) del panel, respetando los mismos filtros
+    (fecha/turno/usuario/estado) que están aplicados en la página de historial."""
     clase = request.GET.get("clase", "").strip()
     LIMITE = 200
 
-    qs = MedicionGlucemia.objects.select_related("usuario").order_by("-fecha_hora")
-    if clase:
-        qs = qs.filter(clase=clase)
+    qs, *_ = _filtrar_mediciones_desde_request(request)
 
     total_clase = qs.count()
     mediciones = list(qs[:LIMITE])
+    detalle_graficos = calcular_detalle_categoria(mediciones)
 
-    return render(request, "calculadora/partials/detalle_clase.html", {
+    contexto = {
         "mediciones": mediciones,
         "total_clase": total_clase,
         "hay_mas": total_clase > LIMITE,
         "clase": clase,
-    })
+        **detalle_graficos,
+    }
+    return render(request, "calculadora/partials/detalle_clase.html", contexto)
 
 
 @login_required
@@ -535,102 +467,89 @@ def exportar_historial_excel(request):
     return response
 
 
+_TURNO_TEXTOS = {
+    "manana": "Mañana (06–12)",
+    "tarde": "Tarde (12–18)",
+    "noche": "Noche (18–24)",
+    "madrugada": "Madrugada (00–06)",
+}
+
+
+def _construir_filtros_pdf(usuario, estado, clase, periodo, turno, fecha_desde, fecha_hasta):
+    if fecha_desde or fecha_hasta:
+        periodo_texto = f"{fecha_desde or '...'} – {fecha_hasta or '...'}"
+    elif periodo == "semanal":
+        periodo_texto = "Últimos 7 días"
+    elif periodo == "mensual":
+        periodo_texto = "Últimos 30 días"
+    else:
+        periodo_texto = "Completo"
+
+    return {
+        "periodo_texto": periodo_texto,
+        "turno_texto": _TURNO_TEXTOS.get(turno),
+        "usuario": usuario,
+        "estado": estado,
+        "clase": clase,
+        "generado": timezone.localtime().strftime("%d/%m/%Y %H:%M"),
+    }
+
+
+def _nombre_archivo_filtrado(prefijo, periodo, turno, fecha_desde, fecha_hasta):
+    partes = [prefijo]
+    if fecha_desde:
+        partes.append(fecha_desde)
+    if fecha_hasta:
+        partes.append(fecha_hasta)
+    if turno:
+        partes.append(turno)
+    if not fecha_desde and not fecha_hasta and not turno:
+        partes.append(periodo or "completo")
+    return "_".join(partes) + ".pdf"
+
+
 @login_required
 @user_passes_test(tiene_acceso_historial, login_url="/login/")
 def exportar_historial_pdf(request):
-    from reportlab.lib import colors
-    from reportlab.lib.pagesizes import A4, landscape
-    from reportlab.lib.styles import getSampleStyleSheet
-    from reportlab.lib.units import mm
-    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    (
+        mediciones,
+        usuario,
+        estado,
+        clase,
+        periodo,
+        turno,
+        fecha_desde,
+        fecha_hasta,
+    ) = _filtrar_mediciones_desde_request(request)
 
-    mediciones, usuario, estado, clase, periodo, turno, *_ = _filtrar_mediciones_desde_request(
-        request
-    )
+    filtros = _construir_filtros_pdf(usuario, estado, clase, periodo, turno, fecha_desde, fecha_hasta)
+    pdf = generar_pdf_registro(mediciones, filtros)
 
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(
-        buffer,
-        pagesize=landscape(A4),
-        leftMargin=12 * mm,
-        rightMargin=12 * mm,
-        topMargin=12 * mm,
-        bottomMargin=12 * mm,
-    )
+    nombre = _nombre_archivo_filtrado("historial", periodo, turno, fecha_desde, fecha_hasta)
+    response = HttpResponse(pdf, content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{nombre}"'
+    return response
 
-    styles = getSampleStyleSheet()
-    elements = []
 
-    elements.append(
-        Paragraph(f"Reporte de mediciones - {periodo or 'completo'}", styles["Title"])
-    )
-    elements.append(Spacer(1, 8))
-    elements.append(Paragraph(f"Usuario: {usuario or 'Todos'}", styles["Normal"]))
-    elements.append(Paragraph(f"Estado: {estado or 'Todos'}", styles["Normal"]))
-    elements.append(Paragraph(f"Clase: {clase or 'Todas'}", styles["Normal"]))
-    elements.append(
-        Paragraph(
-            f"Generado: {timezone.localtime().strftime('%d/%m/%Y %H:%M')}",
-            styles["Normal"],
-        )
-    )
-    elements.append(Spacer(1, 12))
+@login_required
+@user_passes_test(tiene_acceso_historial, login_url="/login/")
+def exportar_metricas_pdf(request):
+    (
+        mediciones_qs,
+        usuario,
+        estado,
+        clase,
+        periodo,
+        turno,
+        fecha_desde,
+        fecha_hasta,
+    ) = _filtrar_mediciones_desde_request(request)
 
-    estilo_conducta = styles["Normal"].clone("conducta")
-    estilo_conducta.fontSize = 7.5
-    estilo_conducta.leading = 10
+    metricas = calcular_metricas_dashboard(mediciones_qs)
+    filtros = _construir_filtros_pdf(usuario, estado, clase, periodo, turno, fecha_desde, fecha_hasta)
+    pdf = generar_pdf_metricas(metricas, filtros)
 
-    data = [[
-        "Fecha", "Usuario", "Actual", "Previa", "Infusión",
-        "Estado", "Clase", "Conducta", "Tendencia"
-    ]]
-
-    for m in mediciones:
-        data.append(
-            [
-                timezone.localtime(m.fecha_hora).strftime("%d/%m/%Y\n%H:%M"),
-                m.usuario.username if m.usuario else "",
-                f"{m.glicemia_actual}",
-                f"{m.glicemia_previa}" if m.glicemia_previa is not None else "",
-                "Sí" if m.infusion_activa else "No",
-                m.estado,
-                m.clase,
-                Paragraph((m.conducta or "").replace("<br>", "<br/>"), estilo_conducta),
-                f"{m.tendencia or ''} {m.flecha_tendencia or ''}".strip(),
-            ]
-        )
-
-    col_widths = [28*mm, 24*mm, 16*mm, 16*mm, 16*mm, 36*mm, 22*mm, 62*mm, 20*mm]
-    table = Table(data, colWidths=col_widths, repeatRows=1)
-
-    style_cmds = [
-        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1F4E78")),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("FONTSIZE", (0, 0), (-1, 0), 8.5),
-        ("BOTTOMPADDING", (0, 0), (-1, 0), 9),
-        ("TOPPADDING", (0, 0), (-1, 0), 9),
-        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-        ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("FONTSIZE", (0, 1), (-1, -1), 7.5),
-        ("TOPPADDING", (0, 1), (-1, -1), 5),
-        ("BOTTOMPADDING", (0, 1), (-1, -1), 5),
-        ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#C7D3E0")),
-        ("LINEBELOW", (0, 0), (-1, 0), 1, colors.HexColor("#0F2E52")),
-    ]
-    for i, _ in enumerate(data[1:], start=1):
-        bg = colors.HexColor("#EBF3FB") if i % 2 == 0 else colors.white
-        style_cmds.append(("BACKGROUND", (0, i), (-1, i), bg))
-
-    table.setStyle(TableStyle(style_cmds))
-
-    elements.append(table)
-    doc.build(elements)
-
-    pdf = buffer.getvalue()
-    buffer.close()
-
-    nombre = f"historial_{periodo or 'completo'}.pdf"
+    nombre = _nombre_archivo_filtrado("metricas", periodo, turno, fecha_desde, fecha_hasta)
     response = HttpResponse(pdf, content_type="application/pdf")
     response["Content-Disposition"] = f'attachment; filename="{nombre}"'
     return response
