@@ -4,7 +4,7 @@ Aplicación web desarrollada en Django para asistir al equipo de enfermería y m
 control de glicemia e infusión de insulina de pacientes en Unidad de Cuidados Intensivos (UCI),
 siguiendo un protocolo clínico institucional de manejo de glucemia en nutrición crítica.
 
-🔗 **Demo:** [138.36.238.175:8001/login](http://138.36.238.175:8001/login) (instancia real del
+🔗 **Demo:** [ailonline.com.ar/glicemia](https://ailonline.com.ar/glicemia/) (instancia real del
 sistema — pedir credenciales de acceso)
 
 > ⚠️ **Esta aplicación es una herramienta de apoyo informático.** Sistematiza y automatiza el
